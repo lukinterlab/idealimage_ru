@@ -1,0 +1,22 @@
+[Unit]
+Description=AI Agent Django-Q Worker для idealimage.ru
+After=network.target
+
+[Service]
+Type=simple
+User=j7642490
+Group=j7642490
+WorkingDirectory=/home/users/j/j7642490/domains/idealimage.ru
+Environment="PATH=/home/users/j/j7642490/domains/idealimage.ru/.venv/python311/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/home/users/j/j7642490/domains/idealimage.ru/.venv/python311/bin/python manage.py qcluster
+Restart=always
+RestartSec=10
+
+# Логи
+StandardOutput=append:/home/users/j/j7642490/domains/idealimage.ru/logs/djangoq.log
+StandardError=append:/home/users/j/j7642490/domains/idealimage.ru/logs/djangoq_error.log
+
+[Install]
+WantedBy=multi-user.target
+

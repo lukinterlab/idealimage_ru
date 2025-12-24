@@ -1,0 +1,1158 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Конструктор пайплайнов{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-black text-white flex items-center gap-3">
+                        <span>🧩</span>
+                        Конструктор пайплайнов
+                    </h1>
+                    <p class="text-lg text-gray-300 mt-2 max-w-3xl">
+                        Настройте автоматизацию модерации, SEO, Telegram, рекламы и бонусов. Пайплайны позволяют объединять шаги, триггеры и действия в единую цепочку.
+                    </p>
+                </div>
+                <a href="{% url 'asistent:admin_dashboard' %}"
+                   class="px-4 py-2 rounded-lg font-semibold border border-white/30 text-white/90 hover:bg-white/10 transition-colors flex items-center gap-2">
+                    <span>↩️</span>
+                    Назад в админку
+                </a>
+            </div>
+        </div>
+
+        {% verbatim %}
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6" id="pipeline-builder-app" v-cloak>
+            <div class="lg:col-span-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 space-y-4 relative z-20">
+                <div class="flex items-center justify-between flex-wrap gap-3 relative z-20">
+                    <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+                        <span>📚</span> Пайплайны
+                    </h2>
+                    <div class="flex items-center gap-2 flex-wrap relative z-20">
+                        <div class="flex items-center gap-2 bg-white/90 text-gray-800 dark:bg-black/30 dark:text-gray-200 border border-white/40 dark:border-white/10 rounded-lg px-2 py-1 transition-colors relative z-30 shadow-lg">
+                            <select v-model="selectedPreset"
+                                    class="bg-transparent text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-md px-1 py-0.5 relative z-30">
+                                <option value="">Создать из пресета…</option>
+                                <option v-for="preset in presets" :key="preset.slug" :value="preset.slug">
+                                    {{ preset.name }}
+                                </option>
+                            </select>
+                            <button type="button"
+                                    @click="createPipelineFromPreset"
+                                    :disabled="!selectedPreset"
+                                    class="px-2 py-1 rounded-md text-xs font-semibold bg-emerald-500/20 border border-emerald-500/40 text-emerald-100 hover:bg-emerald-500/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    title="Создать пайплайн на основе выбранного пресета">
+                                Создать
+                            </button>
+                        </div>
+                        <button type="button" @click="createPipeline"
+                                class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+                                title="Создать новый пайплайн с нуля">
+                            Новый
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+                    <button v-for="pipeline in pipelines"
+                            :key="pipeline.id"
+                            @click="selectPipeline(pipeline.id)"
+                            class="w-full text-left px-3 py-2 rounded-xl border transition"
+                            :class="selectedId === pipeline.id
+                                ? 'bg-purple-600/30 border-purple-500/60 text-white'
+                                : 'bg-white/5 border-white/10 text-gray-200 hover:bg-white/10'">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="font-semibold text-sm">{{ pipeline.name }}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full border border-white/20 text-white/70">{{ pipeline.kind }}</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1 line-clamp-2">{{ pipeline.description || 'Без описания' }}</p>
+                    </button>
+                    <p v-if="pipelines.length === 0" class="text-sm text-gray-400">
+                        Пайплайны еще не созданы. Нажмите «Новый», чтобы добавить первый.
+                    </p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 space-y-6" v-if="current">
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <h2 class="text-2xl font-semibold text-white flex items-center gap-2">
+                            <span>⚙️</span> Общие настройки
+                        </h2>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <button type="button" @click="deletePipeline"
+                                    class="px-4 py-2 rounded-lg text-sm font-semibold bg-rose-500/30 hover:bg-rose-500/40 border border-rose-400/40 text-rose-200 transition"
+                                    title="Удалить текущий пайплайн">
+                                Удалить
+                            </button>
+                            <button type="button" @click="openRunModal"
+                                    class="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-500/30 hover:bg-blue-500/40 border border-blue-400/40 text-blue-100 transition"
+                                    title="Запустить пайплайн и посмотреть результат">
+                                Запустить
+                            </button>
+                            <button type="button" @click="savePipeline"
+                                    class="px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition"
+                                    title="Сохранить текущую конфигурацию">
+                                Сохранить
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="space-y-2">
+                            <span class="text-sm text-gray-300">Название</span>
+                            <input type="text" v-model="current.name"
+                                   class="w-full px-4 py-2 rounded-lg bg-black/40 border border-white/20 text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        </label>
+                        <div class="space-y-2">
+                            <span class="text-sm text-gray-300">Системный идентификатор</span>
+                            <div class="px-4 py-2 rounded-lg bg-black/30 border border-white/10 text-xs text-gray-300 font-mono">
+                                {{ current.slug || 'будет сгенерирован автоматически' }}
+                            </div>
+                        </div>
+                        <label class="space-y-2">
+                            <span class="text-sm text-gray-300">Тип</span>
+                            <select v-model="current.kind"
+                                    class="w-full px-4 py-2 rounded-lg bg-black/40 border border-white/20 text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                <option value="article">Статьи</option>
+                                <option value="comment">Комментарии</option>
+                                <option value="seo">SEO</option>
+                                <option value="distribution">Дистрибуция</option>
+                                <option value="advertising">Реклама</option>
+                                <option value="donations">Донаты</option>
+                                <option value="custom">Пользовательский</option>
+                            </select>
+                        </label>
+                        <label class="flex items-center gap-3 text-sm text-gray-200 mt-6 md:mt-0">
+                            <input type="checkbox" v-model="current.is_active"
+                                   class="w-5 h-5 rounded border-white/30 bg-black/40">
+                            Активен
+                        </label>
+                    </div>
+
+                    <label class="space-y-2 block">
+                        <span class="text-sm text-gray-300">Описание</span>
+                        <textarea v-model="current.description" rows="3"
+                                  class="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/20 text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
+                    </label>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-2xl font-semibold text-white flex items-center gap-2">
+                            <span>⏱️</span> Триггеры
+                        </h2>
+                        <div class="relative">
+                            <select v-model="selectedTrigger"
+                                    class="px-4 py-2 rounded-lg bg-black/50 border border-white/20 text-white">
+                                <option disabled value="">Добавить триггер...</option>
+                                <option v-for="trigger in catalog.triggers" :key="trigger.code" :value="trigger.code">
+                                    {{ trigger.name }} ({{ trigger.category }})
+                                </option>
+                            </select>
+                            <button v-if="selectedTrigger"
+                                    @click="addTrigger"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-emerald-100">
+                                ➕
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-3" ref="triggersSortable">
+                        <div v-for="(trigger, index) in current.triggers" :key="`${trigger.code}-${index}`"
+                             class="border border-white/10 rounded-xl p-4 bg-black/30 space-y-3">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="drag-handle text-gray-400 hover:text-gray-200 cursor-move select-none" title="Перетащите">
+                                        ::
+                                    </span>
+                                    <div>
+                                    <p class="text-white font-semibold text-sm">{{ trigger.code }}</p>
+                                    <p class="text-xs text-gray-300">{{ triggerTitle(trigger.code) }}</p>
+                                    </div>
+                                </div>
+                                <button @click="removeTrigger(index)"
+                                        class="text-sm text-rose-300 hover:text-rose-100">
+                                    Удалить
+                                </button>
+                            </div>
+                            <label class="block text-xs text-gray-300 space-y-2">
+                                Параметры (JSON)
+                                <textarea v-model="trigger.parameters_json"
+                                          @change="syncTriggerParameters(trigger)"
+                                          class="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/20 text-gray-100 font-mono text-xs"
+                                          rows="3"></textarea>
+                            </label>
+                            <label class="block text-xs text-gray-300 space-y-2">
+                                Инструкция
+                                <textarea v-model="trigger.instruction"
+                                          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-gray-100 text-xs"
+                                          rows="2"
+                                          placeholder="Опишите, что запускает этот триггер и какие условия должны соблюдаться."></textarea>
+                            </label>
+                        </div>
+                        <p v-if="current.triggers.length === 0" class="text-sm text-gray-400">
+                            Нет триггеров. Добавьте хотя бы один источник запуска.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-2xl font-semibold text-white flex items-center gap-2">
+                            <span>🪜</span> Шаги пайплайна
+                        </h2>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="relative">
+                                <select v-model="selectedStep"
+                                        class="px-4 py-2 rounded-lg bg-black/50 border border-white/20 text-white">
+                                    <option disabled value="">Добавить шаг...</option>
+                                    <option v-for="step in catalog.steps" :key="step.code" :value="step.code">
+                                        {{ step.name }} ({{ step.category }})
+                                    </option>
+                                </select>
+                                <button v-if="selectedStep"
+                                        @click="addStep"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-emerald-100">
+                                    ➕
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <select v-model="selectedPrompt"
+                                        class="px-4 py-2 rounded-lg bg-black/50 border border-white/20 text-white">
+                                    <option disabled value="">Добавить шаг из промта...</option>
+                                    <option v-for="prompt in promptTemplates" :key="prompt.id" :value="prompt.name">
+                                        {{ prompt.name }} ({{ prompt.category_display || prompt.category || 'prompt' }})
+                                    </option>
+                                </select>
+                                <button v-if="selectedPrompt"
+                                        @click="addPromptStep"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-emerald-100">
+                                    ➕
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-3" ref="stepsSortable">
+                        <div v-for="(step, index) in current.steps" :key="`${step.code}-${index}`"
+                             class="border border-white/10 rounded-xl p-4 bg-black/30 space-y-3">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="drag-handle text-gray-400 hover:text-gray-200 cursor-move select-none" title="Перетащите">
+                                        ::
+                                    </span>
+                                    <div>
+                                        <p class="text-white font-semibold text-sm">{{ step.code }}</p>
+                                        <p class="text-xs text-gray-300">{{ stepTitle(step.code) }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 text-xs text-gray-300">
+                                    <label class="flex items-center gap-2">
+                                        <span>Приоритет</span>
+                                        <input type="number" v-model.number="step.priority"
+                                               class="w-16 px-2 py-1 rounded bg-black/60 border border-white/20 text-gray-100">
+                                    </label>
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" v-model="step.enabled"
+                                               class="w-4 h-4 rounded border-white/30 bg-black/40">
+                                        Активен
+                                    </label>
+                                    <button @click="removeStep(index)"
+                                            class="text-rose-300 hover:text-rose-100 text-sm">
+                                        Удалить
+                                    </button>
+                                </div>
+                            </div>
+                            <label class="block text-xs text-gray-300 space-y-2">
+                                Параметры (JSON)
+                                <textarea v-model="step.parameters_json"
+                                          @change="syncStepParameters(step)"
+                                          class="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/20 text-gray-100 font-mono text-xs"
+                                          rows="4"></textarea>
+                            </label>
+                            <label class="block text-xs text-gray-300 space-y-2">
+                                Инструкция шага
+                                <textarea v-model="step.instruction"
+                                          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-gray-100 text-xs"
+                                          rows="3"
+                                          placeholder="Опишите, зачем выполняется шаг и что проверяется/изменяется."></textarea>
+                            </label>
+                        </div>
+                        <p v-if="current.steps.length === 0" class="text-sm text-gray-400">
+                            Добавьте шага, чтобы пайплайн выполнял действия.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-2xl font-semibold text-white flex items-center gap-2">
+                            <span>📬</span> Действия после шага
+                        </h2>
+                        <div class="relative">
+                            <select v-model="selectedAction"
+                                    class="px-4 py-2 rounded-lg bg-black/50 border border-white/20 text-white">
+                                <option disabled value="">Добавить действие...</option>
+                                <option v-for="action in catalog.actions" :key="action.code" :value="action.code">
+                                    {{ action.name }} ({{ action.category }})
+                                </option>
+                            </select>
+                            <button v-if="selectedAction"
+                                    @click="addAction"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-emerald-100">
+                                ➕
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-3" ref="actionsSortable">
+                        <div v-for="(action, index) in current.actions" :key="`${action.code}-${index}`"
+                             class="border border-white/10 rounded-xl p-4 bg-black/30 space-y-3">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="drag-handle text-gray-400 hover:text-gray-200 cursor-move select-none" title="Перетащите">
+                                        ::
+                                    </span>
+                                    <div>
+                                        <p class="text-white font-semibold text-sm">{{ action.code }}</p>
+                                        <p class="text-xs text-gray-300">{{ actionTitle(action.code) }}</p>
+                                    </div>
+                                </div>
+                                <button @click="removeAction(index)"
+                                        class="text-sm text-rose-300 hover:text-rose-100">
+                                    Удалить
+                                </button>
+                            </div>
+                            <label class="block text-xs text-gray-300 space-y-2">
+                                Параметры (JSON)
+                                <textarea v-model="action.parameters_json"
+                                          @change="syncActionParameters(action)"
+                                          class="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/20 text-gray-100 font-mono text-xs"
+                                          rows="3"></textarea>
+                            </label>
+                            <label class="block text-xs text-gray-300 space-y-2">
+                                Инструкция действия
+                                <textarea v-model="action.instruction"
+                                          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-gray-100 text-xs"
+                                          rows="2"
+                                          placeholder="Уточните, что должно произойти после выполнения пайплайна."></textarea>
+                            </label>
+                        </div>
+                        <p v-if="current.actions.length === 0" class="text-sm text-gray-400">
+                            Добавьте действия, чтобы оповещать команду или авторов после выполнения пайплайна.
+                        </p>
+                    </div>
+                </div>
+
+                <div v-if="toast"
+                     :class="toast.success ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-200' : 'bg-rose-500/20 border-rose-400/50 text-rose-200'"
+                     class="rounded-xl px-4 py-3 border transition">
+                    {{ toast.message }}
+                </div>
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-2xl font-semibold text-white flex items-center gap-2">
+                            <span>🧾</span> История запусков
+                        </h2>
+                        <span class="text-sm text-gray-300">Последние 5</span>
+                    </div>
+                    <div v-if="runHistory.length === 0" class="text-sm text-gray-400">
+                        Запусков пока не было.
+                    </div>
+                    <div v-else class="space-y-3">
+                        <div v-for="run in runHistory" :key="run.id"
+                             class="border border-white/10 rounded-xl p-4 bg-black/30 text-sm text-gray-200">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <span class="font-semibold" :class="run.statusClass">{{ run.statusDisplay }}</span>
+                                    <span class="text-xs text-gray-400 ml-2">{{ run.started_at }}</span>
+                                </div>
+                                <button type="button" @click="repeatRun(run)"
+                                        class="px-3 py-1 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/20">
+                                    Повторить
+                                </button>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-300">
+                                Payload:
+                                <code class="font-mono bg-black/40 px-2 py-1 rounded">{{ run.payloadPreview }}</code>
+                            </div>
+                            <div v-if="run.error_message" class="mt-2 text-xs text-rose-300">
+                                Ошибка: {{ run.error_message }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="showRunModal" class="fixed inset-0 z-40 flex items-center justify-center px-4 py-6">
+                <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeRunModal"></div>
+                <div class="relative z-10 w-full max-w-lg bg-gray-900/95 dark:bg-gray-900/95 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-semibold text-white">Запуск пайплайна</h3>
+                        <button type="button"
+                                class="text-gray-400 hover:text-gray-200 transition"
+                                @click="closeRunModal">
+                            ✕
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-300">
+                        Выберите знак зодиака и при необходимости дополните payload. JSON-значение будет объединено с целью запуска.
+                    </p>
+                    <div class="space-y-4">
+                        <label class="block text-sm text-gray-200 space-y-2">
+                            <span>Знак зодиака<span class="text-rose-300">*</span></span>
+                            <select v-model="runModal.zodiacSign"
+                                    class="w-full px-4 py-2 rounded-lg bg-black/50 border border-white/20 text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                <option disabled value="">Выберите знак…</option>
+                                <option v-for="sign in zodiacSigns" :key="sign" :value="sign">
+                                    {{ sign }}
+                                </option>
+                            </select>
+                        </label>
+                        <label class="block text-sm text-gray-200 space-y-2">
+                            <span>Payload (JSON, опционально)</span>
+                            <textarea ref="runPayloadInput"
+                                      v-model="runModal.payloadText"
+                                      rows="5"
+                                      class="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/20 text-gray-100 font-mono text-xs focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                      placeholder='{"extra": "значение"}'></textarea>
+                        </label>
+                        <p v-if="runModal.error" class="text-sm text-rose-300">
+                            {{ runModal.error }}
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-end gap-3">
+                        <button type="button"
+                                class="px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-gray-200 hover:bg-white/20 transition"
+                                @click="closeRunModal">
+                            Отмена
+                        </button>
+                        <button type="button"
+                                class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
+                                @click="confirmRunModal">
+                            Запустить
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="lg:col-span-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-10 text-center text-gray-200">
+                <div class="text-6xl mb-4">🛠️</div>
+                <p class="text-lg">Выберите пайплайн слева или создайте новый, чтобы приступить к настройке.</p>
+            </div>
+        </div>
+        {% endverbatim %}
+    </div>
+</div>
+
+<form method="post" id="pipeline-csrf">{% csrf_token %}</form>
+<script>
+    window.CSRF_TOKEN = document.querySelector('#pipeline-csrf input[name=csrfmiddlewaretoken]').value;
+    window.PIPELINE_CATALOG = JSON.parse('{{ catalog_json|escapejs }}');
+    window.PIPELINE_PRESETS = JSON.parse('{{ presets_json|escapejs }}');
+    window.PIPELINE_PROMPTS = JSON.parse('{{ prompt_templates_json|escapejs }}');
+    window.PIPELINES_INITIAL = JSON.parse('{{ pipelines_json|escapejs }}');
+    window.PIPELINE_ENDPOINTS = {
+        list: "{% url 'asistent:api_pipelines' %}",
+        catalog: "{% url 'asistent:api_pipeline_catalog' %}",
+        presets: "{% url 'asistent:api_pipeline_presets' %}",
+        fromPreset: "{% url 'asistent:api_pipeline_from_preset' %}",
+        detail: function(id) { return "{% url 'asistent:api_pipeline_detail' 0 %}".replace('0', id); },
+        run: function(id) { return "{% url 'asistent:api_pipeline_run' 0 %}".replace('0', id); }
+    };
+</script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    (function () {
+        const { createApp } = Vue;
+        const Sortable = window.Sortable;
+        const catalog = window.PIPELINE_CATALOG;
+        const presets = window.PIPELINE_PRESETS || [];
+        catalog.triggers = (catalog.triggers || []).sort((a, b) => {
+            const categoryCompare = (a.category || '').localeCompare(b.category || '', 'ru');
+            if (categoryCompare !== 0) return categoryCompare;
+            return (a.name || a.code).localeCompare(b.name || b.code, 'ru');
+        });
+        catalog.steps = (catalog.steps || []).map(step => ({
+            ...step,
+            name: step.name || step.code,
+            description: step.description || '',
+            category: step.category || 'misc',
+        })).sort((a, b) => {
+            if (a.category === b.category) {
+                return a.name.localeCompare(b.name, 'ru');
+            }
+            return a.category.localeCompare(b.category, 'ru');
+        });
+        const statusDisplayMap = {
+            success: "Успех",
+            failed: "Ошибка",
+            running: "Выполняется",
+            pending: "Ожидает",
+        };
+
+        const statusClassMap = {
+            success: "text-emerald-300",
+            failed: "text-rose-300",
+            running: "text-blue-300",
+            pending: "text-gray-300",
+        };
+
+        function decorateRuns(rawRuns) {
+            return (rawRuns || []).map((run) => {
+                const payloadString = JSON.stringify(run.payload || {}, null, 0);
+                const preview =
+                    payloadString.length > 120
+                        ? payloadString.slice(0, 117) + "..."
+                        : payloadString;
+                return {
+                    ...run,
+                    statusDisplay: statusDisplayMap[run.status] || run.status,
+                    statusClass: statusClassMap[run.status] || "text-gray-300",
+                    payloadPreview: preview || "{}",
+                };
+            });
+        }
+
+        const initial = (window.PIPELINES_INITIAL || []).map((pipeline) => ({
+            ...pipeline,
+            runs: decorateRuns(pipeline.runs || []),
+        }));
+
+        function clone(obj) {
+            return JSON.parse(JSON.stringify(obj));
+        }
+
+        function prepareItem(item) {
+            return {
+                ...item,
+                instruction: item.instruction || "",
+                parameters_json: JSON.stringify(item.parameters || {}, null, 2),
+            };
+        }
+
+        const firstPipeline = initial.length ? initial[0] : null;
+
+        createApp({
+            data() {
+                return {
+                    catalog,
+                    pipelines: initial,
+                    presets,
+                    promptTemplates: window.PIPELINE_PROMPTS || [],
+                    selectedId: firstPipeline ? firstPipeline.id : null,
+                    current: null,
+                    selectedStep: '',
+                    selectedPrompt: '',
+                    selectedTrigger: '',
+                    selectedAction: '',
+                    selectedPreset: '',
+                    toast: null,
+                    lastPayloadInput: '{"post_id": null}',
+                    runHistory: [],
+                    sortables: {
+                        triggers: null,
+                        steps: null,
+                        actions: null,
+                    },
+                    zodiacSigns: [
+                        "Овен",
+                        "Телец",
+                        "Близнецы",
+                        "Рак",
+                        "Лев",
+                        "Дева",
+                        "Весы",
+                        "Скорпион",
+                        "Стрелец",
+                        "Козерог",
+                        "Водолей",
+                        "Рыбы",
+                    ],
+                    showRunModal: false,
+                    runModal: {
+                        zodiacSign: '',
+                        payloadText: '{"post_id": null}',
+                        error: '',
+                    },
+                };
+            },
+            created() {
+                if (firstPipeline) {
+                    this.current = this.preparePipeline(firstPipeline);
+                    this.runHistory = [...(firstPipeline.runs || [])];
+                    this.$nextTick(() => this.setupSortables());
+                }
+            },
+            mounted() {
+                if (this.current) {
+                    this.$nextTick(() => this.setupSortables());
+                }
+            },
+            beforeUnmount() {
+                this.destroySortables();
+            },
+            watch: {
+                selectedId(newId) {
+                    if (newId) {
+                        this.fetchPipeline(newId);
+                    }
+                }
+            },
+            methods: {
+                refreshSortables() {
+                    this.$nextTick(() => {
+                        this.setupSortables();
+                    });
+                },
+                setupSortables() {
+                    if (!Sortable) {
+                        return;
+                    }
+                    this.destroySortables();
+                    if (!this.current) {
+                        return;
+                    }
+                    this.initSortable('triggersSortable', 'triggers');
+                    this.initSortable('stepsSortable', 'steps');
+                    this.initSortable('actionsSortable', 'actions');
+                },
+                destroySortables() {
+                    Object.keys(this.sortables).forEach((key) => {
+                        const instance = this.sortables[key];
+                        if (instance && typeof instance.destroy === 'function') {
+                            instance.destroy();
+                        }
+                        this.sortables[key] = null;
+                    });
+                },
+                initSortable(refName, type) {
+                    let container = this.$refs[refName];
+                    if (Array.isArray(container)) {
+                        container = container[0];
+                    }
+                    if (!container || !Sortable) {
+                        return;
+                    }
+                    this.sortables[type] = new Sortable(container, {
+                        animation: 150,
+                        handle: '.drag-handle',
+                        ghostClass: 'sortable-ghost',
+                        chosenClass: 'sortable-chosen',
+                        dragClass: 'sortable-drag',
+                        onEnd: (evt) => {
+                            if (evt.oldIndex === evt.newIndex || evt.oldIndex == null || evt.newIndex == null) {
+                                return;
+                            }
+                            this.reorderList(type, evt.oldIndex, evt.newIndex);
+                        },
+                    });
+                },
+                reorderList(type, oldIndex, newIndex) {
+                    if (!this.current || !Array.isArray(this.current[type])) {
+                        return;
+                    }
+                    const list = this.current[type];
+                    if (oldIndex < 0 || newIndex < 0 || oldIndex >= list.length || newIndex >= list.length) {
+                        return;
+                    }
+                    const [moved] = list.splice(oldIndex, 1);
+                    list.splice(newIndex, 0, moved);
+                    if (type === 'steps') {
+                        this.normalizeStepPriorities();
+                    }
+                },
+                normalizeStepPriorities() {
+                    if (!this.current || !Array.isArray(this.current.steps)) {
+                        return;
+                    }
+                    this.current.steps.forEach((step, index) => {
+                        step.priority = (index + 1) * 10;
+                    });
+                },
+                preparePipeline(pipeline) {
+                    const copy = clone(pipeline);
+                    copy.steps = (copy.steps || []).map(prepareItem);
+                    copy.triggers = (copy.triggers || []).map(prepareItem);
+                    copy.actions = (copy.actions || []).map(prepareItem);
+                    copy.runs = decorateRuns(copy.runs || pipeline.runs || []);
+                    return copy;
+                },
+                triggerTitle(code) {
+                    const item = this.catalog.triggers.find(t => t.code === code);
+                    return item ? item.description : '';
+                },
+                stepTitle(code) {
+                    const item = this.catalog.steps.find(t => t.code === code);
+                    return item ? item.description : '';
+                },
+                actionTitle(code) {
+                    const item = this.catalog.actions.find(t => t.code === code);
+                    return item ? item.description : '';
+                },
+                selectPipeline(id) {
+                    this.selectedId = id;
+                    this.selectedPreset = '';
+                },
+                addTrigger() {
+                    if (!this.selectedTrigger) return;
+                    const tpl = this.catalog.triggers.find(item => item.code === this.selectedTrigger);
+                    this.current.triggers.push({
+                        code: tpl.code,
+                        parameters: clone(tpl.parameters_schema && tpl.parameters_schema.defaults ? tpl.parameters_schema.defaults : {}),
+                        parameters_json: JSON.stringify({}, null, 2),
+                        instruction: '',
+                    });
+                    this.selectedTrigger = '';
+                    this.refreshSortables();
+                },
+                addStep() {
+                    if (!this.selectedStep) return;
+                    const tpl = this.catalog.steps.find(item => item.code === this.selectedStep);
+                    this.current.steps.push({
+                        code: tpl.code,
+                        priority: (this.current.steps.length + 1) * 10,
+                        enabled: true,
+                        parameters: {},
+                        parameters_json: JSON.stringify({}, null, 2),
+                        instruction: '',
+                    });
+                    this.selectedStep = '';
+                    this.normalizeStepPriorities();
+                    this.refreshSortables();
+                },
+                addPromptStep() {
+                    if (!this.current) return;
+                    if (!this.selectedPrompt) return;
+                    const prompt = this.promptTemplates.find(item => item.name === this.selectedPrompt);
+                    if (!prompt) {
+                        this.selectedPrompt = '';
+                        return;
+                    }
+                    const mode = this.detectPromptMode(prompt);
+                    const outputKeyBase = this.slugifyKey(prompt.name || 'prompt');
+                    const outputKey = mode === 'image' ? `${outputKeyBase}_image` : `${outputKeyBase}_html`;
+                    const parameters = {
+                        template_name: prompt.name,
+                        mode,
+                        context_mapping: {},
+                        extra_variables: {},
+                        output_key: outputKey,
+                        store_prompt: true,
+                        markdown_to_html: mode === 'text',
+                        parse_json: false,
+                        json_fields: {},
+                    };
+                    this.current.steps.push({
+                        code: 'GENERIC_PROMPT',
+                        priority: (this.current.steps.length + 1) * 10,
+                        enabled: true,
+                        parameters,
+                        parameters_json: JSON.stringify(parameters, null, 2),
+                        instruction: `AI-промт: ${prompt.name}`,
+                    });
+                    this.selectedPrompt = '';
+                    this.normalizeStepPriorities();
+                    this.refreshSortables();
+                },
+                addAction() {
+                    if (!this.selectedAction) return;
+                    const tpl = this.catalog.actions.find(item => item.code === this.selectedAction);
+                    this.current.actions.push({
+                        code: tpl.code,
+                        parameters: {},
+                        parameters_json: JSON.stringify({}, null, 2),
+                        instruction: '',
+                    });
+                    this.selectedAction = '';
+                    this.refreshSortables();
+                },
+                slugifyKey(value) {
+                    return (value || '')
+                        .toString()
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '_')
+                        .replace(/^_+|_+$/g, '') || 'prompt_output';
+                },
+                detectPromptMode(prompt) {
+                    const name = (prompt.name || '').toLowerCase();
+                    const category = (prompt.category || '').toLowerCase();
+                    if (name.includes('image') || name.includes('изображ') || category === 'image') {
+                        return 'image';
+                    }
+                    return 'text';
+                },
+                removeTrigger(index) {
+                    this.current.triggers.splice(index, 1);
+                    this.refreshSortables();
+                },
+                removeStep(index) {
+                    this.current.steps.splice(index, 1);
+                    this.normalizeStepPriorities();
+                    this.refreshSortables();
+                },
+                removeAction(index) {
+                    this.current.actions.splice(index, 1);
+                    this.refreshSortables();
+                },
+                openRunModal() {
+                    if (!this.current) return;
+                    this.runModal.zodiacSign = '';
+                    this.runModal.payloadText = this.lastPayloadInput || '{}';
+                    this.runModal.error = '';
+                    this.showRunModal = true;
+                    this.$nextTick(() => {
+                        const input = this.$refs.runPayloadInput;
+                        if (input && typeof input.focus === 'function') {
+                            input.focus();
+                        }
+                    });
+                },
+                closeRunModal() {
+                    this.showRunModal = false;
+                    this.runModal.error = '';
+                },
+                confirmRunModal() {
+                    if (!this.current) return;
+                    if (!this.runModal.zodiacSign) {
+                        this.runModal.error = 'Выберите знак зодиака';
+                        return;
+                    }
+                    let payloadObject = {};
+                    const raw = (this.runModal.payloadText || '').trim();
+                    if (raw) {
+                        try {
+                            payloadObject = JSON.parse(raw);
+                        } catch (err) {
+                            this.runModal.error = 'Некорректный JSON payload';
+                            return;
+                        }
+                    }
+                    if (typeof payloadObject !== 'object' || Array.isArray(payloadObject) || payloadObject === null) {
+                        payloadObject = {};
+                    }
+                    payloadObject.zodiac_sign = this.runModal.zodiacSign;
+                    this.closeRunModal();
+                    this.executeRun(payloadObject);
+                },
+                syncTriggerParameters(trigger) {
+                    try {
+                        trigger.parameters = JSON.parse(trigger.parameters_json || '{}');
+                    } catch (err) {
+                        this.showToast('Ошибка парсинга параметров триггера', false);
+                    }
+                },
+                syncStepParameters(step) {
+                    try {
+                        step.parameters = JSON.parse(step.parameters_json || '{}');
+                    } catch (err) {
+                        this.showToast('Ошибка парсинга параметров шага', false);
+                    }
+                },
+                syncActionParameters(action) {
+                    try {
+                        action.parameters = JSON.parse(action.parameters_json || '{}');
+                    } catch (err) {
+                        this.showToast('Ошибка парсинга параметров действия', false);
+                    }
+                },
+                async fetchPipeline(id) {
+                    try {
+                        const response = await fetch(window.PIPELINE_ENDPOINTS.detail(id), {
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        if (!response.ok) {
+                            throw new Error('Не удалось загрузить пайплайн');
+                        }
+                        const data = await response.json();
+                        const pipelineData = {
+                            ...data.pipeline,
+                            runs: decorateRuns(data.pipeline.runs || []),
+                        };
+                        this.current = this.preparePipeline(pipelineData);
+                        this.runHistory = [...(this.current.runs || [])];
+                        this.updatePipelineEntry(pipelineData);
+                        this.refreshSortables();
+                    } catch (error) {
+                        this.showToast(error.message || 'Ошибка загрузки пайплайна', false);
+                    }
+                },
+                updatePipelineEntry(pipelineData) {
+                    const index = this.pipelines.findIndex(p => p.id === pipelineData.id);
+                    if (index > -1) {
+                        this.pipelines.splice(index, 1, { ...pipelineData });
+                    } else {
+                        this.pipelines.push({ ...pipelineData });
+                    }
+                },
+                payloadForSave() {
+                    const payload = clone(this.current);
+                    payload.steps = payload.steps.map(item => ({
+                        code: item.code,
+                        priority: item.priority,
+                        enabled: item.enabled,
+                        parameters: item.parameters || {},
+                        instruction: item.instruction || '',
+                    }));
+                    payload.triggers = payload.triggers.map(item => ({
+                        code: item.code,
+                        parameters: item.parameters || {},
+                        instruction: item.instruction || '',
+                    }));
+                    payload.actions = payload.actions.map(item => ({
+                        code: item.code,
+                        parameters: item.parameters || {},
+                        instruction: item.instruction || '',
+                    }));
+                    return payload;
+                },
+                async savePipeline() {
+                    if (!this.current) return;
+                    try {
+                        const response = await fetch(window.PIPELINE_ENDPOINTS.detail(this.current.id), {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': window.CSRF_TOKEN,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify(this.payloadForSave()),
+                        });
+                        if (!response.ok) {
+                            throw new Error('Ошибка сохранения');
+                        }
+                        const data = await response.json();
+                        const pipelineData = {
+                            ...data.pipeline,
+                            runs: decorateRuns(data.pipeline.runs || []),
+                        };
+                        const updated = this.preparePipeline(pipelineData);
+                        this.current = updated;
+                        this.runHistory = [...(updated.runs || [])];
+                        this.updatePipelineEntry(pipelineData);
+                        this.refreshSortables();
+                        this.showToast('Пайплайн сохранен', true);
+                    } catch (error) {
+                        this.showToast(error.message || 'Ошибка сохранения', false);
+                    }
+                },
+                async createPipeline() {
+                    let name = prompt('Название нового пайплайна', 'Новый пайплайн');
+                    if (!name || !name.trim()) {
+                        const now = new Date();
+                        const formatted = now.toLocaleString('ru-RU', {
+                            hour12: false,
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        }).replace(',', '');
+                        name = `Новый пайплайн ${formatted}`;
+                    }
+                    name = name.trim();
+                    try {
+                        const response = await fetch(window.PIPELINE_ENDPOINTS.list, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': window.CSRF_TOKEN,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({ name }),
+                        });
+                        if (!response.ok) {
+                            throw new Error('Не удалось создать пайплайн');
+                        }
+                        const data = await response.json();
+                        const pipeline = {
+                            ...data.pipeline,
+                            runs: [],
+                        };
+                        this.pipelines.push(pipeline);
+                        this.current = this.preparePipeline(pipeline);
+                        this.selectedId = pipeline.id;
+                        this.runHistory = [];
+                        this.selectedPreset = '';
+                        this.refreshSortables();
+                        this.showToast('Пайплайн создан', true);
+                    } catch (error) {
+                        this.showToast(error.message || 'Ошибка создания', false);
+                    }
+                },
+                async createPipelineFromPreset() {
+                    if (!this.selectedPreset) {
+                        this.showToast('Сначала выберите пресет', false);
+                        return;
+                    }
+                    const preset = this.presets.find(item => item.slug === this.selectedPreset);
+                    if (!preset) {
+                        this.showToast('Пресет не найден', false);
+                        return;
+                    }
+                    let name = prompt('Название пайплайна по пресету', preset.name || 'Новый пайплайн');
+                    if (name === null) {
+                        return;
+                    }
+                    if (!name || !name.trim()) {
+                        const now = new Date();
+                        const formatted = now.toLocaleString('ru-RU', {
+                            hour12: false,
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        }).replace(',', '');
+                        name = `${preset.name || 'Новый пайплайн'} ${formatted}`;
+                    }
+                    name = name.trim();
+                    try {
+                        const response = await fetch(window.PIPELINE_ENDPOINTS.fromPreset, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': window.CSRF_TOKEN,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                preset: preset.slug,
+                                name,
+                                description: preset.description,
+                            }),
+                        });
+                        if (!response.ok) {
+                            const text = await response.text();
+                            throw new Error(text || 'Не удалось создать пайплайн по пресету');
+                        }
+                        const data = await response.json();
+                        const pipeline = {
+                            ...data.pipeline,
+                            runs: decorateRuns(data.pipeline.runs || []),
+                        };
+                        this.updatePipelineEntry(pipeline);
+                        this.current = this.preparePipeline(pipeline);
+                        this.selectedId = pipeline.id;
+                        this.runHistory = [...(this.current.runs || [])];
+                        this.selectedPreset = '';
+                        this.refreshSortables();
+                        this.showToast('Пайплайн создан по пресету', true);
+                    } catch (error) {
+                        this.showToast(error.message || 'Ошибка создания по пресету', false);
+                    }
+                },
+                async deletePipeline() {
+                    if (!this.current || !confirm('Удалить пайплайн?')) return;
+                    try {
+                        const response = await fetch(window.PIPELINE_ENDPOINTS.detail(this.current.id), {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRFToken': window.CSRF_TOKEN,
+                                'Accept': 'application/json',
+                            },
+                        });
+                        if (!response.ok) {
+                            throw new Error('Не удалось удалить пайплайн');
+                        }
+                        this.pipelines = this.pipelines.filter(p => p.id !== this.current.id);
+                        if (this.pipelines.length) {
+                            const next = this.pipelines[0];
+                            this.selectedId = next.id;
+                            this.current = this.preparePipeline(next);
+                            this.runHistory = [...(this.current.runs || [])];
+                            this.refreshSortables();
+                        } else {
+                            this.selectedId = null;
+                            this.current = null;
+                            this.runHistory = [];
+                            this.destroySortables();
+                        }
+                        this.showToast('Пайплайн удален', true);
+                    } catch (error) {
+                        this.showToast(error.message || 'Ошибка удаления', false);
+                    }
+                },
+                async executeRun(payload = {}) {
+                    if (!this.current) return;
+                    let payloadObject = {};
+                    if (typeof payload === 'object' && payload !== null && !Array.isArray(payload)) {
+                        payloadObject = payload;
+                    }
+                    this.lastPayloadInput = JSON.stringify(payloadObject, null, 2);
+                    this.showToast('Запуск...', true);
+                    try {
+                        const response = await fetch(window.PIPELINE_ENDPOINTS.run(this.current.id), {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': window.CSRF_TOKEN,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify(payloadObject),
+                        });
+                        if (!response.ok) {
+                            const text = await response.text();
+                            throw new Error(text || 'Ошибка запуска');
+                        }
+                        const data = await response.json();
+                        const runEntry = decorateRuns([data.run || {}])[0] || null;
+                        if (runEntry) {
+                            this.runHistory = [runEntry, ...this.runHistory].slice(0, 5);
+                            const index = this.pipelines.findIndex(p => p.id === this.current.id);
+                            if (index > -1) {
+                                const existing = this.pipelines[index];
+                                const updatedRuns = [runEntry, ...(existing.runs || [])].slice(0, 5);
+                                this.pipelines.splice(index, 1, { ...existing, runs: updatedRuns });
+                            }
+                            if (this.current) {
+                                this.current.runs = [runEntry, ...(this.current.runs || [])].slice(0, 5);
+                            }
+                        }
+                        const status = data.run?.status || 'unknown';
+                        if (status === 'success') {
+                            this.showToast('Пайплайн выполнен успешно', true);
+                        } else if (status === 'failed') {
+                            this.showToast('Пайплайн завершился с ошибкой', false);
+                        } else {
+                            this.showToast(`Статус выполнения: ${status}`, true);
+                        }
+                    } catch (error) {
+                        this.showToast(error.message || 'Ошибка запуска пайплайна', false);
+                    }
+                },
+                repeatRun(run) {
+                    if (!run || !run.payload) {
+                        this.showToast('Повтор невозможен: payload отсутствует', false);
+                        return;
+                    }
+                    const payloadClone = JSON.parse(JSON.stringify(run.payload || {}));
+                    this.executeRun(payloadClone);
+                },
+                showToast(message, success) {
+                    this.toast = { message, success };
+                    setTimeout(() => {
+                        this.toast = null;
+                    }, 4000);
+                }
+            }
+        }).mount('#pipeline-builder-app');
+    })();
+</script>
+<style>
+    .sortable-ghost {
+        opacity: 0.5;
+    }
+
+    .sortable-chosen {
+        cursor: grabbing !important;
+    }
+
+    .drag-handle {
+        font-weight: 700;
+        letter-spacing: 0.1em;
+    }
+</style>
+{% endblock %}
+

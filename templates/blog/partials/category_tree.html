@@ -1,0 +1,53 @@
+{% load static mptt_tags %}
+
+<!-- ДЕРЕВО КАТЕГОРИЙ -->
+<div class="card mb-4">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">
+      <i data-cs-icon="layout" class="me-2"></i>
+      Категории
+    </h5>
+  </div>
+  <div class="card-body p-0">
+    <ul class="list-group list-group-flush">
+      {% recursetree categories %}
+        <li class="list-group-item {% if node.level > 0 %}ps-{{ node.level|add:3 }}{% endif %}">
+          <a href="{{ node.get_absolute_url }}" class="text-decoration-none d-flex justify-content-between align-items-center">
+            <span>
+              {% if node.level > 0 %}
+                <i class="bi-arrow-return-right me-2 text-muted"></i>
+              {% endif %}
+              {{ node.title }}
+            </span>
+            <span class="badge bg-secondary rounded-pill">
+              {{ node.posts.count }}
+            </span>
+          </a>
+          
+          {% if not node.is_leaf_node %}
+            <ul class="list-group list-group-flush mt-2">
+              {{ children }}
+            </ul>
+          {% endif %}
+        </li>
+      {% endrecursetree %}
+    </ul>
+  </div>
+</div>
+
+<style>
+.list-group-item a {
+  color: inherit;
+  transition: all 0.2s;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.list-group-item a:hover {
+  color: #0d6efd;
+}
+</style>
+
+

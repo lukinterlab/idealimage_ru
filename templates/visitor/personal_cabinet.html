@@ -1,0 +1,1012 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Баннер администратора (если просмотр чужого кабинета) -->
+        {% if is_admin_view %}
+        <div class="mb-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl shadow-2xl p-6 text-white">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-start space-x-4">
+                    <div class="bg-white/20 rounded-full p-3 flex-shrink-0">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold mb-1">🔍 Режим просмотра администратора</h3>
+                        <p class="text-white/90 text-sm mb-2">
+                            Вы просматриваете личный кабинет пользователя: <strong>{{ target_user.username }}</strong> (ID: {{ target_user.id }})
+                        </p>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="px-2 py-1 bg-white/20 rounded">Email: {{ target_user.email|default:"не указан" }}</span>
+                            <span class="px-2 py-1 bg-white/20 rounded">Дата рег.: {{ profile.registration|date:"d.m.Y" }}</span>
+                            {% if profile.telegram_id %}
+                            <span class="px-2 py-1 bg-white/20 rounded">Telegram: {{ profile.telegram_id }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'Visitor:superuser_dashboard' %}" 
+                   class="flex-shrink-0 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur rounded-lg font-semibold transition-colors whitespace-nowrap">
+                    ← Назад к панели
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-2">
+                👤 Личный кабинет {% if is_admin_view %}пользователя {{ target_user.username }}{% endif %}
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                {% if is_admin_view %}
+                    Просмотр администратором
+                {% else %}
+                    Добро пожаловать, {{ user.username }}!
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Роли и статус -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            {% if profile.is_author %}
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-shadow">
+                <div class="text-sm font-medium mb-1">Роль</div>
+                <div class="text-2xl font-bold mb-2">✍️ Автор</div>
+                <a href="{% url 'Visitor:role_instructions' 'author' %}" 
+                   target="_blank"
+                   class="inline-flex items-center text-xs text-white/80 hover:text-white transition-colors">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Инструкция
+                </a>
+            </div>
+            {% endif %}
+            {% if profile.is_moderator %}
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-shadow">
+                <div class="text-sm font-medium mb-1">Роль</div>
+                <div class="text-2xl font-bold mb-2">🛡️ Модератор</div>
+                <a href="{% url 'Visitor:role_instructions' 'moderator' %}" 
+                   target="_blank"
+                   class="inline-flex items-center text-xs text-white/80 hover:text-white transition-colors">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Инструкция
+                </a>
+            </div>
+            {% endif %}
+            {% if profile.is_marketer %}
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-shadow">
+                <div class="text-sm font-medium mb-1">Роль</div>
+                <div class="text-2xl font-bold mb-2">📊 Маркетолог</div>
+                <div class="flex gap-2">
+                    <a href="{% url 'Visitor:role_instructions' 'marketer' %}" 
+                       target="_blank"
+                       class="inline-flex items-center text-xs text-white/80 hover:text-white transition-colors">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Инструкция
+                    </a>
+                    <a href="{% url 'advertising:dashboard' %}" 
+                       class="inline-flex items-center text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors">
+                        🎯 Реклама
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            {% if profile.is_admin %}
+            <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-shadow">
+                <div class="text-sm font-medium mb-1">Роль</div>
+                <div class="text-2xl font-bold">⚙️ Администратор</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Левая колонка -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Заявки на роли - показываем только если нет ролей И нет активных заявок -->
+                {% if not profile.is_author and not profile.is_moderator and not profile.is_marketer and not profile.is_admin %}
+                    {% if not has_pending_applications %}
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                            🎯 Стать частью команды
+                        </h2>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            Подайте заявку на получение роли и получите доступ к дополнительным возможностям!
+                        </p>
+                        <a href="{% url 'Visitor:apply_role' %}" 
+                           class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
+                            Подать заявку на роль →
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+                        <h2 class="text-xl font-bold text-blue-900 dark:text-blue-400 mb-2">
+                            ⏳ Заявка на рассмотрении
+                        </h2>
+                        <p class="text-blue-800 dark:text-blue-300">
+                            Ваша заявка находится на рассмотрении. Администрация ответит в течение 3 дней.
+                        </p>
+                    </div>
+                    {% endif %}
+                {% endif %}
+
+                <!-- Статус заявок (pending и rejected) -->
+                {% if role_applications %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                        📋 Статус заявок
+                    </h2>
+                    <div class="space-y-3">
+                        {% for application in role_applications %}
+                        <div class="border {% if application.status == 'pending' %}border-yellow-300 dark:border-yellow-700{% else %}border-red-300 dark:border-red-700{% endif %} rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <span class="font-medium text-gray-900 dark:text-white">
+                                        {{ application.get_role_display }}
+                                    </span>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        Подана: {{ application.applied_at|date:"d.m.Y H:i" }}
+                                    </p>
+                                </div>
+                                <span class="px-3 py-1 text-xs font-medium rounded-full
+                                    {% if application.status == 'pending' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300
+                                    {% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300{% endif %}">
+                                    {% if application.status == 'pending' %}⏳ На рассмотрении{% else %}❌ Отклонена{% endif %}
+                                </span>
+                            </div>
+                            {% if application.status == 'rejected' and application.admin_response %}
+                            <div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                                <p class="text-sm text-red-800 dark:text-red-300">
+                                    <strong>Причина отклонения:</strong><br>
+                                    {{ application.admin_response }}
+                                </p>
+                            </div>
+                            {% elif application.status == 'pending' %}
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                💡 Администрация рассмотрит вашу заявку в течение 3 дней
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Статистика автора -->
+                {% if profile.is_author %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                        📊 Статистика автора
+                    </h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                            <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ author_posts_count }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Статей</div>
+                        </div>
+                        <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
+                            <div class="text-3xl font-bold text-red-600 dark:text-red-400">{{ total_likes }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Лайков</div>
+                        </div>
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                            <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ comments_to_author }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Комментариев</div>
+                        </div>
+                        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+                            <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{{ total_donations }}₽</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Донатов</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Накоплено премии</div>
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ total_bonus }}₽</div>
+                    </div>
+                </div>
+
+                <!-- Задания AI - только для авторов -->
+                {% if my_assignments %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                        📋 Мои задания AI-ассистента
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-900">
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Задание</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Статус</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Срок</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Награда</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                {% for assignment in my_assignments %}
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td class="px-4 py-4">
+                                        <div class="font-medium text-gray-900 dark:text-white">{{ assignment.task.title }}</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ assignment.task.description|truncatewords:15 }}</div>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                                            {% if assignment.status == 'in_progress' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300
+                                            {% elif assignment.status == 'completed' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300
+                                            {% elif assignment.status == 'rejected_by_ai' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300
+                                            {% elif assignment.status == 'approved' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300
+                                            {% endif %}">
+                                            {{ assignment.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-4 text-sm text-gray-900 dark:text-white">
+                                        {{ assignment.task.deadline|date:"d.m.Y H:i" }}
+                                        {% if assignment.task.is_overdue %}
+                                        <span class="block text-xs text-red-600 dark:text-red-400">Просрочено</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-4 font-semibold text-gray-900 dark:text-white">{{ assignment.task.reward }} ₽</td>
+                                    <td class="px-4 py-4">
+                                        {% if assignment.status == 'in_progress' %}
+                                        <button onclick="openSubmitModal{{ assignment.id }}()" 
+                                                class="px-3 py-1 text-sm bg-primary hover:bg-secondary text-white rounded-lg transition-colors">
+                                            Сдать
+                                        </button>
+                                        {% elif assignment.status == 'rejected_by_ai' %}
+                                        <button onclick="openRejectionModal{{ assignment.id }}()" 
+                                                class="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                                            Причина
+                                        </button>
+                                        {% elif assignment.status == 'completed' %}
+                                        <span class="text-sm text-blue-600 dark:text-blue-400">На модерации</span>
+                                        {% elif assignment.status == 'approved' %}
+                                        <span class="text-sm text-green-600 dark:text-green-400">✓ Одобрено</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Доступные задания AI -->
+                {% if available_tasks %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                        ⭐ Доступные задания
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for task in available_tasks %}
+                        <div class="border border-primary dark:border-primary-600 rounded-xl p-5">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="font-semibold text-gray-900 dark:text-white text-lg">{{ task.title }}</h3>
+                                <span class="px-2 py-1 text-xs bg-primary text-white rounded-full">
+                                    {{ task.get_completions_count }}/{{ task.max_completions }}
+                                </span>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">{{ task.description|truncatewords:25 }}</p>
+                            <ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300 mb-4">
+                                <li>📁 {{ task.category.title|default:"Без категории" }}</li>
+                                <li>📝 Минимум {{ task.required_word_count }} слов</li>
+                                <li>📅 До {{ task.deadline|date:"d.m.Y H:i" }}</li>
+                                <li>💰 <strong>{{ task.reward }} ₽</strong></li>
+                            </ul>
+                            <div class="flex gap-2">
+                                <form method="post" action="{% url 'Visitor:take_task' task.id %}" class="flex-1">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium">
+                                        Взять в работу
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'Visitor:reject_task' task.id %}" class="flex-1">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            onclick="return confirm('Отклонить задание? Оно больше не будет отображаться.')"
+                                            class="w-full px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-900 dark:text-white rounded-lg transition-colors">
+                                        Отклонить
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Аккордеон: Уведомления / Баланс / Бонусы -->
+                {% if profile.is_author %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                        📊 Финансы и уведомления
+                    </h2>
+                    
+                    <div class="space-y-3">
+                        
+                        <!-- Аккордеон: Уведомления -->
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                            <button onclick="toggleAccordion('notifications-section')" 
+                                    class="w-full flex items-center justify-between px-6 py-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">🔔</span>
+                                    <span class="text-lg font-bold text-gray-900 dark:text-white">Уведомления</span>
+                                    {% if notifications_count > 0 %}
+                                    <span class="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-semibold">
+                                        {{ notifications_count }} новых
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <svg class="accordion-icon w-6 h-6 text-gray-600 dark:text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="notifications-section" class="accordion-content">
+                                <div class="p-6 space-y-3">
+                                    {% for notification in all_notifications %}
+                                    <div class="border {% if not notification.is_read %}border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/10{% else %}border-gray-200 dark:border-gray-700{% endif %} rounded-lg p-4">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex-1">
+                                                <h4 class="font-semibold text-gray-900 dark:text-white mb-1">
+                                                    {% if notification.notification_type == 'moderation_passed' %}✅
+                                                    {% elif notification.notification_type == 'moderation_failed' %}❌
+                                                    {% elif notification.notification_type == 'task_approved' %}✅
+                                                    {% elif notification.notification_type == 'task_rejected' %}❌
+                                                    {% elif notification.notification_type == 'payment' %}💰
+                                                    {% else %}ℹ️{% endif %}
+                                                    {{ notification.title }}
+                                                </h4>
+                                                <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line mb-2">{{ notification.message }}</p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    {{ notification.created_at|date:"d.m.Y H:i" }}
+                                                </p>
+                                            </div>
+                                            {% if not notification.is_read %}
+                                            <button onclick="markNotificationRead({{ notification.id }})"
+                                                    class="ml-3 px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                                                Прочитано
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <p class="text-center text-gray-500 dark:text-gray-400 py-8">Нет уведомлений</p>
+                                    {% endfor %}
+                                    
+                                    <!-- Пагинация для AJAX -->
+                                    <div id="notifications-pagination"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Аккордеон: История баланса -->
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                            <button onclick="toggleAccordion('balance-section')" 
+                                    class="w-full flex items-center justify-between px-6 py-4 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">💼</span>
+                                    <span class="text-lg font-bold text-gray-900 dark:text-white">История баланса</span>
+                                    <span class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold">
+                                        {{ balance }}₽
+                                    </span>
+                                </div>
+                                <svg class="accordion-icon w-6 h-6 text-gray-600 dark:text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="balance-section" class="accordion-content">
+                                <div class="p-6">
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                            <thead>
+                                                <tr class="bg-gray-50 dark:bg-gray-900">
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Дата</th>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Тип</th>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Описание</th>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Сумма</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="balance-table-body" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                                {% for transaction in recent_transactions %}
+                                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <td class="px-4 py-4 text-sm text-gray-900 dark:text-white">
+                                                        {{ transaction.created_at|date:"d.m.Y H:i" }}
+                                                    </td>
+                                                    <td class="px-4 py-4">
+                                                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                                                            {% if transaction.transaction_type == 'task_payment' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300
+                                                            {% elif transaction.transaction_type == 'bonus_payment' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300
+                                                            {% elif transaction.transaction_type == 'withdrawal' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300
+                                                            {% endif %}">
+                                                            {{ transaction.get_transaction_type_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300">
+                                                        {{ transaction.description }}
+                                                    </td>
+                                                    <td class="px-4 py-4 font-semibold 
+                                                        {% if transaction.amount > 0 %}text-green-600 dark:text-green-400
+                                                        {% else %}text-red-600 dark:text-red-400{% endif %}">
+                                                        {% if transaction.amount > 0 %}+{% endif %}{{ transaction.amount }} ₽
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr><td colspan="4" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">Нет транзакций</td></tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div id="balance-pagination" class="mt-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Аккордеон: Бонусы -->
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                            <button onclick="toggleAccordion('bonuses-section')" 
+                                    class="w-full flex items-center justify-between px-6 py-4 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">💰</span>
+                                    <span class="text-lg font-bold text-gray-900 dark:text-white">Мои бонусы</span>
+                                    <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-sm font-semibold">
+                                        {{ total_bonus }}₽
+                                    </span>
+                                </div>
+                                <svg class="accordion-icon w-6 h-6 text-gray-600 dark:text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="bonuses-section" class="accordion-content">
+                                <div class="p-6">
+                                    <!-- Статистика бонусов -->
+                                    <div class="grid grid-cols-3 gap-4 mb-6">
+                                        <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Всего начислено</p>
+                                            <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ bonuses_stats.total }}₽</p>
+                                        </div>
+                                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Выплачено</p>
+                                            <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ bonuses_stats.paid }}₽</p>
+                                        </div>
+                                        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 text-center">
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">К выплате</p>
+                                            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ bonuses_stats.pending }}₽</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Таблица бонусов -->
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                            <thead>
+                                                <tr class="bg-gray-50 dark:bg-gray-900">
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Неделя</th>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Дата</th>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Сумма</th>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Статус</th>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Детали</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="bonuses-table-body" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                                {% for bonus in recent_bonuses %}
+                                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <td class="px-4 py-4 text-sm text-gray-900 dark:text-white">
+                                                        {{ bonus.period_start|date:"d.m" }} - {{ bonus.period_end|date:"d.m.Y" }}
+                                                    </td>
+                                                    <td class="px-4 py-4 text-sm text-gray-900 dark:text-white">
+                                                        {{ bonus.created_at|date:"d.m.Y H:i" }}
+                                                    </td>
+                                                    <td class="px-4 py-4 font-semibold text-purple-600 dark:text-purple-400">
+                                                        {{ bonus.total_bonus }} ₽
+                                                    </td>
+                                                    <td class="px-4 py-4">
+                                                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                                                            {% if bonus.status == 'paid' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300
+                                                            {% elif bonus.status == 'pending' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300
+                                                            {% elif bonus.status == 'cancelled' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300
+                                                            {% endif %}">
+                                                            {{ bonus.get_status_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-4">
+                                                        <button onclick="openBonusDetailsModal({{ bonus.id }})"
+                                                                class="px-3 py-1 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+                                                            Подробнее
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">Нет начислений</td></tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div id="bonuses-pagination" class="mt-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                {% endif %}
+
+
+                <!-- Последние комментарии к статьям -->               
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                        💬 Последние комментарии к вашим статьям
+                    </h2>
+                    {% if recent_comments_to_posts %}
+                    <div class="space-y-4">
+                        {% for comment in recent_comments_to_posts %}
+                        <div class="border-l-4 border-primary pl-4 py-2">
+                            <p class="text-gray-900 dark:text-white mb-2">{{ comment.content|truncatewords:20 }}</p>
+                            <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                                <span>{{ comment.author_comment }}</span>
+                                <span>•</span>
+                                <span>{{ comment.created|date:"d.m.Y H:i" }}</span>
+                                <span>•</span>
+                                <a href="{% url 'blog:post_detail' comment.post.slug %}" 
+                                   class="text-primary hover:underline">
+                                    {{ comment.post.title }}
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'Visitor:author_comments' %}" 
+                       class="inline-block mt-4 text-primary hover:underline">
+                        Посмотреть все комментарии →
+                    </a>
+                    {% endif %}
+                </div>
+                <!-- Последние комментарии к статьям конец-->
+
+              
+                <!-- Мои комментарии -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                        💭 Мои комментарии
+                    </h2>
+                    {% if user_comments %}
+                    <div class="space-y-3">
+                        {% for comment in user_comments %}
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                            <p class="text-gray-900 dark:text-white mb-2">{{ comment.content|truncatewords:15 }}</p>
+                            <a href="{% url 'blog:post_detail' comment.post.slug %}" 
+                               class="text-sm text-primary hover:underline">
+                                {{ comment.post.title }}
+                            </a>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {{ comment.created|date:"d.m.Y H:i" }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- Мои комментарии конец-->
+
+            </div>
+
+            <!-- Правая колонка -->
+            <div class="space-y-6">
+
+                <!-- Подписчики автора -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                        👥 Подписчики ({{ subscribers_count }})
+                    </h2>
+                    {% if subscribers_count > 0 %}
+                    <div class="space-y-2">
+                        {% for subscription in subscribers|slice:":10" %}
+                        <div class="flex items-center space-x-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            <img src="{{ subscription.subscriber.profile.get_avatar }}" 
+                                 alt="{{ subscription.subscriber.username }}"
+                                 class="w-10 h-10 rounded-full">
+                            <div>
+                                <a href="{% url 'Visitor:profile_detail' subscription.subscriber.profile.slug %}"
+                                   class="font-medium text-gray-900 dark:text-white hover:text-primary">
+                                    {{ subscription.subscriber.username }}
+                                </a>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    С {{ subscription.created_at|date:"d.m.Y" }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- Подписчики автора конец-->
+                
+                <!-- Подписки -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                        ⭐ Мои подписки ({{ subscriptions_count }})
+                    </h2>
+                    {% if subscriptions %}
+                    <div class="space-y-3">
+                        {% for subscription in subscriptions|slice:":5" %}
+                        <div class="flex items-center space-x-3">
+                            <img src="{{ subscription.author.profile.get_avatar }}" 
+                                 alt="{{ subscription.author.username }}"
+                                 class="w-10 h-10 rounded-full">
+                            <div class="flex-1">
+                                <a href="{% url 'Visitor:profile_detail' subscription.author.profile.slug %}"
+                                   class="font-medium text-gray-900 dark:text-white hover:text-primary block">
+                                    {{ subscription.author.username }}
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">
+                        Вы еще ни на кого не подписаны
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Последние статьи из подписок -->
+                {% if subscribed_posts %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                        📰 Новое от авторов
+                    </h2>
+                    <div class="space-y-4">
+                        {% for post in subscribed_posts|slice:":5" %}
+                        <div>
+                            <a href="{% url 'blog:post_detail' post.slug %}"
+                               class="font-medium text-gray-900 dark:text-white hover:text-primary block mb-1">
+                                {{ post.title|truncatewords:8 }}
+                            </a>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ post.author.username }} • {{ post.created|date:"d.m.Y" }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Быстрые действия -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                        ⚡ {% if is_admin_view %}Полный доступ администратора{% else %}Быстрые действия{% endif %}
+                    </h2>
+                    
+                    {% if is_admin_view %}
+                    <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-800 dark:text-blue-300">
+                        <strong>ℹ️ Подсказка:</strong> В режиме просмотра администратора вы можете выполнять все действия. 
+                        Для редактирования данных пользователя используйте кнопки с оранжевым цветом ниже.
+                    </div>
+                    {% endif %}
+                    
+                    <div class="space-y-2">
+                        <!-- Основные действия (ДОСТУПНЫ ВСЕГДА для суперюзера) -->
+                        <a href="{% url 'Visitor:profile_edit' %}" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            ✏️ Редактировать профиль {% if is_admin_view %}пользователя{% endif %}
+                        </a>
+                        
+                        <!-- Написать статью (ВСЕГДА доступно для суперюзера) -->
+                        {% if profile.is_author or is_admin_view or user.is_superuser %}
+                        <a href="{% url 'blog:post_create' %}" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            📝 Написать статью
+                        </a>
+                        {% endif %}
+                        
+                        <!-- Подать заявку на роль (показываем если нет ролей) -->
+                        {% if not profile.is_author and not profile.is_moderator and not profile.is_marketer and not profile.is_admin and not has_pending_applications %}
+                        <a href="{% url 'Visitor:apply_role' %}" 
+                           class="block px-4 py-2 text-primary dark:text-primary-400 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            🎯 Подать заявку на роль
+                        </a>
+                        {% endif %}
+                        
+                        <!-- Просмотр публичного профиля -->
+                        <a href="{% url 'Visitor:profile_detail' profile.slug %}" 
+                           target="_blank"
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            👁️ Публичный профиль
+                        </a>
+                        
+                        <!-- Просмотр комментариев автора -->
+                        {% if profile.is_author or is_admin_view %}
+                        <a href="{% url 'Visitor:author_comments' %}" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            💬 Комментарии к статьям
+                        </a>
+                        {% endif %}
+                        
+                        <!-- Дополнительные инструменты администратора -->
+                        {% if is_admin_view %}
+                            <hr class="my-2 border-gray-200 dark:border-gray-700">
+                            <div class="text-xs font-semibold text-orange-600 dark:text-orange-400 px-4 py-2 bg-orange-50 dark:bg-orange-900/20 rounded">
+                                🔧 Инструменты администратора:
+                            </div>
+                            <a href="{% url 'admin:auth_user_change' target_user.id %}" 
+                               target="_blank"
+                               class="block px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors font-medium">
+                                ⚙️ Управление пользователем
+                            </a>
+                            <a href="{% url 'admin:Visitor_profile_change' profile.id %}" 
+                               target="_blank"
+                               class="block px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors font-medium">
+                                📋 Управление профилем
+                            </a>
+                            <a href="{% url 'admin:blog_post_changelist' %}?author__id={{ target_user.id }}" 
+                               target="_blank"
+                               class="block px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors font-medium">
+                                📰 Все статьи автора (админка)
+                            </a>
+                            <a href="{% url 'Visitor:superuser_dashboard' %}" 
+                               class="block px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors font-medium">
+                                ⬅️ Назад к панели
+                            </a>
+                        {% endif %}
+                        
+                        <!-- Панель администратора (в своем кабинете) -->
+                        {% if user.is_superuser and not is_admin_view %}
+                        <hr class="my-2 border-gray-200 dark:border-gray-700">
+                        <a href="{% url 'Visitor:superuser_dashboard' %}" 
+                           class="block px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors font-medium">
+                            ⚙️ Панель администратора
+                        </a>
+                        <a href="{% url 'asistent:admin_dashboard' %}" 
+                           class="block px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors font-medium">
+                            ⚙️ Панель AдминистраторA
+                        </a>
+                        <a href="/dashboard/" 
+                           class="block px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors font-medium">
+                            ⚙️ Панель AдминиA
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- Модальные окна для сдачи заданий -->
+{% if my_assignments %}
+{% for assignment in my_assignments %}
+{% if assignment.status == 'in_progress' %}
+<div id="submitModal{{ assignment.id }}" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Сдать задание: {{ assignment.task.title }}
+        </h3>
+        <form method="post" action="{% url 'Visitor:submit_assignment' assignment.id %}">
+            {% csrf_token %}
+            <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p class="text-sm text-blue-800 dark:text-blue-300">
+                    AI-Ассистент автоматически проверит вашу статью на соответствие критериям задания.
+                </p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ID статьи</label>
+                <input type="number" name="article_id" required
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Введите ID вашей опубликованной статьи</p>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeSubmitModal{{ assignment.id }}()"
+                        class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-900 dark:text-white rounded-lg transition-colors">
+                    Отмена
+                </button>
+                <button type="submit"
+                        class="flex-1 px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors font-medium">
+                    Отправить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openSubmitModal{{ assignment.id }}() {
+    document.getElementById('submitModal{{ assignment.id }}').classList.remove('hidden');
+}
+function closeSubmitModal{{ assignment.id }}() {
+    document.getElementById('submitModal{{ assignment.id }}').classList.add('hidden');
+}
+</script>
+{% endif %}
+
+{% if assignment.status == 'rejected_by_ai' %}
+<div id="rejectionModal{{ assignment.id }}" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full p-6">
+        <h3 class="text-xl font-bold text-red-600 dark:text-red-400 mb-4">
+            Замечания AI: {{ assignment.task.title }}
+        </h3>
+        <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+            <p class="font-medium text-red-800 dark:text-red-300">Статья отклонена AI-Ассистентом</p>
+            {% if assignment.ai_moderation_result %}
+            <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-2">
+                Оценка: {{ assignment.ai_moderation_result.score|default:"?" }}/10
+            </p>
+            {% endif %}
+        </div>
+        <div class="mb-4">
+            <h4 class="font-medium text-gray-900 dark:text-white mb-2">Замечания:</h4>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p class="text-gray-900 dark:text-white whitespace-pre-line">{{ assignment.rejection_reason }}</p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button type="button" onclick="closeRejectionModal{{ assignment.id }}()"
+                    class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-900 dark:text-white rounded-lg transition-colors">
+                Закрыть
+            </button>
+            {% if assignment.article %}
+            <a href="{% url 'blog:post_update' assignment.article.slug %}" target="_blank"
+               class="flex-1 text-center px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors font-medium">
+                Редактировать статью
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function openRejectionModal{{ assignment.id }}() {
+    document.getElementById('rejectionModal{{ assignment.id }}').classList.remove('hidden');
+}
+function closeRejectionModal{{ assignment.id }}() {
+    document.getElementById('rejectionModal{{ assignment.id }}').classList.add('hidden');
+}
+</script>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+<!-- Стили для аккордеона -->
+<style>
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.accordion-content.open {
+    max-height: 3000px;
+    transition: max-height 0.5s ease-in;
+}
+</style>
+
+<!-- JavaScript для аккордеона и AJAX -->
+<script>
+// Функция переключения аккордеона
+function toggleAccordion(id) {
+    const content = document.getElementById(id);
+    const header = content.previousElementSibling;
+    const icon = header.querySelector('.accordion-icon');
+    
+    if (content.classList.contains('open')) {
+        content.classList.remove('open');
+        icon.classList.remove('rotate-180');
+    } else {
+        content.classList.add('open');
+        icon.classList.add('rotate-180');
+    }
+}
+
+// Функция получения CSRF токена
+function getCsrfToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue;
+}
+
+// Отметить уведомление как прочитанное
+async function markNotificationRead(notificationId) {
+    try {
+        const response = await fetch(`/notifications/${notificationId}/read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+    }
+}
+
+// Открыть модальное окно с деталями бонуса
+async function openBonusDetailsModal(bonusId) {
+    try {
+        const response = await fetch(`/api/bonuses/${bonusId}/`);
+        const data = await response.json();
+        
+        // Создаём и показываем модальное окно
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        modal.id = 'bonusDetailsModal';
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6">
+                <h3 class="text-xl font-bold text-purple-600 dark:text-purple-400 mb-4">
+                    Детали бонуса: ${data.week}
+                </h3>
+                <div class="space-y-3 mb-6">
+                    <div class="flex justify-between items-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                        <span class="text-gray-700 dark:text-gray-300">Общая сумма:</span>
+                        <span class="text-xl font-bold text-purple-600 dark:text-purple-400">${data.total_bonus} ₽</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <span class="text-gray-700 dark:text-gray-300">Бонус от донатов:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">${data.details.calculated_bonus} ₽</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <span class="text-gray-700 dark:text-gray-300">Вознаграждение за задания:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">${data.details.tasks_reward} ₽</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <span class="text-gray-700 dark:text-gray-300">Бонус из баллов:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">${data.details.bonus_from_points} ₽</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <span class="text-gray-700 dark:text-gray-300">Заработано баллов:</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">${data.details.points_earned}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <span class="text-gray-700 dark:text-gray-300">Статус:</span>
+                        <span class="text-sm font-medium">${data.status}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <span class="text-gray-700 dark:text-gray-300">Дата:</span>
+                        <span class="text-sm">${data.created_at}</span>
+                    </div>
+                </div>
+                <button onclick="closeBonusDetailsModal()"
+                        class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium">
+                    Закрыть
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Закрытие по клику вне окна
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeBonusDetailsModal();
+            }
+        });
+    } catch (error) {
+        console.error('Error loading bonus details:', error);
+        alert('Ошибка загрузки деталей бонуса');
+    }
+}
+
+function closeBonusDetailsModal() {
+    const modal = document.getElementById('bonusDetailsModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+</script>
+{% endblock %}
+

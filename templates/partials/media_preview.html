@@ -1,0 +1,138 @@
+{% comment %}
+Универсальный компонент для отображения медиа (изображения/видео)
+
+Параметры:
+- post: объект статьи
+- size: размер контейнера ('small', 'medium', 'large', 'hero')
+- show_controls: показывать ли элементы управления видео (по умолчанию False)
+- lazy: использовать ли lazy loading (по умолчанию True)
+- css_class: дополнительные CSS классы
+
+Использование:
+{% include 'partials/media_preview.html' with post=post size='medium' %}
+{% include 'partials/media_preview.html' with post=post size='hero' show_controls=True %}
+{% endcomment %}
+
+{% with post.video_url|default:''|lower as video_url_lower %}
+    {% with css_class|default:'' as media_extra_classes %}
+    <div class="relative w-full aspect-video bg-black {% if size == 'hero' %}group/media{% endif %}">
+        <div class="absolute inset-0 flex items-center justify-center">
+            {% load video_tags %}
+            {% if post.video_url|is_video %}
+                {# Приоритет 1: Видео-ссылка (iframe) #}
+                <iframe src="{{ post.video_url|video_embed }}" 
+                        class="{% if 'shorts' in video_url_lower or 'reel' in video_url_lower or 'stories' in video_url_lower %}h-full w-auto max-w-full{% else %}w-full h-full{% endif %} {{ media_extra_classes }}"
+                        frameborder="0" 
+                        allow="autoplay; encrypted-media{% if show_controls %}; picture-in-picture{% endif %}" 
+                        {% if show_controls %}allowfullscreen{% endif %}
+                        {% if lazy|default:True %}loading="lazy"{% endif %}
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                </iframe>
+                <div style="display:none;" class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white {% if size == 'small' %}text-2xl{% elif size == 'medium' %}text-4xl{% else %}text-6xl{% endif %}">
+                    ⚠️
+                </div>
+                
+            {% elif post.kartinka %}
+                {% if post.kartinka.name|slice:"-4:" == ".mp4" or post.kartinka.name|slice:"-5:" == ".webm" or post.kartinka.name|slice:"-4:" == ".mov" %}
+                    {# Приоритет 2: Видео-файл #}
+                    <video {% if size == 'hero' or show_controls %}id="postVideo"{% endif %}
+                           src="{{ post.kartinka.url }}" 
+                           class="js-video-orientation w-full h-full object-cover {{ media_extra_classes }}"
+                           autoplay 
+                           loop 
+                           muted 
+                           playsinline
+                           {% if show_controls %}controls{% endif %}>
+                    </video>
+                    
+                    {% if show_controls and size == 'hero' %}
+                    {# Кастомные элементы управления для hero-видео #}
+                    <div class="absolute bottom-6 right-6 z-20 flex items-center gap-3 bg-black/70 backdrop-blur-sm rounded-full px-4 py-3 transition-all duration-300 opacity-0 group-hover/media:opacity-100">
+                        <button id="volumeBtn" 
+                                onclick="toggleMute()"
+                                class="text-white hover:text-primary transition-colors focus:outline-none"
+                                title="Управление звуком">
+                            <svg id="volumeIconOn" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.983 5.983 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.984 3.984 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"></path>
+                            </svg>
+                            <svg id="volumeIconOff" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                        
+                        <div class="flex items-center gap-2">
+                            <input type="range" 
+                                   id="volumeSlider" 
+                                   min="0" 
+                                   max="100" 
+                                   value="100"
+                                   onchange="changeVolume(this.value)"
+                                   oninput="changeVolume(this.value)"
+                                   class="w-24 h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer accent-primary">
+                            <span id="volumeValue" class="text-white text-sm font-semibold min-w-[2.5rem] text-right">100%</span>
+                        </div>
+                    </div>
+                    
+                    <script>
+                    const video = document.getElementById('postVideo');
+                    const volumeBtn = document.getElementById('volumeBtn');
+                    const volumeIconOn = document.getElementById('volumeIconOn');
+                    const volumeIconOff = document.getElementById('volumeIconOff');
+                    const volumeSlider = document.getElementById('volumeSlider');
+                    const volumeValue = document.getElementById('volumeValue');
+                    
+                    function toggleMute() {
+                        if (video.muted) {
+                            video.muted = false;
+                            volumeIconOn.classList.remove('hidden');
+                            volumeIconOff.classList.add('hidden');
+                            const currentVolume = Math.round(video.volume * 100);
+                            volumeSlider.value = currentVolume;
+                            volumeValue.textContent = currentVolume + '%';
+                        } else {
+                            video.muted = true;
+                            volumeIconOn.classList.add('hidden');
+                            volumeIconOff.classList.remove('hidden');
+                        }
+                    }
+                    
+                    function changeVolume(value) {
+                        const volumeLevel = value / 100;
+                        video.volume = volumeLevel;
+                        volumeValue.textContent = value + '%';
+                        
+                        if (volumeLevel > 0 && video.muted) {
+                            video.muted = false;
+                            volumeIconOn.classList.remove('hidden');
+                            volumeIconOff.classList.add('hidden');
+                        } else if (volumeLevel === 0) {
+                            video.muted = true;
+                            volumeIconOn.classList.add('hidden');
+                            volumeIconOff.classList.remove('hidden');
+                        }
+                    }
+                    
+                    video.volume = 1.0;
+                    </script>
+                    {% endif %}
+                    
+                {% else %}
+                    {# Приоритет 3: Изображение #}
+                    <img src="{{ post.kartinka.url }}" 
+                         alt="{{ post.title }}" 
+                         class="w-full h-full object-cover {{ media_extra_classes }} {% if size != 'small' %}group-hover:scale-110 transition-transform duration-500{% endif %}"
+                         {% if lazy|default:True %}loading="lazy" decoding="async"{% endif %}>
+                {% endif %}
+                
+            {% else %}
+                {# Fallback: нет медиа #}
+                <div class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white {% if size == 'small' %}text-2xl{% elif size == 'medium' %}text-4xl{% else %}text-6xl{% endif %}">
+                    📷
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endwith %}
+{% endwith %}
+
+{% include 'partials/video_orientation_script.html' %}

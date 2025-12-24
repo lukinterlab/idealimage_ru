@@ -1,0 +1,93 @@
+<!-- Виджет расписаний AI -->
+<div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8" id="ai-schedules-widget">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-purple-500/30 rounded-xl flex items-center justify-center">
+                <svg class="w-8 h-8 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 7H7v6h6V7z"></path>
+                    <path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold text-white">Расписания AI</h3>
+                <p class="text-white/70 text-sm">Автоматическая генерация контента</p>
+            </div>
+        </div>
+        <a href="{% url 'asistent:create_ai_schedule' %}" 
+           class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+            </svg>
+            Создать
+        </a>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <a href="{% url 'asistent:ai_schedules_active' %}" class="block bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-white/70 text-sm mb-1">Активные</p>
+                    <p class="text-3xl font-bold text-green-300">{{ ai_schedules_stats.active }}</p>
+                </div>
+                <svg class="w-10 h-10 text-green-300/30" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </a>
+        
+        <a href="{% url 'asistent:ai_schedules_inactive' %}" class="block bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-white/70 text-sm mb-1">Неактивные</p>
+                    <p class="text-3xl font-bold text-gray-300">{{ ai_schedules_stats.inactive }}</p>
+                </div>
+                <svg class="w-10 h-10 text-gray-300/30" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </a>
+        
+        <a href="{% url 'asistent:ai_schedules_stats_today' %}" class="block bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-white/70 text-sm mb-1">Сегодня</p>
+                    <p class="text-3xl font-bold text-yellow-300">{{ ai_schedules_stats.generated_today }}</p>
+                </div>
+                <svg class="w-10 h-10 text-yellow-300/30" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
+                </svg>
+            </div>
+        </a>
+        
+        <a href="{% url 'asistent:ai_schedules' %}" class="block bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-white/70 text-sm mb-1">Всего</p>
+                    <p class="text-3xl font-bold text-purple-300">{{ ai_schedules_stats.total }}</p>
+                </div>
+                <svg class="w-10 h-10 text-purple-300/30" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Дополнительная информация -->
+    <div class="flex items-center justify-between text-sm text-white/70">
+        <div class="flex items-center gap-4">
+            <span>Success Rate: <strong class="text-white">{{ ai_schedules_stats.success_rate|floatformat:0 }}%</strong></span>
+            <span>Всего статей: <strong class="text-white">{{ ai_schedules_stats.total_articles }}</strong></span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="{% url 'asistent:prompt_templates_list' %}" class="hover:text-white transition-colors">
+                📝 Промпты
+            </a>
+            <a href="{% url 'asistent:ai_schedules' %}" class="hover:text-white transition-colors">
+                Управление →
+            </a>
+        </div>
+    </div>
+</div>
+

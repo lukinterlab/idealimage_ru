@@ -1,0 +1,184 @@
+<!-- Системные задачи Django-Q -->
+{% if system_schedules %}
+    {% if view_mode == 'table' %}
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 shadow-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-white/10">
+                    <thead class="bg-white/5">
+                        <tr class="text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
+                            <th class="px-5 py-3">ID</th>
+                            <th class="px-5 py-3">Название</th>
+                            <th class="px-5 py-3 hidden xl:table-cell">Функция</th>
+                            <th class="px-5 py-3 hidden lg:table-cell">Тип расписания</th>
+                            <th class="px-5 py-3 hidden xl:table-cell">Следующий запуск</th>
+                            <th class="px-5 py-3 hidden xl:table-cell">Повторений</th>
+                            <th class="px-5 py-3 text-right">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10 text-sm">
+                        {% for schedule in system_schedules %}
+                        <tr class="hover:bg-white/10 transition-colors">
+                            <td class="px-5 py-4 text-white font-semibold">#{{ schedule.id }}</td>
+                            <td class="px-5 py-4">
+                                <div class="text-white font-semibold">{{ schedule.name }}</div>
+                                {% if schedule.kwargs %}
+                                <div class="text-xs text-gray-400 mt-1">Kwargs: <code class="bg-black/40 px-1.5 py-0.5 rounded">{{ schedule.kwargs }}</code></div>
+                                {% endif %}
+                            </td>
+                            <td class="px-5 py-4 hidden xl:table-cell text-xs text-green-300">
+                                <code class="bg-black/40 px-2 py-1 rounded">{{ schedule.func }}</code>
+                            </td>
+                            <td class="px-5 py-4 hidden lg:table-cell text-gray-200">
+                                {% if schedule.schedule_type == 'I' %}
+                                    Интервал: каждые {{ schedule.minutes }} мин
+                                {% elif schedule.schedule_type == 'H' %}
+                                    Ежечасно
+                                {% elif schedule.schedule_type == 'D' %}
+                                    Ежедневно
+                                {% elif schedule.schedule_type == 'W' %}
+                                    Еженедельно
+                                {% elif schedule.schedule_type == 'M' %}
+                                    Ежемесячно
+                                {% elif schedule.schedule_type == 'C' %}
+                                    Cron: {{ schedule.cron }}
+                                {% elif schedule.schedule_type == 'O' %}
+                                    Однократно
+                                {% else %}
+                                    {{ schedule.schedule_type }}
+                                {% endif %}
+                            </td>
+                            <td class="px-5 py-4 hidden xl:table-cell text-gray-200">
+                                {{ schedule.next_run|date:"d.m.Y H:i:s"|default:"—" }}
+                            </td>
+                            <td class="px-5 py-4 hidden xl:table-cell text-gray-200">
+                                {% if schedule.repeats == -1 %}
+                                    Бесконечно
+                                {% else %}
+                                    {{ schedule.repeats|default:"—" }}
+                                {% endif %}
+                            </td>
+                            <td class="px-5 py-4">
+                                <div class="flex flex-wrap justify-end gap-2">
+                                    <a href="{% url 'asistent:edit_system_schedule' schedule.id %}"
+                                       class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap">
+                                        Редактировать
+                                    </a>
+                                    <form method="post" action="{% url 'asistent:delete_system_schedule' schedule.id %}" class="inline"
+                                          onsubmit="return confirm('Удалить задачу {{ schedule.name }}? Это действие нельзя отменить!')">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-600 hover:bg-red-700 text-white whitespace-nowrap">
+                                            Удалить
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="grid grid-cols-1 gap-4">
+            {% for schedule in system_schedules %}
+            <div class="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 dark:border-white/20 overflow-hidden shadow-lg hover:shadow-xl transition-all">
+                <div class="p-6">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <svg class="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                                </svg>
+                                <h3 class="text-lg font-bold text-white dark:text-white">{{ schedule.name }}</h3>
+                                <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs font-semibold">ID: {{ schedule.id }}</span>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400 dark:text-gray-400 w-32">Функция:</span>
+                                    <code class="text-green-300 bg-black/30 px-2 py-1 rounded font-mono text-xs">{{ schedule.func }}</code>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400 dark:text-gray-400 w-32">Тип расписания:</span>
+                                    <span class="text-white dark:text-white font-semibold">
+                                        {% if schedule.schedule_type == 'I' %}
+                                            Интервал: каждые {{ schedule.minutes }} минут
+                                        {% elif schedule.schedule_type == 'H' %}
+                                            Ежечасно
+                                        {% elif schedule.schedule_type == 'D' %}
+                                            Ежедневно
+                                        {% elif schedule.schedule_type == 'W' %}
+                                            Еженедельно
+                                        {% elif schedule.schedule_type == 'M' %}
+                                            Ежемесячно
+                                        {% elif schedule.schedule_type == 'C' %}
+                                            Cron: {{ schedule.cron }}
+                                        {% elif schedule.schedule_type == 'O' %}
+                                            Однократно
+                                        {% else %}
+                                            {{ schedule.schedule_type }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                {% if schedule.args %}
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400 dark:text-gray-400 w-32">Аргументы:</span>
+                                    <code class="text-yellow-300 bg-black/30 px-2 py-1 rounded font-mono text-xs">{{ schedule.args }}</code>
+                                </div>
+                                {% endif %}
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400 dark:text-gray-400 w-32">Следующий запуск:</span>
+                                    <span class="text-white dark:text-white">{{ schedule.next_run|date:"d.m.Y H:i:s"|default:"—" }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400 dark:text-gray-400 w-32">Повторений:</span>
+                                    <span class="text-white dark:text-white">
+                                        {% if schedule.repeats == -1 %}Бесконечно{% else %}{{ schedule.repeats|default:"—" }}{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <a href="{% url 'asistent:edit_system_schedule' schedule.id %}"
+                               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-semibold whitespace-nowrap">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828л-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828л8.38-8.379-2.83-2.828z"></path>
+                                </svg>
+                                Редактировать
+                            </a>
+                            <form method="post" action="{% url 'asistent:delete_system_schedule' schedule.id %}" class="inline"
+                                  onsubmit="return confirm('Удалить задачу {{ schedule.name }}? Это действие нельзя отменить!')">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white dark:text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-semibold">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2В6a1 1 0 100-2h-3.382л-.724-1.447A1 1 0 0011 2H9zM7 8а1 1 0 012 0v6а1 1 0 11-2 0В8zm5-1а1 1 0 00-1 1v6а1 1 0 102 0В8а1 1 0 00-1-1з" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Удалить
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% else %}
+    <!-- Пустое состояние -->
+    <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 p-12 text-center shadow-2xl">
+        <svg class="w-24 h-24 mx-auto text-white/30 dark:text-white/30 mb-6" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+        </svg>
+        <h3 class="text-2xl font-bold text-white dark:text-white mb-2">Системных задач нет</h3>
+        <p class="text-gray-400 dark:text-gray-400 mb-6">Создайте системную задачу для автоматизации процессов</p>
+        <a href="{% url 'asistent:create_system_schedule' %}" 
+           class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white dark:text-white font-semibold rounded-lg transition-colors gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+            </svg>
+            Создать системную задачу
+        </a>
+    </div>
+{% endif %}
+

@@ -1,0 +1,132 @@
+{% extends "base_tailwind.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Заголовок -->
+    <div class="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg shadow-lg p-6 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-white">🔌 Внешние скрипты</h1>
+                <p class="text-white/90 mt-1">Управление счетчиками и рекламными кодами</p>
+            </div>
+            <a href="{% url 'advertising:external_script_create' %}" 
+               class="px-6 py-3 bg-white text-cyan-600 rounded-lg hover:bg-gray-100 font-semibold shadow-lg">
+                + Добавить скрипт
+            </a>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <div class="text-gray-500 dark:text-gray-400 text-sm">Всего скриптов</div>
+            <div class="text-3xl font-bold text-gray-900 dark:text-white">{{ total_scripts }}</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <div class="text-green-600 text-sm">Активных</div>
+            <div class="text-3xl font-bold text-green-600">{{ active_scripts }}</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <div class="text-gray-500 dark:text-gray-400 text-sm">Неактивных</div>
+            <div class="text-3xl font-bold text-gray-400">{{ total_scripts|add:"-"|add:active_scripts|default:0 }}</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <a href="{% url 'advertising:dashboard' %}" class="text-cyan-600 hover:text-cyan-700 text-sm">← Назад в дашборд</a>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Тип</label>
+                <select name="script_type" class="w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option value="">Все типы</option>
+                    {% for code, name in script_types %}
+                    <option value="{{ code }}" {% if current_script_type == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Позиция</label>
+                <select name="position" class="w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option value="">Все позиции</option>
+                    {% for code, name in positions %}
+                    <option value="{{ code }}" {% if current_position == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Статус</label>
+                <select name="is_active" class="w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option value="">Все</option>
+                    <option value="1" {% if current_is_active == '1' %}selected{% endif %}>Активные</option>
+                    <option value="0" {% if current_is_active == '0' %}selected{% endif %}>Неактивные</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700">
+                    Применить
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Список скриптов -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+        {% for script in scripts %}
+        <div class="border-b last:border-b-0 dark:border-gray-700 p-6 hover:bg-gray-50 dark:hover:bg-gray-750">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                            {{ script.name }}
+                        </h3>
+                        {% if script.is_active %}
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">✓ Активен</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded">✗ Выключен</span>
+                        {% endif %}
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">{{ script.get_script_type_display }}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                        <div><strong>Провайдер:</strong> {{ script.provider|default:"—" }}</div>
+                        <div><strong>Позиция:</strong> {{ script.get_position_display }}</div>
+                        <div><strong>Приоритет:</strong> {{ script.priority }}</div>
+                        {% if script.description %}
+                        <div class="mt-2"><strong>Описание:</strong> {{ script.description }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{% url 'advertising:external_script_detail' script.id %}" 
+                       class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Подробнее
+                    </a>
+                    <form method="post" action="{% url 'advertising:external_script_toggle' script.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="px-4 py-2 {% if script.is_active %}bg-orange-600 hover:bg-orange-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white rounded">
+                            {% if script.is_active %}Выключить{% else %}Включить{% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="p-12 text-center">
+            <div class="text-6xl mb-4">🔌</div>
+            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Нет внешних скриптов</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-4">Добавьте первый счетчик или рекламный код</p>
+            <a href="{% url 'advertising:external_script_create' %}" 
+               class="inline-block px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700">
+                + Добавить скрипт
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,57 @@
+{% load static %}
+    <h2 class="small-title">abc/carusel/carus_4</h2>
+        <div class="glide" id="glideSingle">
+          <div class="glide__track" data-glide-el="track">
+            <div class="glide__slides">
+            {% for post in post_list reversed %}
+
+              <div class="glide__slide">
+                <div class="card mb-5">
+                  <div class="row g-0 sh-25">
+                    <div class="col-2 col-lg-1 d-flex align-items-center">
+                      <img src="{{ post.kartinka.url }}" alt="card image" class="card-img card-img-horizontal sw-30 sh-25 " />
+                    </div>
+                    <div class="col-11 col-lg-11 h-100">
+                      <div class="row g-0 h-100 align-content-center">
+                        <div class="col-12 col-lg-4 d-flex align-items-center">
+                          <p class="heading mb-0 ps-card">{{ post.title }}</p>
+                        </div>
+                        <div class="col-lg-3 col-5 col-sm-5 d-flex align-items-center mb-1 mb-md-0">
+                          <p class="mb-0 text-alternate ps-card">{{ post.created }}1</p>
+                        </div>
+                        <div class="col-lg-2 col-sm-4 col-3 d-flex align-items-center mb-0">
+                          <span class="badge bg-tertiary text-uppercase">{{ post.category }}</span>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 d-flex align-items-center justify-content-end">
+                          <div class="pe-card">
+                            <button class="btn btn-sm btn-icon btn-icon-only btn-outline-primary" type="button">
+                              <i data-cs-icon="check"></i>
+                            </button>
+                            <button class="btn btn-sm btn-icon btn-icon-only btn-outline-secondary ms-2" type="button">
+                              <i data-cs-icon="close"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+            </div>
+          </div>
+
+          <div class="text-center">
+            <span class="glide__arrows slider-nav" data-glide-el="controls">
+              <button class="btn btn-icon btn-icon-only btn-outline-primary" data-glide-dir="<">
+                <i data-cs-icon="chevron-left"></i>
+              </button>
+            </span>
+            <span class="glide__bullets" data-glide-el="controls[nav]"></span>
+            <span class="glide__arrows slider-nav" data-glide-el="controls">
+              <button class="btn btn-icon btn-icon-only btn-outline-primary" data-glide-dir=">">
+                <i data-cs-icon="chevron-right"></i>
+              </button>
+            </span>
+          </div>
+        </div>

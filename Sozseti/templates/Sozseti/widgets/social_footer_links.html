@@ -1,0 +1,91 @@
+{% load social_tags %}
+
+<!-- Ссылки на социальные сети для футера -->
+{% get_main_social_links as social_links %}
+
+<div class="social-footer-links text-gray-900 dark:text-gray-100">
+    <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white">Мы в социальных сетях</h3>
+    
+    <div class="flex gap-3 flex-wrap">
+        <!-- Telegram -->
+        {% if social_links.telegram %}
+        <a href="{{ social_links.telegram }}" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="social-icon telegram"
+           title="Telegram: @ideal_image_ru">
+            <i class="fab fa-telegram text-2xl text-blue-500 hover:text-blue-600 transition-colors"></i>
+        </a>
+        {% endif %}
+        
+        <!-- VK -->
+        {% if social_links.vk %}
+        <a href="{{ social_links.vk }}" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="social-icon vk"
+           title="ВКонтакте">
+            <i class="fab fa-vk text-2xl text-blue-700 hover:text-blue-800 transition-colors"></i>
+        </a>
+        {% endif %}
+        
+        <!-- Pinterest -->
+        {% if social_links.pinterest %}
+        <a href="{{ social_links.pinterest }}" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="social-icon pinterest"
+           title="Pinterest">
+            <i class="fab fa-pinterest text-2xl text-red-600 hover:text-red-700 transition-colors"></i>
+        </a>
+        {% endif %}
+        
+        <!-- Rutube -->
+        {% if social_links.rutube %}
+        <a href="{{ social_links.rutube }}" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="social-icon rutube"
+           title="Rutube">
+            <i class="fas fa-video text-2xl text-purple-600 hover:text-purple-700 transition-colors"></i>
+        </a>
+        {% endif %}
+        
+        <!-- Яндекс.Дзен -->
+        {% if social_links.dzen %}
+        <a href="{{ social_links.dzen }}" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="social-icon dzen"
+           title="Яндекс.Дзен">
+            <i class="fas fa-newspaper text-2xl text-yellow-600 hover:text-yellow-700 transition-colors"></i>
+        </a>
+        {% endif %}
+        
+        <!-- Instagram (Coming Soon) -->
+        <a href="#" 
+           class="social-icon instagram opacity-50 cursor-not-allowed"
+           title="Instagram - Скоро">
+            <i class="fab fa-instagram text-2xl text-pink-600"></i>
+        </a>
+        
+        <!-- Facebook (Coming Soon) -->
+        <a href="#" 
+           class="social-icon facebook opacity-50 cursor-not-allowed"
+           title="Facebook - Скоро">
+            <i class="fab fa-facebook text-2xl text-blue-600"></i>
+        </a>
+        
+        <!-- YouTube (Coming Soon) -->
+        <a href="#" 
+           class="social-icon youtube opacity-50 cursor-not-allowed"
+           title="YouTube - Скоро">
+            <i class="fab fa-youtube text-2xl text-red-600"></i>
+        </a>
+    </div>
+    
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
+        Подписывайтесь на наши каналы, чтобы не пропустить новые статьи!
+    </p>
+</div>
+

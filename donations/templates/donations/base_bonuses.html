@@ -1,0 +1,70 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+    .stat-card {
+        @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl;
+    }
+    
+    .role-badge {
+        @apply inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold;
+    }
+    
+    .progress-bar-container {
+        @apply w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden;
+    }
+    
+    .progress-bar-fill {
+        @apply h-full transition-all duration-500 ease-out;
+    }
+    
+    .dashboard-table {
+        @apply w-full text-sm text-left text-gray-500 dark:text-gray-400;
+    }
+    
+    .dashboard-table thead {
+        @apply text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400;
+    }
+    
+    .dashboard-table th {
+        @apply px-6 py-3;
+    }
+    
+    .dashboard-table td {
+        @apply px-6 py-4;
+    }
+    
+    .dashboard-table tbody tr {
+        @apply bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if request.user.is_staff %}
+{% include 'partials/admin_navbar.html' %}
+{% endif %}
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {% block bonuses_content %}
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+// Дополнительные функции для бонусов
+function toggleDetails(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.classList.toggle('hidden');
+    }
+}
+</script>
+{% endblock %}
+

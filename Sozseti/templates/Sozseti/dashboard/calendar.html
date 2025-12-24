@@ -1,0 +1,93 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Календарь публикаций - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 text-gray-900 dark:text-gray-100">
+    <!-- Хлебные крошки -->
+    <div class="mb-4 text-sm text-gray-600 dark:text-gray-300">
+        <a href="/dashboard/" class="text-blue-600 dark:text-blue-400 hover:underline">Главный дашборд</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <a href="{% url 'sozseti:dashboard' %}" class="text-blue-600 dark:text-blue-400 hover:underline">Соцсети</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <span class="text-gray-600 dark:text-gray-300">Календарь</span>
+    </div>
+    
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Календарь публикаций</h1>
+        <a href="{% url 'sozseti:dashboard' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+            ← Назад к дашборду
+        </a>
+    </div>
+    
+    <!-- Запланированные публикации -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Запланированные публикации</h2>
+        
+        {% if scheduled %}
+        <div class="space-y-4">
+            {% for pub in scheduled %}
+            <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ pub.post.title|truncatewords:15 }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Канал: {{ pub.channel.channel_name }} | 
+                        Запланировано: {{ pub.scheduled_at|date:"d.m.Y H:i" }}
+                    </p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="/admin/Sozseti/postpublication/{{ pub.id }}/change/" 
+                       class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded">
+                        Редактировать
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 dark:text-gray-400 text-center py-8">Нет запланированных публикаций</p>
+        <a href="/admin/Sozseti/postpublication/add/" 
+           class="block text-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg mt-4">
+            Запланировать публикацию
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Активные расписания -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Активные расписания</h2>
+        
+        {% if schedules %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for schedule in schedules %}
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ schedule.name }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    {{ schedule.get_posting_frequency_display }}
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    Каналов: {{ schedule.channels.count }} | 
+                    Категорий: {{ schedule.categories.count }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    Следующий запуск: {{ schedule.next_run|date:"d.m.Y H:i" }}
+                </p>
+                <a href="/admin/Sozseti/publicationschedule/{{ schedule.id }}/change/" 
+                   class="block mt-3 text-center px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded">
+                    Настроить
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 dark:text-gray-400 text-center py-8">Нет активных расписаний</p>
+        <a href="/admin/Sozseti/publicationschedule/add/" 
+           class="block text-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg mt-4">
+            Создать расписание
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,148 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-2">
+                🎯 Стать частью команды
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                Выберите роль и подайте заявку
+            </p>
+        </div>
+
+        {% if has_pending_applications %}
+        <!-- Уведомление о существующих заявках -->
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6 mb-8">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-400">
+                        У вас есть активные заявки
+                    </h3>
+                    <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-500">
+                        <p>Администрация рассмотрит ваши заявки в течение 3 дней.</p>
+                        <ul class="list-disc list-inside mt-2 space-y-1">
+                            {% for app in pending_applications %}
+                            <li>{{ app.get_role_display }} - подана {{ app.applied_at|date:"d.m.Y" }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Форма выбора роли -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                    Выберите роль
+                </h2>
+
+                <div class="space-y-4">
+                    {% for value, label in form.role.field.choices %}
+                        {% if value == 'author' or value == 'moderator' or value == 'marketer' %}
+                        <label class="relative flex items-start p-6 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:border-primary dark:hover:border-primary transition-all cursor-pointer group">
+                            <input type="radio" name="role" value="{{ value }}" 
+                                   class="h-5 w-5 text-primary focus:ring-primary border-gray-300 dark:border-gray-600"
+                                   required>
+                            <div class="ml-4 flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        {% if value == 'author' %}
+                                            ✍️ Автор
+                                        {% elif value == 'moderator' %}
+                                            🛡️ Модератор
+                                        {% elif value == 'marketer' %}
+                                            📊 Маркетолог
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            <p class="mt-2 text-gray-600 dark:text-gray-400">
+                                {% if value == 'author' %}
+                                    Вы сможете создавать и публиковать статьи, получать донаты от читателей, видеть статистику по своим публикациям.
+                                {% elif value == 'moderator' %}
+                                    Вы сможете модерировать комментарии, удалять нежелательный контент, помогать пользователям.
+                                {% elif value == 'marketer' %}
+                                    Вы будете работать над продвижением сайта, анализировать статистику, создавать маркетинговые кампании.
+                                {% endif %}
+                            </p>
+                            <a href="{% url 'Visitor:role_instructions' value %}" 
+                               target="_blank"
+                               class="inline-flex items-center mt-3 text-sm text-primary hover:text-secondary font-medium transition-colors">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Должностная инструкция
+                            </a>
+                        </div>
+                    </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if form.role.errors %}
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-400 px-4 py-3 rounded-lg">
+                    {{ form.role.errors }}
+                </div>
+                {% endif %}
+
+                <div class="flex items-center justify-between pt-4">
+                    <a href="{% url 'Visitor:personal_cabinet' %}" 
+                       class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        ← Назад в кабинет
+                    </a>
+                    <button type="submit"
+                            class="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
+                        Подать заявку
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Информационный блок -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-400 mb-3">
+                ℹ️ Что происходит после подачи заявки?
+            </h3>
+            <ul class="space-y-2 text-blue-800 dark:text-blue-300">
+                <li class="flex items-start">
+                    <svg class="h-5 w-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Ваша заявка будет рассмотрена администрацией в течение 3 дней</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="h-5 w-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Вы получите уведомление о результате рассмотрения</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="h-5 w-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>При одобрении вы получите доступ к новым возможностям</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="h-5 w-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>При отклонении вы сможете подать заявку повторно позже</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

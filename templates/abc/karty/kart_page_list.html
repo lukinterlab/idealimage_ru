@@ -1,0 +1,56 @@
+{% load static %}
+
+<!-- СЕТКА СТАТЕЙ-->
+<div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-2 mb-5">
+    {% for post in post_list %}
+    
+      <!-- Статья"col-auto pe-3"-->
+      <div class="col">
+        
+        <div class="card border-quaternary sh-55 hover-img-scale-up hover-reveal">
+          <h4 class="align-middle text-white">{{ post.title|truncatechars:44 }}</h4>
+          
+          {% if post.kartinka %}
+            <a href="{{ post.get_absolute_url }}" class="stretched-link">
+              <img  src="{{ post.kartinka.url }}" class="card-img h-100 sh-30 sw-55 scale" alt="{{ post.title|truncatechars:44 |lower  }}"  />
+            </a>
+          {% endif %}
+          
+          <!-- Исчезающий Текст внутри картинки-->
+          <div class="card-img-overlay d-flex flex-column justify-content-between reveal-content">
+              <div class="row g-0">
+                <div class="text-white">
+                  <h2 class="heading text-white mb-1">
+                  
+                  </h2> 
+                </div>
+              </div>
+              <div class="row g-0">
+                <div class="text-white">
+                  {{ post.description|truncatechars:200 }}
+                </div>
+              </div>
+              <div class="row g-0">
+                <div class="text-white">
+                  <span class="align-middle text-white">{{ post.created|date:"d,m,y" }}</span>
+                </div>
+              </div>
+          </div>
+           <!-- Исчезающий Текст внутри картинки-->
+           
+          <div class="col-auto pe-3">
+            <i data-cs-icon="eye" data-cs-size="15"></i>
+            <span>{{ post.views }}</span>
+            <!--<i data-cs-icon="message"  data-cs-size="15"></i>
+            <span>{{ post.comments.count }}</span>-->
+            <i data-cs-icon="user" data-cs-size="15"></i>
+            <span>{{ post.author }}</span>
+          </div>
+          
+        </div>
+      </div>
+      <!-- Статья-->
+      
+    {% endfor %}
+</div>
+<!-- СЕТКА -->

@@ -1,0 +1,128 @@
+<!-- Плавающая кнопка донатов (FAB) - СЛЕВА внизу -->
+<!-- Справа занят чат-ботом! -->
+<div id="donation-fab" class="fixed left-6 bottom-6 z-[9998]">
+    
+    <!-- Меню (скрыто по умолчанию, открывается вверх) -->
+    <div id="fab-menu" class="hidden absolute bottom-20 left-0 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-3 w-64 border border-gray-200 dark:border-gray-700">
+        <!-- Заголовок меню -->
+        <div class="text-center mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">Поддержите проект</p>
+        </div>
+        
+        <!-- Кнопки быстрой оплаты -->
+        <div class="space-y-2 mb-3">
+            <a href="{% url 'donations:quick_donation' %}?amount=100" 
+               class="block px-4 py-2 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 hover:from-red-100 hover:to-pink-100 dark:hover:from-red-900/30 dark:hover:to-pink-900/30 rounded-lg text-center font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                💝 Поддержать 100₽
+            </a>
+            <a href="{% url 'donations:quick_donation' %}?amount=500" 
+               class="block px-4 py-2 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 hover:from-red-100 hover:to-pink-100 dark:hover:from-red-900/30 dark:hover:to-pink-900/30 rounded-lg text-center font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                💝 Поддержать 500₽
+            </a>
+            <a href="{% url 'donations:quick_donation' %}?amount=1000" 
+               class="block px-4 py-2 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 hover:from-red-100 hover:to-pink-100 dark:hover:from-red-900/30 dark:hover:to-pink-900/30 rounded-lg text-center font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                💝 Поддержать 1000₽
+            </a>
+            <a href="{% url 'donations:donation_page' %}" 
+               class="block px-4 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/30 dark:hover:to-indigo-900/30 rounded-lg text-center font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                💝 Своя сумма
+            </a>
+        </div>
+        
+        <!-- Разделитель -->
+        <div class="border-t border-gray-200 dark:border-gray-700 my-3"></div>
+        
+        <!-- Услуги -->
+        <div class="space-y-2">
+            <a href="{% url 'donations:subscribe_premium' %}" 
+               class="block px-4 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg text-center font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                💎 Premium подписка
+            </a>
+            <a href="{% url 'donations:subscribe_ai' %}" 
+               class="block px-4 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg text-center font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                🤖 AI-Соавтор
+            </a>
+            <a href="{% url 'donations:marathons_catalog' %}" 
+               class="block px-4 py-2 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg text-center font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                📚 Марафоны
+            </a>
+        </div>
+    </div>
+    
+    <!-- Главная кнопка -->
+    <button id="fab-main-btn" 
+            class="w-16 h-16 bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 rounded-full shadow-2xl flex items-center justify-center text-3xl hover:scale-110 active:scale-95 transition-transform duration-300 animate-pulse hover:animate-none"
+            aria-label="Открыть меню поддержки"
+            title="Поддержать проект">
+        <span class="drop-shadow-lg">❤️</span>
+    </button>
+    
+</div>
+
+<!-- Стили для адаптивности -->
+<style>
+@media (max-width: 640px) {
+    #donation-fab {
+        left: 1rem;
+        bottom: 1rem;
+    }
+    
+    #fab-main-btn {
+        width: 3.5rem;
+        height: 3.5rem;
+        font-size: 1.5rem;
+    }
+    
+    #fab-menu {
+        width: 15rem;
+        bottom: 4.5rem;
+    }
+}
+
+/* Анимация появления меню */
+#fab-menu {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+<!-- JavaScript для управления меню -->
+<script>
+(function() {
+    const fabBtn = document.getElementById('fab-main-btn');
+    const fabMenu = document.getElementById('fab-menu');
+    
+    if (!fabBtn || !fabMenu) return;
+    
+    // Открытие/закрытие меню при клике на кнопку
+    fabBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        fabMenu.classList.toggle('hidden');
+    });
+    
+    // Закрытие меню при клике вне его
+    document.addEventListener('click', function(e) {
+        if (!fabMenu.contains(e.target) && !fabBtn.contains(e.target)) {
+            fabMenu.classList.add('hidden');
+        }
+    });
+    
+    // Закрытие меню при нажатии Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            fabMenu.classList.add('hidden');
+        }
+    });
+})();
+</script>
+

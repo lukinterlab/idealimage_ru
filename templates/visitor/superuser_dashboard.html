@@ -1,0 +1,1061 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-full mx-auto">
+        <!-- Header -->
+        <div class="mb-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div class="flex-1">
+                <h1 class="text-3xl lg:text-4xl font-heading font-bold text-gray-900 dark:text-white mb-2">
+                    ⚙️ Панель администратора
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Управление сайтом и пользователями
+                </p>
+            </div>
+
+    
+
+        </div>
+
+        <!-- Общая статистика -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Пользователей</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ total_users }}</p>
+                    </div>
+                    <div class="bg-blue-100 dark:bg-blue-900/30 rounded-full p-3">
+                        <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Статей</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ total_posts }}</p>
+                    </div>
+                    <div class="bg-green-100 dark:bg-green-900/30 rounded-full p-3">
+                        <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Комментариев</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ total_comments }}</p>
+                    </div>
+                    <div class="bg-purple-100 dark:bg-purple-900/30 rounded-full p-3">
+                        <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Донатов</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ total_donations }}₽</p>
+                    </div>
+                    <div class="bg-yellow-100 dark:bg-yellow-900/30 rounded-full p-3">
+                        <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI-Ассистент -->
+        <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl p-8 mb-8">
+            <div class="text-white">
+                <h2 class="text-3xl font-bold mb-2 flex items-center">
+                    <span class="mr-3">🤖</span>
+                    AI-Ассистент
+                </h2>
+                <p class="text-white/90 mb-6">Умный помощник для автоматизации контента и управления сайтом</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <!-- Статистика AI -->
+                    <div class="bg-white/10 backdrop-blur-md rounded-xl p-4">
+                        <div class="text-sm text-white/70 mb-1">Сгенерировано статей</div>
+                        <div class="text-2xl font-bold">{{ ai_stats.generated_articles|default:0 }}</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md rounded-xl p-4">
+                        <div class="text-sm text-white/70 mb-1">Задач выполнено</div>
+                        <div class="text-2xl font-bold">{{ ai_stats.completed_tasks|default:0 }}</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md rounded-xl p-4">
+                        <div class="text-sm text-white/70 mb-1">Активных расписаний</div>
+                        <div class="text-2xl font-bold">{{ ai_stats.active_schedules|default:0 }}</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md rounded-xl p-4">
+                        <div class="text-sm text-white/70 mb-1">Диалогов в чате</div>
+                        <div class="text-2xl font-bold">{{ ai_stats.chat_conversations|default:0 }}</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-4">
+                    <a href="{% url 'asistent:admin_dashboard' %}" 
+                       class="px-6 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-white/90 transition-all transform hover:scale-105 shadow-lg inline-flex items-center">
+                        📊 Панель AI-ассистента
+                    </a>
+                    <a href="{% url 'asistent:ai_chat' %}" 
+                       class="px-6 py-3 bg-white/20 border-2 border-white text-white font-bold rounded-lg hover:bg-white/30 transition-all inline-flex items-center">
+                        💬 AI-Чат
+                    </a>
+                    <a href="{% url 'asistent:ai_analytics_dashboard' %}" 
+                       class="px-6 py-3 bg-white/20 border-2 border-white text-white font-bold rounded-lg hover:bg-white/30 transition-all inline-flex items-center">
+                        📈 Аналитика
+                    </a>
+                    <a href="{% url 'asistent:tasks_management' %}" 
+                       class="px-6 py-3 bg-white/20 border-2 border-white text-white font-bold rounded-lg hover:bg-white/30 transition-all inline-flex items-center">
+                        ✅ Задания
+                    </a>
+                    <a href="/admin/" class="px-4 lg:px-6 py-2 lg:py-3 bg-gray-800 dark:bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-900 dark:hover:bg-gray-600 transition-all shadow-lg inline-flex items-center justify-center gap-2 text-sm lg:text-base whitespace-nowrap">
+                        ⚙️ <span class="hidden sm:inline">Django Админка</span><span class="sm:hidden">Админка</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Левая колонка - Заявки на роли -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Заявки на роли -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                        📋 Заявки на роли ({{ pending_applications|length }})
+                    </h2>
+                    
+                    {% if pending_applications %}
+                    <div class="space-y-4">
+                        {% for application in pending_applications %}
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <img src="{{ application.user.profile.get_avatar }}" 
+                                         alt="{{ application.user.username }}"
+                                         class="w-12 h-12 rounded-full">
+                                    <div>
+                                        <p class="font-semibold text-gray-900 dark:text-white">
+                                            {{ application.user.username }}
+                                        </p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                            {{ application.user.email }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 rounded-full">
+                                    {{ application.get_role_display }}
+                                </span>
+                            </div>
+                            
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                Подана: {{ application.applied_at|date:"d.m.Y H:i" }}
+                            </p>
+
+                            <form method="post" action="{% url 'Visitor:process_role_application' application.id %}" class="space-y-3">
+                                {% csrf_token %}
+                                <textarea name="admin_response" 
+                                          placeholder="Комментарий для пользователя (необязательно)"
+                                          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                          rows="2"></textarea>
+                                
+                                <div class="flex space-x-2">
+                                    <button type="submit" name="action" value="approve"
+                                            class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors">
+                                        ✓ Одобрить
+                                    </button>
+                                    <button type="submit" name="action" value="reject"
+                                            class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+                                        ✗ Отклонить
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-center text-gray-500 dark:text-gray-400 py-8">
+                        Нет новых заявок на рассмотрении
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Статистика авторов с вкладками -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                            ✍️ Статистика авторов
+                        </h2>
+                        <span class="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg font-semibold">
+                            Всего авторов: {{ total_authors|default:0 }}
+                        </span>
+                    </div>
+                    
+                    <!-- Поиск и пагинация -->
+                    {% if page_all_time.paginator.count > 0 %}
+                    <div class="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <!-- Поиск -->
+                        <div class="flex-1 max-w-md">
+                            <input type="text" 
+                                   id="authors-filter" 
+                                   placeholder="🔍 Поиск по авторам, статьям, донатам..." 
+                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   oninput="filterAllTables(this.value)">
+                        </div>
+                        
+                        <!-- Выбор количества на страницу -->
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Показывать:</label>
+                            <select onchange="changePerPage(this.value)" 
+                                    class="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary">
+                                <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                                <option value="20" {% if per_page == 20 %}selected{% endif %}>20</option>
+                                <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Аккордеон с 4 вкладками -->
+                    <div class="space-y-3">
+                        
+                        <!-- Вкладка 1: За всё время (открыта по умолчанию) -->
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                            <button onclick="toggleAccordion('all-time')" 
+                                    class="accordion-header w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">📊</span>
+                                    <span class="text-lg font-bold text-gray-900 dark:text-white">За всё время</span>
+                                    <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-semibold">
+                                        {{ page_all_time.paginator.count }} авторов
+                                    </span>
+                                </div>
+                                <svg class="accordion-icon w-6 h-6 text-gray-600 dark:text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="all-time" class="accordion-content open">
+                                {% include 'visitor/partials/authors_table.html' with stats=page_all_time totals=authors_totals_all_time period='all-time' per_page=per_page %}
+                            </div>
+                        </div>
+                        
+                        <!-- Вкладка 2: За прошлый месяц -->
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                            <button onclick="toggleAccordion('last-month')" 
+                                    class="accordion-header w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">📅</span>
+                                    <span class="text-lg font-bold text-gray-900 dark:text-white">За прошлый месяц</span>
+                                    <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-sm font-semibold">
+                                        {{ page_last_month.paginator.count }} авторов
+                                    </span>
+                                </div>
+                                <svg class="accordion-icon w-6 h-6 text-gray-600 dark:text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="last-month" class="accordion-content">
+                                {% include 'visitor/partials/authors_table.html' with stats=page_last_month totals=authors_totals_last_month period='last-month' per_page=per_page %}
+                            </div>
+                        </div>
+                        
+                        <!-- Вкладка 3: За текущий месяц -->
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                            <button onclick="toggleAccordion('current-month')" 
+                                    class="accordion-header w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">📈</span>
+                                    <span class="text-lg font-bold text-gray-900 dark:text-white">За текущий месяц</span>
+                                    <span class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold">
+                                        {{ page_current_month.paginator.count }} авторов
+                                    </span>
+                                </div>
+                                <svg class="accordion-icon w-6 h-6 text-gray-600 dark:text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="current-month" class="accordion-content">
+                                {% include 'visitor/partials/authors_table.html' with stats=page_current_month totals=authors_totals_current_month period='current-month' per_page=per_page %}
+                            </div>
+                        </div>
+                        
+                        <!-- Вкладка 4: Динамика -->
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                            <button onclick="toggleAccordion('dynamics')" 
+                                    class="accordion-header w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 hover:from-orange-100 hover:to-red-100 dark:hover:from-orange-900/30 dark:hover:to-red-900/30 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">🔄</span>
+                                    <span class="text-lg font-bold text-gray-900 dark:text-white">Динамика (текущий — прошлый месяц)</span>
+                                    <span class="px-3 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full text-sm font-semibold">
+                                        {{ page_dynamics.paginator.count }} авторов
+                                    </span>
+                                </div>
+                                <svg class="accordion-icon w-6 h-6 text-gray-600 dark:text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="dynamics" class="accordion-content">
+                                {% include 'visitor/partials/authors_dynamics_table.html' with stats=page_dynamics totals=authors_totals_dynamics per_page=per_page %}
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    {% else %}
+                    <p class="text-center text-gray-500 dark:text-gray-400 py-8">
+                        Пока нет авторов на сайте
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- AI-Ассистент: Интеграция -->
+                {% if ai_enabled %}
+                <div class="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-2xl shadow-xl p-6 border-2 border-purple-200 dark:border-purple-800">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                            🤖 AI-Ассистент
+                        </h2>
+                        <span class="px-3 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-full">
+                            Активен
+                        </span>
+                    </div>
+                    
+                    <!-- Кнопки быстрого создания -->
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <a href="/admin/Moderation/articlemoderationsettings/add/" 
+                           class="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105">
+                            <span class="text-lg">📝</span>
+                            <span>Настройки модерации статей</span>
+                        </a>
+                        <a href="/admin/Moderation/commentmoderationsettings/add/" 
+                           class="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105">
+                            <span class="text-lg">💬</span>
+                            <span>Критерий модерации комментариев</span>
+                        </a>
+                        <a href="{% url 'asistent:create_task' %}" 
+                           class="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105">
+                            <span class="text-lg">✍️</span>
+                            <span>Задание для авторов</span>
+                        </a>
+                        <a href="{% url 'asistent:create_ai_schedule' %}" 
+                           class="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105">
+                            <span class="text-lg">🤖</span>
+                            <span>Расписание для Ассистента</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Карточки критериев модерации статей -->
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+                            📝 Критерии модерации статей ({{ article_criteria.count }})
+                        </h3>
+                        {% if article_criteria %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {% for criteria in article_criteria %}
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border {% if criteria.is_active %}border-green-300 dark:border-green-700{% else %}border-gray-300 dark:border-gray-700{% endif %}">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-gray-900 dark:text-white">{{ criteria.name }}</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Создан: {{ criteria.created_at|date:"d.m.Y H:i" }}</p>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium rounded {% if criteria.is_active %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300{% else %}bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300{% endif %}">
+                                        {% if criteria.is_active %}Активен{% else %}Выключен{% endif %}
+                                    </span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="checkbox" 
+                                               onchange="toggleCriteria('article', {{ criteria.id }}, this.checked)" 
+                                               {% if criteria.is_active %}checked{% endif %}
+                                               class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500">
+                                        <span class="text-xs text-gray-700 dark:text-gray-300">Активен</span>
+                                    </label>
+                                    <a href="/admin/Moderation/articlemoderationsettings/{{ criteria.id }}/change/" 
+                                       class="flex-1 text-center px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+                                        ✏️ Редактировать
+                                    </a>
+                                    <button onclick="deleteCriteria('article', {{ criteria.id }}, '{{ criteria.name|escapejs }}')" 
+                                            class="flex-1 px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
+                                        🗑️ Удалить
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Нет критериев модерации статей</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Карточки критериев модерации комментариев -->
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+                            💬 Критерии модерации комментариев ({{ comment_criteria.count }})
+                        </h3>
+                        {% if comment_criteria %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {% for criteria in comment_criteria %}
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border {% if criteria.is_active %}border-indigo-300 dark:border-indigo-700{% else %}border-gray-300 dark:border-gray-700{% endif %}">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-gray-900 dark:text-white">{{ criteria.name }}</h4>
+                                        <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                                            Действие: {{ criteria.get_action_display }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Создан: {{ criteria.created_at|date:"d.m.Y H:i" }}</p>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium rounded {% if criteria.is_active %}bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300{% else %}bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300{% endif %}">
+                                        {% if criteria.is_active %}Активен{% else %}Выключен{% endif %}
+                                    </span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="checkbox" 
+                                               onchange="toggleCriteria('comment', {{ criteria.id }}, this.checked)" 
+                                               {% if criteria.is_active %}checked{% endif %}
+                                               class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="text-xs text-gray-700 dark:text-gray-300">Активен</span>
+                                    </label>
+                                    <a href="/admin/Moderation/commentmoderationsettings/{{ criteria.id }}/change/" 
+                                       class="flex-1 text-center px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+                                        ✏️ Редактировать
+                                    </a>
+                                    <button onclick="deleteCriteria('comment', {{ criteria.id }}, '{{ criteria.name|escapejs }}')" 
+                                            class="flex-1 px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
+                                        🗑️ Удалить
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Нет критериев модерации комментариев</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Статистика модерации комментариев -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6">
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+                            📊 Статистика модерации комментариев
+                        </h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <a href="/admin/Moderation/moderationlog/?content_type=comment" 
+                               class="block p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 rounded-lg transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Всего проверок</p>
+                                        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ comment_moderation_stats.total }}</p>
+                                    </div>
+                                    <span class="text-2xl">📊</span>
+                                </div>
+                            </a>
+                            <a href="/admin/Moderation/moderationlog/?content_type=comment&passed__exact=1" 
+                               class="block p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 rounded-lg transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Одобрено</p>
+                                        <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ comment_moderation_stats.passed }}</p>
+                                    </div>
+                                    <span class="text-2xl">✅</span>
+                                </div>
+                            </a>
+                            <a href="/admin/Moderation/moderationlog/?content_type=comment&passed__exact=0" 
+                               class="block p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 hover:from-red-100 hover:to-pink-100 dark:hover:from-red-900/30 dark:hover:to-pink-900/30 rounded-lg transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Заблокировано</p>
+                                        <p class="text-2xl font-bold text-red-600 dark:text-red-400">{{ comment_moderation_stats.blocked }}</p>
+                                    </div>
+                                    <span class="text-2xl">🚫</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Статистика заданий для авторов -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6">
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+                            ✍️ Задания для авторов
+                        </h3>
+                        <div class="grid grid-cols-4 gap-3 mb-4">
+                            <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ tasks_stats.total }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Всего заданий</p>
+                            </div>
+                            <div class="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                                <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ tasks_stats.in_progress }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">В работе</p>
+                            </div>
+                            <div class="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ tasks_stats.authors_count }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Авторов работают</p>
+                            </div>
+                            <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ tasks_stats.completed }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Выполнено</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'asistent:tasks_management' %}" 
+                           class="block text-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all">
+                            📋 Управление заданиями
+                        </a>
+                    </div>
+                    
+                    <!-- Статистика AI в 3 колонки -->
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+                            🤖 Задания для AI
+                        </h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                                <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ ai_stats.tasks_for_review }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">На проверке</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ ai_stats.tasks_in_progress }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">В работе</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                                <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ ai_stats.completed_tasks }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Завершено</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ ai_stats.available_tasks }}</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Доступно</p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                            <p class="text-2xl font-bold text-red-600 dark:text-red-400">{{ ai_stats.overdue_tasks }}</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Просрочено</p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                            <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ ai_stats.ai_articles_today }}</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">AI статей сегодня</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Задания на AI модерации -->
+                    {% if tasks_for_review %}
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4">
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+                            ⏳ На AI модерации ({{ tasks_for_review|length }})
+                        </h3>
+                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                            {% for assignment in tasks_for_review %}
+                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-900 dark:text-white text-sm">{{ assignment.task.title }}</p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                            Автор: {{ assignment.author.username }} | Сдано: {{ assignment.submitted_at|date:"d.m H:i" }}
+                                        </p>
+                                    </div>
+                                    <span class="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 rounded">
+                                        {{ assignment.task.reward }}₽
+                                    </span>
+                                </div>
+                                <div class="flex space-x-2">
+                                    {% if assignment.article %}
+                                    <a href="{{ assignment.article.get_absolute_url }}" target="_blank"
+                                       class="flex-1 text-center px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+                                        👁️ Просмотр статьи
+                                    </a>
+                                    {% endif %}
+                                    <span class="flex-1 text-center px-3 py-1 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 rounded">
+                                        🤖 AI проверяет...
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Просроченные задания -->
+                    {% if overdue_tasks %}
+                    <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 mb-4 border border-red-200 dark:border-red-800">
+                        <h3 class="font-semibold text-red-900 dark:text-red-300 mb-2">
+                            ⚠️ Просроченные задания ({{ overdue_tasks.count }})
+                        </h3>
+                        <div class="space-y-2">
+                            {% for task in overdue_tasks|slice:":3" %}
+                            <div class="text-xs text-red-800 dark:text-red-300">
+                                • {{ task.title }} - Статус: {{ task.get_status_display }} (до {{ task.deadline|date:"d.m H:i" }})
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Активные расписания AI -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4">
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+                            📅 Активные расписания AI ({{ ai_schedules|length }})
+                        </h3>
+                        {% if ai_schedules %}
+                        <div class="space-y-2">
+                            {% for schedule in ai_schedules|slice:":3" %}
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-700 dark:text-gray-300">{{ schedule.name }}</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ schedule.get_posting_frequency_display }}
+                                    </span>
+                                    <form method="post" action="{% url 'Visitor:ai_run_schedule' schedule.id %}" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" 
+                                                class="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded">
+                                            ▶️ Запустить
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Расписания не настроены</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Критерии модерации -->
+                    <a href="/admin/Moderation/" class="block bg-white dark:bg-gray-800 rounded-lg p-4 mb-4 hover:ring-2 hover:ring-purple-500 transition-all">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-semibold text-gray-900 dark:text-white">
+                                🛡️ Система модерации
+                            </h3>
+                            <span class="text-xs px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 rounded">
+                                Настроить
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                            Настройки проверки статей и комментариев
+                        </p>
+                    </a>
+                    
+                    <!-- Быстрые действия AI -->
+                    <div class="grid grid-cols-2 gap-2">
+                       
+                        <a href="{% url 'Visitor:ai_schedules' %}" 
+                           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg text-center transition-colors">
+                            🤖 Расписания AI
+                        </a>
+                       
+                        <a href="{% url 'Visitor:task_calendar' %}" 
+                           class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg text-center transition-colors">
+                            📆 Календарь
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <!-- Правая колонка - Лог активности -->
+            <div class="space-y-6">
+                
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                        📊 Последние действия
+                    </h2>
+                    
+                    {% if recent_activities %}
+                    <div class="space-y-3 max-h-[800px] overflow-y-auto">
+                        {% for activity in recent_activities %}
+                        <div class="border-l-4 border-primary pl-3 py-2">
+                            <p class="text-sm text-gray-900 dark:text-white font-medium">
+                                {{ activity.get_action_type_display }}
+                            </p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                {% if activity.user %}{{ activity.user.username }}{% else %}Система{% endif %}
+                                {% if activity.target_user %}→ {{ activity.target_user.username }}{% endif %}
+                            </p>
+                            {% if activity.description %}
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {{ activity.description|truncatewords:15 }}
+                            </p>
+                            {% endif %}
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                {{ activity.created_at|date:"d.m.Y H:i" }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-center text-gray-500 dark:text-gray-400 py-8">
+                        Нет записей активности
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Быстрые ссылки -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                        ⚡ Быстрые ссылки
+                    </h2>
+                    <div class="space-y-2">
+                        <a href="{% url 'admin:index' %}" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            🔧 Django Admin
+                        </a>
+                        <a href="{% url 'Visitor:personal_cabinet' %}" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            👤 Мой кабинет
+                        </a>
+                        <a href="{% url 'blog:post_list' %}" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            📰 На главную
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для отклонения задания -->
+<div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Отклонить задание
+        </h3>
+        <p id="rejectTaskTitle" class="text-gray-600 dark:text-gray-400 mb-4"></p>
+        <form id="rejectForm" method="post" action="">
+            {% csrf_token %}
+            <textarea name="reason" 
+                      placeholder="Укажите причину отклонения..."
+                      required
+                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      rows="4"></textarea>
+            <div class="flex space-x-3 mt-4">
+                <button type="button" onclick="closeRejectModal()"
+                        class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-medium rounded-lg transition-colors">
+                    Отмена
+                </button>
+                <button type="submit"
+                        class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+                    Отклонить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Стили для аккордеона */
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.accordion-content.open {
+    max-height: 10000px;
+    transition: max-height 0.5s ease-in;
+}
+
+.accordion-header .accordion-icon {
+    transition: transform 0.3s ease;
+}
+
+.accordion-header.active .accordion-icon {
+    transform: rotate(180deg);
+}
+
+/* Стили для индикаторов сортировки */
+.sort-indicator {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+.sort-indicator::after {
+    content: '⇅';
+}
+
+.sort-indicator.asc::after {
+    content: '↑';
+    color: #3b82f6;
+}
+
+.sort-indicator.desc::after {
+    content: '↓';
+    color: #3b82f6;
+}
+
+/* Выделение при поиске */
+.table-row.hidden {
+    display: none;
+}
+
+.table-row.highlight {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+}
+</style>
+
+<script>
+// ========================================
+// ФУНКЦИИ АККОРДЕОНА
+// ========================================
+function toggleAccordion(id) {
+    const content = document.getElementById(id);
+    const header = content.previousElementSibling;
+    
+    if (content.classList.contains('open')) {
+        // Закрываем
+        content.classList.remove('open');
+        header.classList.remove('active');
+    } else {
+        // Открываем (множественное открытие - не закрываем другие)
+        content.classList.add('open');
+        header.classList.add('active');
+    }
+}
+
+// Открыть первую вкладку по умолчанию при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    const allTimeContent = document.getElementById('all-time');
+    if (allTimeContent) {
+        const header = allTimeContent.previousElementSibling;
+        header.classList.add('active');
+    }
+});
+
+// ========================================
+// ЖИВОЙ ПОИСК ПО ВСЕМ ТАБЛИЦАМ
+// ========================================
+function filterAllTables(query) {
+    const searchQuery = query.toLowerCase().trim();
+    
+    // Находим все таблицы авторов
+    const tables = document.querySelectorAll('.authors-table');
+    
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('tbody .table-row');
+        
+        rows.forEach(row => {
+            if (!searchQuery) {
+                // Если поиск пустой - показываем все
+                row.classList.remove('hidden', 'highlight');
+                return;
+            }
+            
+            // Ищем по всем data-атрибутам и тексту
+            const author = row.dataset.author || '';
+            const posts = row.dataset.posts || '';
+            const views = row.dataset.views || '';
+            const likes = row.dataset.likes || '';
+            const comments = row.dataset.comments || '';
+            const donations = row.dataset.donations || '';
+            const subscribers = row.dataset.subscribers || '';
+            
+            // Объединяем все данные для поиска
+            const searchableText = `${author} ${posts} ${views} ${likes} ${comments} ${donations} ${subscribers}`.toLowerCase();
+            
+            if (searchableText.includes(searchQuery)) {
+                row.classList.remove('hidden');
+                row.classList.add('highlight');
+            } else {
+                row.classList.add('hidden');
+                row.classList.remove('highlight');
+            }
+        });
+    });
+}
+
+// ========================================
+// СОРТИРОВКА ТАБЛИЦ
+// ========================================
+let sortStates = {}; // Хранит состояние сортировки для каждой таблицы
+
+function sortTable(header, column, period) {
+    const table = header.closest('table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('.table-row'));
+    
+    // Определяем текущее состояние сортировки
+    const key = `${period}-${column}`;
+    const currentState = sortStates[key] || 'none';
+    let newState = 'asc';
+    
+    if (currentState === 'none') {
+        newState = 'desc'; // Первый клик - по убыванию
+    } else if (currentState === 'desc') {
+        newState = 'asc'; // Второй клик - по возрастанию
+    } else {
+        newState = 'desc'; // Третий клик - снова по убыванию
+    }
+    
+    sortStates[key] = newState;
+    
+    // Очищаем индикаторы в этой таблице
+    table.querySelectorAll('.sort-indicator').forEach(indicator => {
+        indicator.className = 'sort-indicator';
+    });
+    
+    // Устанавливаем индикатор для текущей колонки
+    const indicator = header.querySelector('.sort-indicator');
+    indicator.className = `sort-indicator ${newState}`;
+    
+    // Сортируем строки
+    rows.sort((a, b) => {
+        let aVal, bVal;
+        
+        if (column === 'author') {
+            aVal = a.dataset.author;
+            bVal = b.dataset.author;
+            // Строковая сортировка
+            return newState === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        } else {
+            // Числовая сортировка
+            const dataAttr = column === 'posts' ? 'posts' : 
+                            column === 'views' ? 'views' :
+                            column === 'likes' ? 'likes' :
+                            column === 'comments' ? 'comments' :
+                            column === 'donations' ? 'donations' :
+                            column === 'subscribers' ? 'subscribers' :
+                            column === 'bonus' ? 'bonus' : column;
+            
+            aVal = parseFloat(a.dataset[dataAttr]) || 0;
+            bVal = parseFloat(b.dataset[dataAttr]) || 0;
+            
+            return newState === 'asc' ? aVal - bVal : bVal - aVal;
+        }
+    });
+    
+    // Перестраиваем таблицу
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+// ========================================
+// ИЗМЕНЕНИЕ КОЛИЧЕСТВА НА СТРАНИЦУ
+// ========================================
+function changePerPage(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', value);
+    url.searchParams.set('page', '1'); // Сбрасываем на первую страницу
+    window.location.href = url.toString();
+}
+
+// ========================================
+// УПРАВЛЕНИЕ КРИТЕРИЯМИ МОДЕРАЦИИ
+// ========================================
+function getCsrfToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue;
+}
+
+async function toggleCriteria(type, id, isActive) {
+    try {
+        const response = await fetch(`/asistent/criteria/toggle/${type}/${id}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({is_active: isActive})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Обновляем страницу для отображения изменений
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (data.error || 'Не удалось изменить статус'));
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Произошла ошибка при изменении статуса');
+        location.reload();
+    }
+}
+
+async function deleteCriteria(type, id, name) {
+    if (!confirm(`Вы уверены, что хотите удалить критерий "${name}"?\n\nЭто действие необратимо!`)) {
+        return;
+    }
+    
+    try {
+        const url = type === 'article' 
+            ? `/asistent/criteria/articles/${id}/delete/`
+            : `/asistent/criteria/comments/${id}/delete/`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ Критерий успешно удалён!');
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (data.error || 'Не удалось удалить критерий'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Произошла ошибка при удалении');
+    }
+}
+
+// ========================================
+// МОДАЛЬНОЕ ОКНО ОТКЛОНЕНИЯ ЗАДАНИЯ
+// ========================================
+function showRejectModal(taskId, taskTitle) {
+    const modal = document.getElementById('rejectModal');
+    const form = document.getElementById('rejectForm');
+    const title = document.getElementById('rejectTaskTitle');
+    
+    // Используем Django URL pattern
+    const rejectUrl = "{% url 'Visitor:ai_reject_task' 0 %}".replace('/0/', `/${taskId}/`);
+    form.action = rejectUrl;
+    title.textContent = `Задание: ${taskTitle}`;
+    modal.classList.remove('hidden');
+}
+
+function closeRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    modal.classList.add('hidden');
+}
+
+// Закрытие по клику вне модального окна
+document.getElementById('rejectModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeRejectModal();
+    }
+});
+</script>
+{% endblock %}
+
+
+

@@ -1,0 +1,133 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{{ channel.channel_name }} - Статистика канала{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 text-gray-900 dark:text-gray-100">
+    <!-- Хлебные крошки -->
+    <div class="mb-4 text-sm text-gray-600 dark:text-gray-300">
+        <a href="/dashboard/" class="text-blue-600 dark:text-blue-400 hover:underline">Главный дашборд</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <a href="{% url 'sozseti:dashboard' %}" class="text-blue-600 dark:text-blue-400 hover:underline">Соцсети</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <a href="{% url 'sozseti:channels_list' %}" class="text-blue-600 dark:text-blue-400 hover:underline">Каналы</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <span class="text-gray-600 dark:text-gray-300">{{ channel.channel_name }}</span>
+    </div>
+    
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ channel.channel_name }}</h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                {{ channel.platform.get_name_display }} | 
+                {{ channel.get_channel_type_display }}
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'sozseti:channels_list' %}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg">
+                <i class="fas fa-arrow-left mr-2"></i>К списку каналов
+            </a>
+            <a href="{% url 'sozseti:dashboard' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                ← К дашборду
+            </a>
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <p class="text-gray-500 dark:text-gray-300 text-sm">Подписчиков</p>
+            <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ channel.subscribers_count }}</p>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <p class="text-gray-500 dark:text-gray-300 text-sm">Публикаций (30 дней)</p>
+            <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ stats.publications_count }}</p>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <p class="text-gray-500 dark:text-gray-300 text-sm">Просмотры</p>
+            <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ stats.total_views|default:0 }}</p>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <p class="text-gray-500 dark:text-gray-300 text-sm">Вовлечённость</p>
+            <p class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ stats.avg_engagement|floatformat:2 }}%</p>
+        </div>
+    </div>
+    
+    <!-- Топ посты -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Топ 10 постов</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left py-2 text-gray-700 dark:text-gray-200">Статья</th>
+                        <th class="text-left py-2 text-gray-700 dark:text-gray-200">Дата</th>
+                        <th class="text-right py-2 text-gray-700 dark:text-gray-200">Просмотры</th>
+                        <th class="text-right py-2 text-gray-700 dark:text-gray-200">Лайки</th>
+                        <th class="text-right py-2 text-gray-700 dark:text-gray-200">Комментарии</th>
+                        <th class="text-right py-2 text-gray-700 dark:text-gray-200">Engagement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pub in top_posts %}
+                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/70">
+                        <td class="py-2">
+                            <a href="{% url 'blog:post_detail' pub.post.slug %}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                {{ pub.post.title|truncatewords:8 }}
+                            </a>
+                        </td>
+                        <td class="py-2 text-sm text-gray-500 dark:text-gray-400">{{ pub.published_at|date:"d.m.Y" }}</td>
+                        <td class="py-2 text-right">{{ pub.views_count }}</td>
+                        <td class="py-2 text-right">{{ pub.likes_count }}</td>
+                        <td class="py-2 text-right">{{ pub.comments_count }}</td>
+                        <td class="py-2 text-right font-semibold text-green-600 dark:text-green-400">{{ pub.engagement_score|floatformat:2 }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-4 text-center text-gray-500 dark:text-gray-400">Нет публикаций</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Аналитика по дням -->
+    {% if analytics %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Статистика по дням</h2>
+        <div class="space-y-2">
+            {% for day in analytics %}
+            <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                <div>
+                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ day.date|date:"d.m.Y" }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Постов: {{ day.posts_published }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-green-600 dark:text-green-400 font-semibold">+{{ day.subscribers_gained }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ day.total_views }} просмотров</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Действия -->
+    <div class="mt-8 flex gap-4">
+        <a href="/admin/Sozseti/socialchannel/{{ channel.id }}/change/" 
+           class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">
+            Настроить канал
+        </a>
+        <a href="/admin/Sozseti/postpublication/?channel__id__exact={{ channel.id }}" 
+           class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+            Все публикации
+        </a>
+    </div>
+</div>
+{% endblock %}
+

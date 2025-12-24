@@ -1,0 +1,446 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}Услуги и подписки IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12">
+    
+    <!-- Заголовок -->
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            💎 Услуги IdealImage.ru
+        </h1>
+        <p class="text-xl text-gray-600 dark:text-gray-300">
+            Платформа контента о моде и красоте с премиум-сервисами
+        </p>
+    </div>
+
+    <!-- КАТЕГОРИЯ: ПОДПИСКИ -->
+    <div class="mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center">
+            <span class="bg-purple-500 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3">1</span>
+            Подписки
+        </h2>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+            <!-- Premium подписка -->
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl shadow-xl p-8 border-2 border-purple-200 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                <div class="text-center mb-6">
+                    <div class="text-6xl mb-4">🎯</div>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        Premium подписка
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Просмотр сайта без рекламы
+                    </p>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <div class="text-5xl font-bold text-purple-600 dark:text-purple-400">
+                        150 ₽
+                    </div>
+                    <div class="text-gray-500">в месяц</div>
+                </div>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Никакой рекламы AdSense/РСЯ
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Чистое чтение статей
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Поддержка авторов
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Особый значок Premium
+                    </li>
+                </ul>
+                
+                <a href="{% url 'donations:subscribe_premium' %}" 
+                   class="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition duration-200">
+                    Оформить подписку
+                </a>
+            </div>
+
+            <!-- AI-Соавтор месячная -->
+            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl shadow-xl p-8 border-2 border-blue-200 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                <div class="text-center mb-6">
+                    <div class="text-6xl mb-4">🤖</div>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        AI-Соавтор
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        AI помогает писать статьи
+                    </p>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <div class="text-5xl font-bold text-blue-600 dark:text-blue-400">
+                        500 ₽
+                    </div>
+                    <div class="text-gray-500">в месяц</div>
+                </div>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Неограниченная генерация
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Улучшение текстов
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        SEO-оптимизация
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Продолжение текста
+                    </li>
+                </ul>
+                
+                <a href="{% url 'donations:subscribe_ai' %}" 
+                   class="block w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition duration-200">
+                    Подключить AI
+                </a>
+            </div>
+
+            <!-- AI-Соавтор разовая -->
+            <div class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 rounded-2xl shadow-xl p-8 border-2 border-green-200 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                <div class="text-center mb-6">
+                    <div class="text-6xl mb-4">⚡</div>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        AI-Соавтор (разово)
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Одна статья с помощью AI
+                    </p>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <div class="text-5xl font-bold text-green-600 dark:text-green-400">
+                        100 ₽
+                    </div>
+                    <div class="text-gray-500">за статью</div>
+                </div>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Генерация 1 статьи
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        800-1200 слов
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Готова за 5 минут
+                    </li>
+                    <li class="flex items-center text-gray-700 dark:text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Без абонементов
+                    </li>
+                </ul>
+                
+                <a href="{% url 'donations:subscribe_ai' %}" 
+                   class="block w-full bg-gradient-to-r from-green-600 to-teal-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-green-700 hover:to-teal-700 transition duration-200">
+                    Создать статью
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- КАТЕГОРИЯ: ПЛАТНЫЙ КОНТЕНТ -->
+    <div class="mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center">
+            <span class="bg-pink-500 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3">2</span>
+            Платный контент
+        </h2>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+            <!-- Марафоны -->
+            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-2xl shadow-xl p-8 border-2 border-yellow-200 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <div class="text-5xl mb-4">📚</div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                            Марафоны и тренинги
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            10 дней к результату
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-orange-600">от 990 ₽</div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">
+                        <strong>Пример:</strong> "Марафон: 10 дней к идеальной коже"
+                    </p>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>• 10 эксклюзивных статей</li>
+                        <li>• Ежедневные задания</li>
+                        <li>• Чек-листы и гайды</li>
+                        <li>• Поддержка в чате</li>
+                    </ul>
+                </div>
+                
+                <a href="{% url 'donations:marathons_catalog' %}" 
+                   class="block w-full bg-gradient-to-r from-yellow-600 to-orange-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-yellow-700 hover:to-orange-700 transition duration-200">
+                    Смотреть марафоны
+                </a>
+            </div>
+
+            <!-- Платные статьи -->
+            <div class="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-2xl shadow-xl p-8 border-2 border-red-200 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <div class="text-5xl mb-4">💎</div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                            Платные статьи
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Эксклюзивный контент
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-pink-600">от 50 ₽</div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">
+                        Доступ к эксклюзивным материалам от топ-авторов
+                    </p>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>• Экспертные гайды</li>
+                        <li>• Секреты профессионалов</li>
+                        <li>• Пошаговые инструкции</li>
+                        <li>• Навсегда в вашей библиотеке</li>
+                    </ul>
+                </div>
+                
+                <a href="{% url 'blog:post_list' %}" 
+                   class="block w-full bg-gradient-to-r from-red-600 to-pink-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-red-700 hover:to-pink-700 transition duration-200">
+                    Смотреть каталог
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- КАТЕГОРИЯ: РЕКЛАМА -->
+    <div class="mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center">
+            <span class="bg-indigo-500 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3">3</span>
+            Рекламные услуги
+        </h2>
+        
+        <div class="grid md:grid-cols-4 gap-6">
+            <!-- Баннер на главной -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-2">📢</div>
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2">
+                        Баннер на главной
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        728×90px, 7 дней
+                    </p>
+                    <div class="text-2xl font-bold text-indigo-600">от 1000 ₽</div>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    ~15,000 показов/неделю
+                </p>
+                <a href="{% url 'donations:advertising_marketplace' %}" 
+                   class="block w-full bg-indigo-600 text-white text-center font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition text-sm">
+                    Купить место
+                </a>
+            </div>
+
+            <!-- Боковой блок -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-2">📍</div>
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2">
+                        Боковой блок
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        300×600px, 7 дней
+                    </p>
+                    <div class="text-2xl font-bold text-indigo-600">от 1500 ₽</div>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    ~20,000 показов/неделю
+                </p>
+                <a href="{% url 'donations:advertising_marketplace' %}" 
+                   class="block w-full bg-indigo-600 text-white text-center font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition text-sm">
+                    Купить место
+                </a>
+            </div>
+
+            <!-- В статьях -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-2">📝</div>
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2">
+                        В тексте статей
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        336×280px, 7 дней
+                    </p>
+                    <div class="text-2xl font-bold text-indigo-600">от 2000 ₽</div>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    ~30,000 показов/неделю
+                </p>
+                <a href="{% url 'donations:advertising_marketplace' %}" 
+                   class="block w-full bg-indigo-600 text-white text-center font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition text-sm">
+                    Купить место
+                </a>
+            </div>
+
+            <!-- Рекламная статья -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-2">✍️</div>
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2">
+                        Рекламная статья
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        С пометкой "Реклама"
+                    </p>
+                    <div class="text-2xl font-bold text-indigo-600">от 2000 ₽</div>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    ~2,000-5,000 просмотров
+                </p>
+                <a href="{% url 'donations:advertising_marketplace' %}" 
+                   class="block w-full bg-indigo-600 text-white text-center font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition text-sm">
+                    Заказать
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- КАТЕГОРИЯ: ДОНАТЫ -->
+    <div class="mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center">
+            <span class="bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3">4</span>
+            Поддержка проекта
+        </h2>
+        
+        <div class="bg-gradient-to-br from-red-50 via-pink-50 to-purple-50 dark:from-red-900/20 dark:via-pink-900/20 dark:to-purple-900/20 rounded-2xl shadow-xl p-8 border-2 border-red-200">
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <div class="text-center md:text-left flex-1">
+                    <div class="text-6xl mb-4">❤️</div>
+                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                        Добровольная поддержка
+                    </h3>
+                    <p class="text-lg text-gray-700 dark:text-gray-300 mb-4">
+                        Если вам нравится наш контент и вы хотите помочь развитию сайта
+                    </p>
+                    <div class="flex flex-wrap gap-3 justify-center md:justify-start">
+                        <a href="{% url 'donations:quick_donation' %}?amount=100" 
+                           class="bg-white dark:bg-gray-800 px-6 py-2 rounded-full font-semibold text-purple-600 hover:bg-purple-50 transition border-2 border-purple-200">
+                            100 ₽
+                        </a>
+                        <a href="{% url 'donations:quick_donation' %}?amount=500" 
+                           class="bg-white dark:bg-gray-800 px-6 py-2 rounded-full font-semibold text-purple-600 hover:bg-purple-50 transition border-2 border-purple-200">
+                            500 ₽
+                        </a>
+                        <a href="{% url 'donations:quick_donation' %}?amount=1000" 
+                           class="bg-white dark:bg-gray-800 px-6 py-2 rounded-full font-semibold text-purple-600 hover:bg-purple-50 transition border-2 border-purple-200">
+                            1000 ₽
+                        </a>
+                        <a href="{% url 'donations:donation_page' %}" 
+                           class="bg-white dark:bg-gray-800 px-6 py-2 rounded-full font-semibold text-purple-600 hover:bg-purple-50 transition border-2 border-purple-200">
+                            Другая сумма
+                        </a>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <a href="{% url 'donations:donation_page' %}" 
+                       class="inline-block bg-gradient-to-r from-red-600 via-pink-600 to-purple-600 text-white font-bold px-12 py-6 rounded-2xl text-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                        💝 Поддержать проект
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информационный блок -->
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-8 border-2 border-blue-200 dark:border-blue-700">
+        <div class="flex items-start gap-4">
+            <div class="text-4xl">💡</div>
+            <div class="flex-1">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                    Как это работает?
+                </h3>
+                <div class="grid md:grid-cols-3 gap-6 text-gray-700 dark:text-gray-300">
+                    <div>
+                        <div class="font-semibold mb-2">1. Выберите услугу</div>
+                        <p class="text-sm">Нажмите на интересующую вас карточку</p>
+                    </div>
+                    <div>
+                        <div class="font-semibold mb-2">2. Оплатите</div>
+                        <p class="text-sm">Безопасная оплата через ЮКассу</p>
+                    </div>
+                    <div>
+                        <div class="font-semibold mb-2">3. Получите доступ</div>
+                        <p class="text-sm">Услуга активируется автоматически</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Безопасность -->
+    <div class="mt-12 text-center text-gray-600 dark:text-gray-400">
+        <div class="flex items-center justify-center gap-4 mb-4">
+            <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span>Все платежи защищены и проходят через проверенные платёжные системы</span>
+        </div>
+        <p class="text-sm">
+            Принимаем: ЮКасса, СберПей, Система Быстрых Платежей (СБП)
+        </p>
+    </div>
+
+</div>
+{% endblock %}
+

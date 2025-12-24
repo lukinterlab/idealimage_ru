@@ -1,0 +1,326 @@
+{% load mptt_tags static %}
+{% load static %}
+<!-- ГЛАВНОЕ МЕНЮ Start -->
+<div id="nav" class="nav-container d-flex">
+  
+  <div class="nav-content d-flex">
+
+    <!-- Logo Start -->
+    <a href='{% url "blog:post_list" %}'>
+      <div class="logo position-relative">
+      <!-- Логотип -->
+        <img src="{% static 'new/img/logo/11.jpg' %}" alt="logo" />
+      <!-- Логотип-->
+      </div>
+    </a>
+    <!-- Logo End -->
+
+    <!-- User Menu Start -->
+    <div class="user-container d-flex">
+
+    </div>
+    <!-- User Menu End -->
+
+    <!-- Icons Menu Start -->
+    <ul class="list-unstyled list-inline text-center menu-icons">
+      <li class="list-inline-item">
+        <a href="#" id="pinButton" class="pin-button">
+          <i data-cs-icon="lock-on" class="unpin" data-cs-size="30"></i>
+          <i data-cs-icon="lock-off" class="pin" data-cs-size="30"></i>
+        </a>
+      </li>
+      <li class="list-inline-item">
+        <a href="#" id="colorButton">
+          <i data-cs-icon="light-on" class="light" data-cs-size="30"></i>
+          <i data-cs-icon="light-off" class="dark" data-cs-size="30"></i>
+        </a>
+      </li>
+
+
+
+    </ul>
+    <!-- Icons Menu End -->
+
+    <!-- Menu Start -->
+    <div class="menu-container flex-grow-1">
+      <ul id="menu" class="menu">
+
+        <!-- ГЛАВНАЯ -->
+        <li>
+          <a href='{% url "Home:home" %}' data-href="Dashboards.html">
+            <i data-cs-icon="home" class="icon" data-cs-size="30"></i>
+            <span class="label">ГЛАВНАЯ</span>
+          </a>
+        </li>
+
+        <!-- ЖУРНАЛ -->
+        <li>
+          <a href='{% url "blog:post_list" %}' data-href="Dashboards.html">
+            <i data-cs-icon="book-open" class="icon" data-cs-size="30"></i>
+            <span class="label">ЖУРНАЛ</span>
+          </a>
+        </li>
+        <!--ЖУРНАЛ стоп-->
+
+        <li>
+          <a href="#blog" data-href="Blog.html">
+            <i data-cs-icon="list" class="icon" data-cs-size="30"></i>
+            <span class="label">СОДЕРЖАНИЕ</span>
+          </a>
+          <ul id="blog">
+            {% block Categories %}
+            {% full_tree_for_model blog.Category as categories %}
+            {% for c in categories  %}
+            {% if c.posts.count != 0 %}
+            <li>
+              <a href="{{ c.get_absolute_url }}">
+                <span class="label">{{ c.title }}</span>
+              </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% endblock Categories %}
+          </ul>
+        </li>
+
+        <li>
+          <a href="#telega" data-href="telega.html">
+            <i data-cs-icon="send" class="icon" data-cs-size="30"></i>
+            <span class="label">Телеграмм КАНАЛЫ</span>
+          </a>
+          <ul id="telega">
+            <li>
+              <a href="https://t.me/eat_love_live">
+                <span class="label">🧘ЕШЬ ЖИВИ ЛЮБИ МОЛИСЬ🧘</span>
+              </a>
+            </li>
+            <li>
+              <a href='https://t.me/ideal_image_ru'>
+                <span class="label">💃Идеальный Образ💃</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://t.me/Fashion_Couture_ru">
+                <span class="label">👗👠Fashion Couture👠👗</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://t.me/the_best_hairstyles">
+                <span class="label">👩Шикарная причёска👩</span>
+              </a>
+            </li>
+            <li>
+              <a href='https://t.me/magicstudyy'>
+                <span class="label">🌜Студенческая магия🌛</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://t.me/chtotopropsy">
+                <span class="label">❓Что-то про психологию❓</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://t.me/nlpnlpnlpnlpnlpp">
+                <span class="label">⚡️NLP⚡️</span>
+              </a>
+            </li>
+            <li>
+              <a href='https://t.me/tarolives" %}'>
+                <span class="label">♠️Таро: карты в жизни♣️</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://t.me/fizkult_hello_beauty">
+                <span class="label">🏃‍♀️Красоте физкульт ПРИВЕТ🏃‍♀️</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://t.me/KOSICHKI_GIRLS">
+                <span class="label">🎀 ДЕВОЧКИ КОСИЧКИ 🎀</span>
+              </a>
+            </li>
+            <li>
+              <a href='https://t.me/matrizalive'>
+                <span class="label">🧬Матрица СУДЬБЫ🧬</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://t.me/LukInterLab_News">
+                <span class="label">🔮LukInterLab🔮</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://t.me/posecretulive">
+                <span class="label">🫣ПО СЕКРЕТУ🤫</span>
+              </a>
+            </li>
+            <li>
+              <a href='#'>
+                <span class="label">Свободно</span>
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <span class="label">Свободно</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Контакты  -->
+        <li>
+          <a href="#email" data-href="email.html">
+            <i data-cs-icon="email" class="icon" data-cs-size="30"></i>
+            <span class="label">Контакты</span>
+          </a>
+          <ul id="email">
+            <li>
+              <a href="https://t.me/ideal_image_rus">
+                <span class="label">Телеграмм-АДМИН</span>
+              </a>
+            </li>
+            <li>
+              <a href='{% url "Visitor:feedback" %}'>
+                <span class="label">Почта</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://dzen.ru/id/6030d91da3b2834e3d1872ce">
+                <span class="label">Дзен</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <!-- Контакты  стоп-->
+
+        {% if request.user.is_authenticated %}
+
+        <!-- username  -->
+        <li>
+          <a href='{% url "Visitor:profile_detail" request.user.profile.slug %}'>
+            <span class="label"><h3>{{ request.user.username }}</h3></span>
+          </a>
+        </li>
+        <!-- username  стоп-->
+
+        {% else %}
+
+        <!-- ВХОД  -->
+        <li>
+          <a href='{% url "Visitor:login" %}' data-href="Dashboards.html">
+            <span class="label">ВХОД</span>
+          </a>
+        </li>
+        <!-- ВХОД стоп-->
+
+        {% endif %}
+
+        <!-- АДМИНИСТРАЦИЯ -->
+        {% if request.user.is_authenticated %}
+        <li class="mega">
+          <a href="#interface" data-href="Interface.html">
+            <i data-cs-icon="shield-warning" class="icon" data-cs-size="25"></i>
+            <span class="label">АДМИНИСТРАЦИЯ</span>
+          </a>
+          <ul id="interface">
+            <li>
+              <a href="#interfaceComponents" data-href="Interface.Components.html">
+                <span class="label">Журналистам</span>
+              </a>
+              <ul id="interfaceComponents">
+              </ul>
+            </li>
+            <li>
+              <a href="#interfaceForms" data-href="Interface.Forms.html">
+                <span class="label">Програмистам</span>
+              </a>
+              <ul id="interfaceForms">
+                <li>
+                  <a href="https://cp.jino.ru/hosting/a/ma3lg/info/">
+                    <span class="label">Джино хостинг</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#formControls" data-href="Interface.Forms.Controls.html">
+                    <span class="label">Джино</span>
+                  </a>
+                  <ul id="formControls">
+                    <li>
+                      <a href="https://cp.jino.ru/hosting/a/ma3lg/info/" target="_blank">
+                        <span class="label">Хостинг</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://cp.jino.ru/hosting/a/ma3lg/management/filemanager/files/domains/idealimage.ru/" target="_blank">
+                        <span class="label">Файловый менеджер</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://cp-hosting.jino.ru/a/ma3lg/statistics/webanalytics/extended/idealimage.ru/2024-09/" target="_blank">
+                        <span class="label">Аналитика</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://cp-hosting.jino.ru/a/ma3lg/statistics/webanalytics/extended/idealimage.ru/static/new/index.html" target="_blank">
+                        <span class="label">ОБРАЗЕЦ</span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="#interfaceContent" data-href="Interface.Content.html">
+                <span class="label">Content</span>
+              </a>
+              <ul id="interfaceContent">
+                <li>
+                  <a href="#menuVarieties" data-href="Interface.Content.Menu.html">
+                    <span class="label">Menu</span>
+                  </a>
+                  <ul id="menuVarieties">
+                    <li></li>
+                    <li>
+                      <a href="https://idealimage.ru/admin/">
+                        <span class="label">АДМИН ПАНЕЛЬ</span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        {% endif %}
+        <!-- АДМИНИСТРАЦИЯ -->
+
+      </ul>
+    </div>
+    <!-- Menu End -->
+
+    <!-- Mobile Buttons Start -->
+    <div class="mobile-buttons-container">
+      <!-- Scrollspy Mobile Button Start -->
+      <a href="#" id="scrollSpyButton" class="spy-button" data-bs-toggle="dropdown">
+        <i data-cs-icon="menu-dropdown"></i>
+      </a>
+      <!-- Scrollspy Mobile Button End -->
+
+      <!-- Scrollspy Mobile Dropdown Start -->
+      <div class="dropdown-menu dropdown-menu-end" id="scrollSpyDropdown"></div>
+      <!-- Scrollspy Mobile Dropdown End -->
+
+      <!-- Menu Button Start -->
+      <a href="#" id="mobileMenuButton" class="menu-button">
+        <i data-cs-icon="menu"></i>
+      </a>
+      <!-- Menu Button End -->
+    </div>
+    <!-- Mobile Buttons End -->
+  </div>
+  <div class="nav-shadow">
+    
+  </div>
+  
+</div>
+<!-- ГЛАВНОЕ МЕНЮ стоп-->

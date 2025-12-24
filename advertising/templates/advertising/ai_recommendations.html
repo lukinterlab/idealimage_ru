@@ -1,0 +1,117 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Рекомендации AI - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-5xl font-black text-white mb-2">
+                        🤖 Рекомендации AI
+                    </h1>
+                    <p class="text-xl text-gray-300">Предложения по оптимизации размещения рекламы</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'advertising:dashboard' %}" 
+                       class="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20">
+                        ← Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Фильтр -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8">
+            <form method="get" class="flex items-center gap-4">
+                <label class="text-white font-semibold">Статус:</label>
+                <select name="status" onchange="this.form.submit()" 
+                        class="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg">
+                    <option value="" class="bg-gray-800">Все</option>
+                    <option value="active" class="bg-gray-800">Активные</option>
+                    <option value="applied" class="bg-gray-800">Примененные</option>
+                </select>
+            </form>
+        </div>
+        
+        <!-- Рекомендации -->
+        <div class="space-y-4">
+            {% for rec in recommendations %}
+            <div class="bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-md rounded-2xl p-6 border border-purple-500/30">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                            <h3 class="text-2xl font-bold text-white">{{ rec.campaign.name }}</h3>
+                            {% if rec.is_applied %}
+                            <span class="px-3 py-1 bg-green-500/30 text-green-200 rounded-full text-xs font-semibold">Применена</span>
+                            {% else %}
+                            <span class="px-3 py-1 bg-yellow-500/30 text-yellow-200 rounded-full text-xs font-semibold">Новая</span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="text-gray-300 mb-4">{{ rec.recommendation_reason }}</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div class="bg-white/10 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs mb-1">Уверенность AI</p>
+                                <p class="text-purple-300 text-xl font-bold">{{ rec.confidence_score }}%</p>
+                            </div>
+                            <div class="bg-white/10 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs mb-1">Предсказанный CTR</p>
+                                <p class="text-green-300 text-xl font-bold">{{ rec.predicted_ctr }}%</p>
+                            </div>
+                            <div class="bg-white/10 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs mb-1">Предсказанный доход</p>
+                                <p class="text-yellow-300 text-xl font-bold">{{ rec.predicted_revenue|floatformat:0 }}₽</p>
+                            </div>
+                            {% if rec.actual_ctr %}
+                            <div class="bg-white/10 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs mb-1">Фактический CTR</p>
+                                <p class="text-blue-300 text-xl font-bold">{{ rec.actual_ctr }}%</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="text-sm text-gray-400">
+                            {% if rec.place %}
+                            Место: <span class="text-white">{{ rec.place.name }}</span>
+                            {% endif %}
+                            {% if rec.post %}
+                            | Статья: <span class="text-white">{{ rec.post.title }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if not rec.is_applied %}
+                    <form method="post" action="{% url 'advertising:apply_recommendation' rec.id %}">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
+                            Применить
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-12 border border-white/20 text-center">
+                <p class="text-gray-400 text-lg">Рекомендаций пока нет</p>
+                <p class="text-gray-500 text-sm mt-2">Соберите статистику или запустите генерацию рекомендаций</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+

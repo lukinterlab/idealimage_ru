@@ -1,0 +1,1586 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Редактировать расписание AI{% else %}Создать расписание AI{% endif %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white mb-2">
+                        <svg class="w-10 h-10 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13 7H7v6h6V7z"></path>
+                            <path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 010-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"></path>
+                        </svg>
+                        {% if is_edit %}Редактировать расписание AI{% else %}Создать расписание AI{% endif %}
+                    </h1>
+                    <p class="text-xl text-gray-300">
+                        {% if is_edit %}Изменение параметров расписания "{{ schedule.name }}"{% else %}Настройте автоматическую генерацию и публикацию статей{% endif %}
+                    </p>
+                </div>
+                <a href="{% url 'asistent:ai_schedules' %}" 
+                   class="px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                    Назад к расписаниям
+                </a>
+            </div>
+        </div>
+        
+        <!-- Форма -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r {% if is_edit %}from-purple-600 to-indigo-700{% else %}from-green-600 to-emerald-700{% endif %} px-8 py-6">
+                <h2 class="text-2xl font-bold text-white">{% if is_edit %}Редактирование расписания{% else %}Новое расписание AI{% endif %}</h2>
+            </div>
+            
+            <form method="post" class="p-8 space-y-6">
+                {% csrf_token %}
+                
+                <!-- Основные параметры -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- Название -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.name.label }} <span class="text-red-400">*</span>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Активность -->
+                    <div class="flex items-end">
+                        <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors w-full">
+                            {{ form.is_active }}
+                            <span class="text-white font-semibold">{{ form.is_active.label }}</span>
+                        </label>
+                        {% if form.is_active.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.is_active.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- НОВАЯ СИСТЕМА: Промпт-шаблон -->
+                    <div class="md:col-span-3 p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-lg border border-purple-500/20">
+                        <h3 class="text-lg font-bold text-white mb-4">Режим работы расписания</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Пайплайн -->
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.pipeline.label }}
+                                </label>
+                                {{ form.pipeline }}
+                                <p class="mt-2 text-xs text-gray-400">Выберите автоматизацию из конструктора пайплайнов</p>
+                                {% if form.pipeline.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.pipeline.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Pipeline slug -->
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.pipeline_slug.label }}
+                                </label>
+                                {{ form.pipeline_slug }}
+                                <p class="mt-2 text-xs text-gray-400">Если пайплайн ещё не создан — укажите slug вручную</p>
+                                {% if form.pipeline_slug.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.pipeline_slug.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Промпт-шаблон -->
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.prompt_template.label }}
+                                </label>
+                                {{ form.prompt_template }}
+                                <p class="mt-2 text-xs text-gray-400">Если выбран - используется промпт вместо парсинга</p>
+                                {% if form.prompt_template.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.prompt_template.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Точное время -->
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.scheduled_time.label }}
+                                </label>
+                                {{ form.scheduled_time }}
+                                <p class="mt-2 text-xs text-gray-400">Например: 08:30 для запуска в 8:30 утра</p>
+                                {% if form.scheduled_time.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.scheduled_time.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Тип задачи -->
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.task_type.label }}
+                                </label>
+                                {{ form.task_type }}
+                                <p class="mt-2 text-xs text-gray-400">Что выполнять по расписанию</p>
+                                {% if form.task_type.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.task_type.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Payload -->
+                        <div class="mt-4">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                {{ form.payload_template.label }}
+                            </label>
+                            {{ form.payload_template }}
+                            <p class="mt-2 text-xs text-gray-400">JSON-данные, которые будут переданы в пайплайн (например {"post_id": 123})</p>
+                            {% if form.payload_template.errors %}
+                            <p class="mt-2 text-sm text-red-400">{{ form.payload_template.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if pipeline_presets %}
+                    <div class="md:col-span-3 p-4 bg-white/5 rounded-lg border border-white/10">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Мастер пресетов (пайплайны)</h3>
+                                <p class="text-sm text-gray-400">Быстро заполните поля расписания готовым шаблоном</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="applyPipelinePreset()" id="pipeline-preset-apply"
+                                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">
+                                    Применить пресет
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    Пайплайн
+                                </label>
+                                <select id="pipeline-preset-pipeline"
+                                        class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white">
+                                    <option value="">— Выберите —</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    Шаблон
+                                </label>
+                                <select id="pipeline-preset-variant" disabled
+                                        class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white">
+                                    <option value="">Сначала выберите пайплайн</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end">
+                                <div class="w-full text-sm text-gray-400 bg-white/5 rounded-lg p-3 border border-white/10" id="pipeline-preset-description">
+                                    Выберите пайплайн и пресет, чтобы увидеть описание.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- НОВАЯ СИСТЕМА: Параметры -->
+                    <div class="md:col-span-3 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/20">
+                        <h3 class="text-lg font-bold text-white mb-4">Параметры для промпта</h3>
+                        
+                        <div class="grid grid-cols-1 gap-6">
+                            
+                            <!-- СТАТИЧЕСКИЕ ПАРАМЕТРЫ (простой ввод) -->
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="block text-sm font-semibold text-white/90">
+                                        Статические параметры (постоянные значения)
+                                    </label>
+                                    <button type="button" onclick="addStaticParam()" 
+                                            class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition-colors">
+                                        + Добавить параметр
+                                    </button>
+                                </div>
+                                
+                                <div id="static-params-container" class="space-y-2">
+                                    <!-- Здесь будут поля параметров -->
+                                </div>
+                                
+                                <!-- Скрытое поле для Django -->
+                                <textarea name="static_params" id="static_params_hidden" style="display:none;">{{ form.static_params.value|default:'{}' }}</textarea>
+                            </div>
+                            
+                            <!-- ДИНАМИЧЕСКИЕ ПАРАМЕТРЫ (конструктор) -->
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="block text-sm font-semibold text-white/90">
+                                        Динамические параметры (автоматически изменяются)
+                                    </label>
+                                    <button type="button" onclick="addDynamicParam()" 
+                                            class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded transition-colors">
+                                        + Добавить параметр
+                                    </button>
+                                </div>
+                                
+                                <div id="dynamic-params-container" class="space-y-3">
+                                    <!-- Здесь будут блоки параметров -->
+                                </div>
+                                
+                                <!-- Скрытое поле для Django -->
+                                <textarea name="dynamic_params" id="dynamic_params_hidden" style="display:none;">{{ form.dynamic_params.value|default:'{}' }}</textarea>
+                            </div>
+                            
+                            <!-- PAYLOAD ДЛЯ ПАЙПЛАЙНА -->
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-white/90">
+                                            Payload для пайплайна
+                                        </label>
+                                        <p class="text-xs text-gray-400">Ключ-значение, которое попадёт в Payload шага запуска</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="addPayloadParam()" 
+                                                class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition-colors">
+                                            + Параметр
+                                        </button>
+                                        <button type="button" onclick="togglePayloadRaw()" 
+                                                class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded transition-colors border border-white/20">
+                                            JSON вручную
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div id="payload-builder" class="space-y-2">
+                                    <div id="payload-params-container" class="space-y-2"></div>
+                                    <p class="text-xs text-gray-500">Типы значений: строка, число, булево или сложный JSON-объект.</p>
+                                </div>
+                                
+                                <div id="payload-raw-wrapper" class="mt-3 hidden">
+                                    <label class="block text-xs font-semibold text-white/70 mb-2">JSON payload</label>
+                                    {{ form.payload_template }}
+                                    <p class="text-xs text-gray-500 mt-2">Можно вставить готовый JSON вручную. Переключение обратно попытается разобрать содержимое.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Максимум запусков -->
+                            <div class="md:w-1/3">
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.max_runs.label }}
+                                </label>
+                                {{ form.max_runs }}
+                                <p class="mt-2 text-xs text-gray-400">Для тренингов "21 день" = 21. Пусто = бесконечно</p>
+                                {% if form.max_runs.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.max_runs.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+            {% if schedule_presets %}
+            <div class="md:col-span-3 p-4 bg-white/5 rounded-lg border border-white/10">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Быстрый старт</h3>
+                        <p class="text-sm text-gray-400">Готовые сценарии: нажмите — и все поля заполнятся автоматически</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {% for preset in schedule_presets %}
+                    <div class="p-4 bg-gradient-to-br from-slate-800/70 to-slate-900/70 border border-white/10 rounded-xl flex flex-col justify-between">
+                        <div>
+                            <p class="text-white font-semibold">{{ preset.title }}</p>
+                            <p class="text-xs text-gray-400 mt-1">{{ preset.description }}</p>
+                            <p class="text-xs text-gray-500 mt-2">Пайплайн: <span class="text-white/80">{{ preset.pipeline_slug|default:"—" }}</span></p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Режим:
+                                <span class="text-white/80 uppercase">{{ preset.schedule_kind }}</span>
+                                {% if preset.schedule_kind == 'interval' and preset.interval_minutes %}
+                                    · каждые {{ preset.interval_minutes }} мин
+                                {% elif preset.schedule_kind == 'cron' and preset.cron_expression %}
+                                    · cron {{ preset.cron_expression }}
+                                {% elif preset.scheduled_time %}
+                                    · {{ preset.scheduled_time }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <button type="button"
+                                onclick="applyGlobalPreset('{{ preset.id }}')"
+                                class="mt-4 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition">
+                            Заполнить
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+                    <!-- Тип расписания -->
+                    <div class="md:col-span-3 p-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-500/20">
+                        <h3 class="text-lg font-bold text-white mb-4">Тип расписания</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.schedule_kind.label }}
+                                </label>
+                                {{ form.schedule_kind }}
+                                {% if form.schedule_kind.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.schedule_kind.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.interval_minutes.label }}
+                                </label>
+                                {{ form.interval_minutes }}
+                                <p class="mt-2 text-xs text-gray-400">Для типа "Интервал"</p>
+                                {% if form.interval_minutes.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.interval_minutes.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.weekday.label }}
+                                </label>
+                                {{ form.weekday }}
+                                <p class="mt-2 text-xs text-gray-400">Для еженедельного запуска</p>
+                                {% if form.weekday.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.weekday.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.cron_expression.label }}
+                                </label>
+                                {{ form.cron_expression }}
+                                <p class="mt-2 text-xs text-gray-400">Используйте классическое cron-выражение, например 0 8 * * *</p>
+                                {% if form.cron_expression.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.cron_expression.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                    <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="p-3 bg-white/5 rounded-lg border border-white/10">
+                            <p class="text-sm text-gray-300">
+                                Описание:
+                                <span id="schedule-preview-text" class="text-white font-semibold">—</span>
+                            </p>
+                        </div>
+                        <div class="p-3 bg-white/5 rounded-lg border border-white/10">
+                            <p class="text-sm text-gray-300">Следующий запуск:</p>
+                            <p id="next-run-preview" class="text-white font-semibold mt-1">—</p>
+                            <p id="next-run-error" class="text-xs text-rose-400 mt-1 hidden"></p>
+                            <p id="load-warning" data-limit="{{ schedule_load_limit }}" class="text-xs text-amber-300 mt-1 hidden"></p>
+                        </div>
+                    </div>
+                        </div>
+                    </div>
+                    
+                    <!-- СТАРАЯ СИСТЕМА: Источники (для парсинга) -->
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.source_urls.label }}
+                        </label>
+                        {{ form.source_urls }}
+                        <p class="mt-2 text-xs text-gray-400">
+                            ℹ️ Не требуется, если выбран промпт-шаблон выше<br>
+                            Пример для парсинга:<br>
+                            https://www.vogue.ru/beauty<br>
+                            https://www.elle.ru/krasota
+                        </p>
+                        {% if form.source_urls.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.source_urls.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Категория -->
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.category.label }} <span class="text-red-400">*</span>
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.category.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Теги -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.tags.label }}
+                        </label>
+                        {{ form.tags }}
+                        {% if form.tags.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.tags.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Частота публикации -->
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.posting_frequency.label }} <span class="text-red-400">*</span>
+                        </label>
+                        {{ form.posting_frequency }}
+                        {% if form.posting_frequency.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.posting_frequency.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Статей за раз -->
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.articles_per_run.label }} <span class="text-red-400">*</span>
+                        </label>
+                        {{ form.articles_per_run }}
+                        {% if form.articles_per_run.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.articles_per_run.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Параметры генерации гороскопов (только для гороскопов) -->
+                    {% if form.generation_delay or form.retry_count or form.retry_delay %}
+                    <div class="md:col-span-3 mt-4 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
+                            </svg>
+                            Параметры генерации гороскопов
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Задержка между генерациями -->
+                            {% if form.generation_delay %}
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.generation_delay.label }}
+                                </label>
+                                {{ form.generation_delay }}
+                                {% if form.generation_delay.help_text %}
+                                <p class="mt-1 text-xs text-gray-400">{{ form.generation_delay.help_text }}</p>
+                                {% endif %}
+                                {% if form.generation_delay.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.generation_delay.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Количество повторных попыток -->
+                            {% if form.retry_count %}
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.retry_count.label }}
+                                </label>
+                                {{ form.retry_count }}
+                                {% if form.retry_count.help_text %}
+                                <p class="mt-1 text-xs text-gray-400">{{ form.retry_count.help_text }}</p>
+                                {% endif %}
+                                {% if form.retry_count.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.retry_count.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Задержка перед повтором -->
+                            {% if form.retry_delay %}
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    {{ form.retry_delay.label }}
+                                </label>
+                                {{ form.retry_delay }}
+                                {% if form.retry_delay.help_text %}
+                                <p class="mt-1 text-xs text-gray-400">{{ form.retry_delay.help_text }}</p>
+                                {% endif %}
+                                {% if form.retry_delay.errors %}
+                                <p class="mt-2 text-sm text-red-400">{{ form.retry_delay.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Мин слов -->
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.min_word_count.label }} <span class="text-red-400">*</span>
+                        </label>
+                        {{ form.min_word_count }}
+                        {% if form.min_word_count.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.min_word_count.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Макс слов -->
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.max_word_count.label }} <span class="text-red-400">*</span>
+                        </label>
+                        {{ form.max_word_count }}
+                        {% if form.max_word_count.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.max_word_count.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Ключевые слова -->
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.keywords.label }}
+                        </label>
+                        {{ form.keywords }}
+                        <p class="mt-2 text-xs text-gray-400">По одной ключевой фразе на строке</p>
+                        {% if form.keywords.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.keywords.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Тон -->
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.tone.label }}
+                        </label>
+                        {{ form.tone }}
+                        {% if form.tone.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.tone.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                </div>
+                
+                <!-- Кнопки -->
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" 
+                            class="flex-1 px-6 py-3 bg-{% if is_edit %}purple{% else %}green{% endif %}-600 hover:bg-{% if is_edit %}purple{% else %}green{% endif %}-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        {% if is_edit %}Сохранить изменения{% else %}Создать расписание{% endif %}
+                    </button>
+                    <a href="{% url 'asistent:ai_schedules' %}" 
+                       class="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<style>
+.hidden {
+    display: none;
+}
+/* Стили для полей формы Django */
+input[type="text"],
+input[type="number"],
+input[type="checkbox"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* ИСПРАВЛЕНИЕ: Выпадающие опции с темным текстом на светлом фоне */
+select option {
+    background-color: #1f2937;
+    color: #ffffff;
+    padding: 0.5rem;
+}
+
+select option:checked {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Стили для конструктора параметров */
+.param-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.375rem;
+}
+
+.param-row input,
+.param-row select {
+    flex: 1;
+    min-width: 0;
+}
+
+.param-row button {
+    flex-shrink: 0;
+}
+</style>
+
+<script id="schedule-presets-data" type="application/json">
+    {{ schedule_presets_json|default:'[]'|safe }}
+</script>
+<script id="pipeline-presets-data" type="application/json">
+    {{ pipeline_presets_json|default:'[]'|safe }}
+</script>
+<script>
+function escapeHtml(value = '') {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// ========== СТАТИЧЕСКИЕ ПАРАМЕТРЫ ==========
+function addStaticParam(key = '', value = '') {
+    const container = document.getElementById('static-params-container');
+    const id = Date.now();
+    
+    const html = `
+        <div class="param-row" id="static-${id}">
+            <input type="text" placeholder="Название параметра (например: topic)" 
+                   class="param-key" value="${key}" 
+                   style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            <input type="text" placeholder="Значение (например: гороскоп)" 
+                   class="param-value" value="${value}"
+                   style="flex: 2; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            <button type="button" onclick="removeParam('static-${id}')" 
+                    style="padding: 0.5rem 0.75rem; background: #dc2626; color: white; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600;">
+                Удалить
+            </button>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', html);
+}
+
+// ========== ДИНАМИЧЕСКИЕ ПАРАМЕТРЫ ==========
+let dynamicParamCounter = 0;
+
+function addDynamicParam(key = '', type = 'cycle_list', config = {}) {
+    const container = document.getElementById('dynamic-params-container');
+    const id = Date.now() + dynamicParamCounter++;
+    
+    const html = `
+        <div class="p-3 bg-white/5 rounded-lg border border-white/10" id="dynamic-${id}">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-2">
+                <input type="text" placeholder="Название переменной" 
+                       class="dynamic-key" value="${key}"
+                       style="padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                
+                <select class="dynamic-type" onchange="updateDynamicFields('dynamic-${id}')"
+                        style="padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                    <option value="cycle_list" ${type === 'cycle_list' ? 'selected' : ''}>Циклический список</option>
+                    <option value="current_date" ${type === 'current_date' ? 'selected' : ''}>Текущая дата</option>
+                    <option value="api_call" ${type === 'api_call' ? 'selected' : ''}>API запрос</option>
+                    <option value="random_choice" ${type === 'random_choice' ? 'selected' : ''}>Случайный выбор</option>
+                </select>
+                
+                <button type="button" onclick="removeParam('dynamic-${id}')"
+                        style="padding: 0.5rem; background: #dc2626; color: white; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600;">
+                    Удалить параметр
+                </button>
+            </div>
+            
+            <div class="dynamic-fields-${id}"></div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', html);
+    updateDynamicFields(`dynamic-${id}`, config);
+}
+
+function updateDynamicFields(parentId, savedConfig = {}) {
+    const parent = document.getElementById(parentId);
+    const type = parent.querySelector('.dynamic-type').value;
+    const fieldsContainer = parent.querySelector(`.dynamic-fields-${parentId.split('-')[1]}`);
+    
+    let html = '';
+    
+    if (type === 'cycle_list') {
+        const values = savedConfig.values || [];
+        html = `
+            <div class="mt-2">
+                <label class="text-xs text-gray-400 mb-1 block">Значения через запятую (например: Овен, Телец, Близнецы)</label>
+                <input type="text" class="config-values" value="${values.join(', ')}"
+                       placeholder="Овен, Телец, Близнецы, Рак, Лев, Дева"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            </div>
+        `;
+    } else if (type === 'current_date') {
+        const format = savedConfig.format || '%d.%m.%Y';
+        html = `
+            <div class="mt-2">
+                <label class="text-xs text-gray-400 mb-1 block">Формат даты</label>
+                <input type="text" class="config-format" value="${format}"
+                       placeholder="%d.%m.%Y"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                <p class="text-xs text-gray-500 mt-1">%d - день, %m - месяц, %Y - год</p>
+            </div>
+        `;
+    } else if (type === 'api_call') {
+        const url = savedConfig.url || '';
+        const path = savedConfig.path || '';
+        const processor = savedConfig.processor || '';
+        html = `
+            <div class="mt-2 space-y-2">
+                <input type="text" class="config-url" value="${url}"
+                       placeholder="URL API (например: https://api.openweathermap.org/...)"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                <input type="text" class="config-path" value="${path}"
+                       placeholder="Путь к данным (например: main.temp)"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                <input type="text" class="config-processor" value="${processor}"
+                       placeholder="Обработка (например: round)"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            </div>
+        `;
+    } else if (type === 'random_choice') {
+        const values = savedConfig.values || [];
+        html = `
+            <div class="mt-2">
+                <label class="text-xs text-gray-400 mb-1 block">Варианты через запятую</label>
+                <input type="text" class="config-values" value="${values.join(', ')}"
+                       placeholder="радостное, нейтральное, вдохновляющее"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            </div>
+        `;
+    }
+    
+    fieldsContainer.innerHTML = html;
+}
+
+function removeParam(id) {
+    document.getElementById(id).remove();
+}
+
+function renderStaticParams(params = {}) {
+    const container = document.getElementById('static-params-container');
+    container.innerHTML = '';
+    if (params && Object.keys(params).length) {
+        Object.entries(params).forEach(([key, value]) => addStaticParam(key, value));
+    }
+    document.getElementById('static_params_hidden').value = JSON.stringify(params || {});
+}
+
+function renderDynamicParams(params = {}) {
+    const container = document.getElementById('dynamic-params-container');
+    container.innerHTML = '';
+    dynamicParamCounter = 0;
+    if (params && Object.keys(params).length) {
+        Object.entries(params).forEach(([key, config]) => {
+            if (config && typeof config === 'object') {
+                addDynamicParam(key, config.type || 'cycle_list', config);
+            } else {
+                addDynamicParam(key, 'cycle_list', {});
+            }
+        });
+    }
+    document.getElementById('dynamic_params_hidden').value = JSON.stringify(params || {});
+}
+
+// ========== PAYLOAD BUILDER ==========
+let payloadRawMode = false;
+
+function addPayloadParam(key = '', value = '', type = 'string') {
+    const container = document.getElementById('payload-params-container');
+    if (!container) return;
+
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    const html = `
+        <div class="param-row" id="payload-${id}">
+            <input type="text" placeholder="Ключ" class="payload-key"
+                   value="${escapeHtml(key)}"
+                   style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            <input type="text" placeholder="Значение"
+                   class="payload-value"
+                   value="${escapeHtml(value)}"
+                   style="flex: 2; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            <select class="payload-type"
+                    style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                <option value="string" ${type === 'string' ? 'selected' : ''}>Строка</option>
+                <option value="number" ${type === 'number' ? 'selected' : ''}>Число</option>
+                <option value="boolean" ${type === 'boolean' ? 'selected' : ''}>Булево</option>
+                <option value="json" ${type === 'json' ? 'selected' : ''}>JSON</option>
+            </select>
+            <button type="button" onclick="removeParam('payload-${id}')"
+                    style="padding: 0.5rem; background: #dc2626; color: white; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600;">
+                ✕
+            </button>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', html);
+}
+
+function togglePayloadRaw() {
+    payloadRawMode = !payloadRawMode;
+    const builder = document.getElementById('payload-builder');
+    const rawWrapper = document.getElementById('payload-raw-wrapper');
+    const rawField = document.getElementById('id_payload_template');
+    if (!builder || !rawWrapper || !rawField) return;
+
+    if (payloadRawMode) {
+        rawWrapper.classList.remove('hidden');
+        builder.classList.add('hidden');
+        rawField.value = serializePayloadBuilder(true);
+    } else {
+        rawWrapper.classList.add('hidden');
+        builder.classList.remove('hidden');
+        loadPayloadFromField();
+    }
+}
+
+function serializePayloadBuilder(pretty = false) {
+    const payload = {};
+    document.querySelectorAll('#payload-params-container .param-row').forEach(row => {
+        const key = row.querySelector('.payload-key').value.trim();
+        const valueRaw = row.querySelector('.payload-value').value.trim();
+        const type = row.querySelector('.payload-type').value;
+        if (!key) {
+            return;
+        }
+
+        let parsedValue = valueRaw;
+        if (type === 'number') {
+            const numberValue = Number(valueRaw);
+            if (!Number.isNaN(numberValue)) {
+                parsedValue = numberValue;
+            } else {
+                return;
+            }
+        } else if (type === 'boolean') {
+            const lowered = valueRaw.toLowerCase();
+            if (['true', '1', 'yes', 'да'].includes(lowered)) {
+                parsedValue = true;
+            } else if (['false', '0', 'no', 'нет'].includes(lowered)) {
+                parsedValue = false;
+            } else {
+                return;
+            }
+        } else if (type === 'json') {
+            try {
+                parsedValue = JSON.parse(valueRaw || 'null');
+            } catch (err) {
+                console.warn('Невозможно разобрать JSON payload:', err);
+                return;
+            }
+        }
+
+        payload[key] = parsedValue;
+    });
+
+    return JSON.stringify(payload, null, pretty ? 2 : 0);
+}
+
+function loadPayloadFromField() {
+    const rawField = document.getElementById('id_payload_template');
+    if (!rawField) return;
+    const container = document.getElementById('payload-params-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    try {
+        const content = rawField.value && rawField.value.trim() ? JSON.parse(rawField.value) : {};
+        if (content && typeof content === 'object' && !Array.isArray(content)) {
+            Object.entries(content).forEach(([key, value]) => {
+                const { displayValue, detectedType } = detectPayloadValue(value);
+                addPayloadParam(key, displayValue, detectedType);
+            });
+        } else if (Array.isArray(content)) {
+            addPayloadParam('items', JSON.stringify(content), 'json');
+        } else {
+            addPayloadParam('value', content ?? '', typeof content);
+        }
+    } catch (err) {
+        console.warn('Ошибка загрузки payload, вставляем сырой JSON', err);
+    }
+
+    if (container.children.length === 0) {
+        addPayloadParam();
+    }
+}
+
+function detectPayloadValue(value) {
+    if (typeof value === 'number') {
+        return { displayValue: value.toString(), detectedType: 'number' };
+    }
+    if (typeof value === 'boolean') {
+        return { displayValue: value ? 'true' : 'false', detectedType: 'boolean' };
+    }
+    if (typeof value === 'object' && value !== null) {
+        return { displayValue: JSON.stringify(value), detectedType: 'json' };
+    }
+    return { displayValue: value ?? '', detectedType: 'string' };
+}
+
+// ========== ГЕНЕРАЦИЯ JSON ПЕРЕД ОТПРАВКОЙ ==========
+document.querySelector('form').addEventListener('submit', function(e) {
+    // Собираем статические параметры
+    const staticParams = {};
+    document.querySelectorAll('#static-params-container .param-row').forEach(row => {
+        const key = row.querySelector('.param-key').value.trim();
+        const value = row.querySelector('.param-value').value.trim();
+        if (key && value) {
+            staticParams[key] = value;
+        }
+    });
+    document.getElementById('static_params_hidden').value = JSON.stringify(staticParams);
+    
+    // Собираем динамические параметры
+    const dynamicParams = {};
+    document.querySelectorAll('#dynamic-params-container > div[id^="dynamic-"]').forEach(block => {
+        const key = block.querySelector('.dynamic-key').value.trim();
+        const type = block.querySelector('.dynamic-type').value;
+        
+        if (!key) return;
+        
+        const config = { type: type };
+        
+        if (type === 'cycle_list' || type === 'random_choice') {
+            const valuesStr = block.querySelector('.config-values')?.value || '';
+            config.values = valuesStr.split(',').map(v => v.trim()).filter(v => v);
+        } else if (type === 'current_date') {
+            config.format = block.querySelector('.config-format')?.value || '%d.%m.%Y';
+        } else if (type === 'api_call') {
+            config.url = block.querySelector('.config-url')?.value || '';
+            config.path = block.querySelector('.config-path')?.value || '';
+            const processor = block.querySelector('.config-processor')?.value || '';
+            if (processor) config.processor = processor;
+        }
+        
+        dynamicParams[key] = config;
+    });
+    document.getElementById('dynamic_params_hidden').value = JSON.stringify(dynamicParams);
+
+    if (!payloadRawMode) {
+        document.getElementById('id_payload_template').value = serializePayloadBuilder();
+    }
+});
+
+// ========== ЗАГРУЗКА СУЩЕСТВУЮЩИХ ПАРАМЕТРОВ ==========
+window.addEventListener('DOMContentLoaded', function() {
+    // Загружаем статические параметры
+    try {
+        const staticJson = document.getElementById('static_params_hidden').value;
+        if (staticJson && staticJson !== '{}') {
+            renderStaticParams(JSON.parse(staticJson));
+        } else {
+            renderStaticParams({});
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки статических параметров:', e);
+        renderStaticParams({});
+    }
+    
+    // Загружаем динамические параметры
+    try {
+        const dynamicJson = document.getElementById('dynamic_params_hidden').value;
+        if (dynamicJson && dynamicJson !== '{}') {
+            renderDynamicParams(JSON.parse(dynamicJson));
+        } else {
+            renderDynamicParams({});
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки динамических параметров:', e);
+        renderDynamicParams({});
+    }
+    
+    // Загружаем payload
+    loadPayloadFromField();
+    initPipelinePresetControls();
+    attachSchedulePreviewListeners();
+    refreshSchedulePreview();
+    triggerSchedulePreviewUpdate(true);
+    updateLoadWarning();
+    
+    const articlesField = document.getElementById('id_articles_per_run');
+    if (articlesField) {
+        articlesField.addEventListener('input', refreshSchedulePreview);
+        articlesField.addEventListener('change', refreshSchedulePreview);
+    }
+    
+    // ========== АВТОПОДГРУЗКА ПЕРЕМЕННЫХ ИЗ ПРОМПТА ==========
+    const promptSelect = document.getElementById('id_prompt_template');
+    if (promptSelect) {
+        promptSelect.addEventListener('change', function() {
+            const promptIdRaw = this.value;
+            if (!promptIdRaw) {
+                return;
+            }
+
+            const promptId = parseInt(promptIdRaw, 10);
+            if (Number.isNaN(promptId)) {
+                console.warn('Пропуск загрузки переменных: некорректный идентификатор промпта', promptIdRaw);
+                return;
+            }
+            
+            console.log('Выбран промпт ID:', promptId);
+            
+            // AJAX запрос к API
+            fetch(`/asistent/api/prompt/${promptId}/variables/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Переменные промпта:', data.variables);
+                        
+                        // ОЧИЩАЕМ существующие динамические параметры
+                        document.getElementById('dynamic-params-container').innerHTML = '';
+                        
+                        // СОЗДАЁМ поля для каждой переменной из промпта
+                        if (data.variables && data.variables.length > 0) {
+                            data.variables.forEach(varName => {
+                                createParamFieldForVariable(varName);
+                            });
+                            
+                            // Показываем уведомление
+                            alert(`✅ Загружено ${data.variables.length} переменных из промпта "${data.name}".\n\nЗаполните их значения ниже в разделе "Динамические параметры".`);
+                        } else {
+                            alert(`ℹ️ В промпте "${data.name}" нет переменных для подстановки.`);
+                        }
+                        
+                        // Автозаполняем категорию если она задана в промпте
+                        if (data.blog_category_id) {
+                            const categorySelect = document.getElementById('id_category');
+                            if (categorySelect) {
+                                categorySelect.value = data.blog_category_id;
+                            }
+                        }
+                    } else {
+                        console.error('Ошибка загрузки переменных:', data.error);
+                        alert('Ошибка загрузки переменных: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка запроса:', error);
+                    alert('Ошибка соединения с сервером');
+                });
+        });
+    }
+});
+
+// ========== МАСТЕР ПРЕСЕТОВ ==========
+const globalPresetRawElement = document.getElementById('schedule-presets-data');
+const globalSchedulePresets = globalPresetRawElement ? JSON.parse(globalPresetRawElement.textContent || '[]') : [];
+const pipelinePresetRawElement = document.getElementById('pipeline-presets-data');
+const pipelinePresetData = pipelinePresetRawElement ? JSON.parse(pipelinePresetRawElement.textContent || '[]') : [];
+const schedulePreviewUrl = "{{ schedule_preview_url }}";
+
+function initPipelinePresetControls() {
+    const pipelineSelect = document.getElementById('pipeline-preset-pipeline');
+    const presetSelect = document.getElementById('pipeline-preset-variant');
+    const applyBtn = document.getElementById('pipeline-preset-apply');
+    const descriptionEl = document.getElementById('pipeline-preset-description');
+    if (!pipelineSelect || !presetSelect || !applyBtn || !descriptionEl) {
+        return;
+    }
+
+    if (!pipelinePresetData.length) {
+        pipelineSelect.disabled = true;
+        presetSelect.disabled = true;
+        applyBtn.disabled = true;
+        descriptionEl.textContent = 'Нет активных пайплайнов с пресетами.';
+        return;
+    }
+
+    pipelinePresetData.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = item.name;
+        pipelineSelect.appendChild(option);
+    });
+
+    pipelineSelect.addEventListener('change', populatePresetVariants);
+    document.getElementById('pipeline-preset-variant').addEventListener('change', updatePresetDescription);
+    populatePresetVariants();
+}
+
+function populatePresetVariants() {
+    const pipelineSelect = document.getElementById('pipeline-preset-pipeline');
+    const presetSelect = document.getElementById('pipeline-preset-variant');
+    const applyBtn = document.getElementById('pipeline-preset-apply');
+    const descriptionEl = document.getElementById('pipeline-preset-description');
+    const pipeline = pipelinePresetData.find(item => item.id?.toString() === pipelineSelect.value);
+
+    presetSelect.innerHTML = '';
+    if (!pipeline) {
+        presetSelect.disabled = true;
+        applyBtn.disabled = true;
+        descriptionEl.textContent = 'Выберите пайплайн, чтобы увидеть описание.';
+        return;
+    }
+
+    pipeline.presets.forEach((preset, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = preset.title || `Пресет ${index + 1}`;
+        presetSelect.appendChild(option);
+    });
+
+    if (pipeline.presets.length) {
+        presetSelect.disabled = false;
+        applyBtn.disabled = false;
+        presetSelect.value = '0';
+        updatePresetDescription();
+    } else {
+        presetSelect.disabled = true;
+        applyBtn.disabled = true;
+        descriptionEl.textContent = 'Для этого пайплайна нет пресетов.';
+    }
+}
+
+function getSelectedPreset() {
+    const pipelineSelect = document.getElementById('pipeline-preset-pipeline');
+    const presetSelect = document.getElementById('pipeline-preset-variant');
+    const pipeline = pipelinePresetData.find(item => item.id?.toString() === pipelineSelect.value);
+    if (!pipeline || presetSelect.disabled) {
+        return null;
+    }
+    const preset = pipeline.presets[Number(presetSelect.value)];
+    return preset ? { pipeline, preset } : null;
+}
+
+function updatePresetDescription() {
+    const descriptionEl = document.getElementById('pipeline-preset-description');
+    const data = getSelectedPreset();
+    if (!data) {
+        descriptionEl.textContent = 'Выберите пайплайн, чтобы увидеть описание.';
+        return;
+    }
+    descriptionEl.textContent = data.preset.description || 'Пресет без описания.';
+}
+
+function applyPipelinePreset() {
+    const data = getSelectedPreset();
+    if (!data) {
+        alert('Выберите пайплайн и пресет.');
+        return;
+    }
+    const { pipeline, preset } = data;
+
+    const pipelineField = document.getElementById('id_pipeline');
+    if (pipelineField) {
+        pipelineField.value = pipeline.id;
+    }
+    const pipelineSlugField = document.getElementById('id_pipeline_slug');
+    if (pipelineSlugField && preset.pipeline_slug) {
+        pipelineSlugField.value = preset.pipeline_slug;
+    }
+
+    const scheduleKindField = document.getElementById('id_schedule_kind');
+    if (scheduleKindField && preset.schedule_kind) {
+        scheduleKindField.value = preset.schedule_kind;
+    }
+
+    const timeField = document.getElementById('id_scheduled_time');
+    if (timeField && preset.scheduled_time) {
+        timeField.value = preset.scheduled_time;
+    }
+
+    const intervalField = document.getElementById('id_interval_minutes');
+    if (intervalField && preset.interval_minutes) {
+        intervalField.value = preset.interval_minutes;
+    }
+
+    const weekdayField = document.getElementById('id_weekday');
+    if (weekdayField && typeof preset.weekday !== 'undefined') {
+        weekdayField.value = preset.weekday;
+    }
+
+    const cronField = document.getElementById('id_cron_expression');
+    if (cronField && preset.cron_expression) {
+        cronField.value = preset.cron_expression;
+    }
+
+    const articlesField = document.getElementById('id_articles_per_run');
+    if (articlesField && preset.articles_per_run) {
+        articlesField.value = preset.articles_per_run;
+    }
+
+    const maxRunsField = document.getElementById('id_max_runs');
+    if (maxRunsField && typeof preset.max_runs !== 'undefined') {
+        maxRunsField.value = preset.max_runs ?? '';
+    }
+
+    const tagsField = document.getElementById('id_tags');
+    if (tagsField && preset.tags) {
+        tagsField.value = preset.tags;
+    }
+
+    const payloadField = document.getElementById('id_payload_template');
+    if (payloadField) {
+        if (preset.payload) {
+            payloadField.value = JSON.stringify(preset.payload);
+        } else {
+            payloadField.value = '{}';
+        }
+        payloadRawMode = false;
+        document.getElementById('payload-raw-wrapper').classList.add('hidden');
+        document.getElementById('payload-builder').classList.remove('hidden');
+        loadPayloadFromField();
+    }
+
+    renderStaticParams(preset.static_params || {});
+    renderDynamicParams(preset.dynamic_params || {});
+    refreshSchedulePreview();
+    triggerSchedulePreviewUpdate(true);
+    updateLoadWarning();
+    updatePresetDescription();
+}
+
+function applyGlobalPreset(presetId) {
+    const preset = globalSchedulePresets.find(item => item.id === presetId);
+    if (!preset) {
+        alert('Не удалось найти пресет');
+        return;
+    }
+
+    const pipelineField = document.getElementById('id_pipeline');
+    if (pipelineField && preset.pipeline_id) {
+        pipelineField.value = preset.pipeline_id;
+    }
+    const pipelineSlugField = document.getElementById('id_pipeline_slug');
+    if (pipelineSlugField) {
+        pipelineSlugField.value = preset.pipeline_slug || '';
+    }
+
+    const scheduleKindField = document.getElementById('id_schedule_kind');
+    if (scheduleKindField && preset.schedule_kind) {
+        scheduleKindField.value = preset.schedule_kind;
+    }
+
+    const timeField = document.getElementById('id_scheduled_time');
+    if (timeField) {
+        timeField.value = preset.scheduled_time || '';
+    }
+
+    const intervalField = document.getElementById('id_interval_minutes');
+    if (intervalField) {
+        intervalField.value = preset.interval_minutes || '';
+    }
+
+    const weekdayField = document.getElementById('id_weekday');
+    if (weekdayField && typeof preset.weekday !== 'undefined' && preset.weekday !== null) {
+        weekdayField.value = preset.weekday;
+    }
+
+    const cronField = document.getElementById('id_cron_expression');
+    if (cronField) {
+        cronField.value = preset.cron_expression || '';
+    }
+
+    const articlesField = document.getElementById('id_articles_per_run');
+    if (articlesField && preset.articles_per_run) {
+        articlesField.value = preset.articles_per_run;
+    }
+
+    const frequencyField = document.getElementById('id_posting_frequency');
+    if (frequencyField && preset.posting_frequency) {
+        frequencyField.value = preset.posting_frequency;
+    }
+
+    const maxRunsField = document.getElementById('id_max_runs');
+    if (maxRunsField && typeof preset.max_runs !== 'undefined') {
+        maxRunsField.value = preset.max_runs ?? '';
+    }
+
+    const tagsField = document.getElementById('id_tags');
+    if (tagsField && preset.tags) {
+        tagsField.value = preset.tags;
+    }
+
+    const payloadField = document.getElementById('id_payload_template');
+    if (payloadField) {
+        const payloadData = preset.payload_template || preset.payload || {};
+        payloadField.value = JSON.stringify(payloadData, null, 2);
+        payloadRawMode = false;
+        document.getElementById('payload-raw-wrapper').classList.add('hidden');
+        document.getElementById('payload-builder').classList.remove('hidden');
+        loadPayloadFromField();
+    }
+
+    renderStaticParams(preset.static_params || {});
+    renderDynamicParams(preset.dynamic_params || {});
+    refreshSchedulePreview();
+    triggerSchedulePreviewUpdate(true);
+    updateLoadWarning();
+}
+
+// ========== СОЗДАНИЕ ПОЛЯ ДЛЯ ПЕРЕМЕННОЙ С УМНЫМИ ПОДСКАЗКАМИ ==========
+function createParamFieldForVariable(varName) {
+    // Словарь с умными подсказками для популярных переменных
+    const suggestions = {
+        'zodiac_sign': {
+            type: 'cycle_list',
+            values: ['Овен', 'Телец', 'Близнецы', 'Рак', 'Лев', 'Дева', 'Весы', 'Скорпион', 'Стрелец', 'Козерог', 'Водолей', 'Рыбы']
+        },
+        'date': {
+            type: 'current_date',
+            format: '%d.%m.%Y'
+        },
+        'weekday': {
+            type: 'current_date',
+            format: '%A'  // День недели
+        },
+        'season': {
+            type: 'random_choice',
+            values: ['зима', 'весна', 'лето', 'осень']
+        },
+        'mood': {
+            type: 'random_choice',
+            values: ['радостное', 'нейтральное', 'вдохновляющее', 'мотивирующее', 'спокойное']
+        },
+        'weather': {
+            type: 'api_call',
+            url: 'https://api.openweathermap.org/data/2.5/weather?q=Moscow&appid=YOUR_API_KEY&units=metric',
+            path: 'main.temp',
+            processor: 'round'
+        },
+        'author_id': {
+            type: 'random_choice',
+            values: []  // Будет заполнено динамически через AJAX
+        }
+    };
+    
+    const suggestion = suggestions[varName];
+    
+    if (varName === 'author_id') {
+        // Специальная обработка для author_id - загружаем список авторов
+        loadAuthorsForSelection();
+    } else if (suggestion) {
+        // Создаём с подсказкой
+        addDynamicParam(varName, suggestion.type, suggestion);
+    } else {
+        // Создаём базовое поле (по умолчанию - текущая дата)
+        addDynamicParam(varName, 'current_date', { format: '%d.%m.%Y' });
+    }
+}
+
+// ========== ПРЕДПРОСМОТР РАСПИСАНИЯ ==========
+const WEEKDAY_LABELS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+
+function refreshSchedulePreview() {
+    const previewEl = document.getElementById('schedule-preview-text');
+    if (!previewEl) return;
+
+    const kind = document.getElementById('id_schedule_kind')?.value || 'daily';
+    const timeValue = document.getElementById('id_scheduled_time')?.value || '';
+    const intervalValue = document.getElementById('id_interval_minutes')?.value;
+    const weekdayValue = document.getElementById('id_weekday')?.value;
+    const cronValue = document.getElementById('id_cron_expression')?.value || '';
+
+    let text = '—';
+    if (kind === 'daily') {
+        text = timeValue ? `Каждый день в ${timeValue}` : 'Каждый день (укажите время)';
+    } else if (kind === 'weekly') {
+        const label = typeof weekdayValue !== 'undefined' && weekdayValue !== '' ? WEEKDAY_LABELS[Number(weekdayValue)] : 'день недели';
+        text = timeValue ? `Каждый ${label} в ${timeValue}` : `Каждый ${label}`;
+    } else if (kind === 'interval') {
+        text = intervalValue ? `Каждые ${intervalValue} минут` : 'Интервал не задан';
+    } else if (kind === 'cron') {
+        text = cronValue ? `Cron: ${cronValue}` : 'Укажите cron-выражение';
+    }
+
+    previewEl.textContent = text;
+    triggerSchedulePreviewUpdate();
+    updateLoadWarning();
+}
+
+function attachSchedulePreviewListeners() {
+    ['id_schedule_kind', 'id_scheduled_time', 'id_interval_minutes', 'id_weekday', 'id_cron_expression'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', refreshSchedulePreview);
+        if (el.tagName === 'INPUT') {
+            el.addEventListener('input', refreshSchedulePreview);
+        }
+    });
+}
+
+let schedulePreviewTimer = null;
+let schedulePreviewRequestId = 0;
+
+function triggerSchedulePreviewUpdate(immediate = false) {
+    if (!schedulePreviewUrl) return;
+    if (schedulePreviewTimer) {
+        clearTimeout(schedulePreviewTimer);
+    }
+    if (immediate) {
+        sendSchedulePreviewRequest();
+        return;
+    }
+    schedulePreviewTimer = setTimeout(sendSchedulePreviewRequest, 600);
+}
+
+function gatherSchedulePreviewPayload() {
+    return {
+        schedule_kind: document.getElementById('id_schedule_kind')?.value || 'daily',
+        scheduled_time: document.getElementById('id_scheduled_time')?.value || '',
+        interval_minutes: document.getElementById('id_interval_minutes')?.value || '',
+        weekday: document.getElementById('id_weekday')?.value || '',
+        cron_expression: document.getElementById('id_cron_expression')?.value || '',
+        articles_per_run: document.getElementById('id_articles_per_run')?.value || '',
+        is_active: document.getElementById('id_is_active')?.checked ?? true,
+    };
+}
+
+function sendSchedulePreviewRequest() {
+    if (!schedulePreviewUrl) return;
+    const previewEl = document.getElementById('next-run-preview');
+    const errorEl = document.getElementById('next-run-error');
+    if (!previewEl || !errorEl) return;
+
+    const payload = gatherSchedulePreviewPayload();
+    const requestId = ++schedulePreviewRequestId;
+
+    fetch(schedulePreviewUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify(payload),
+    })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (requestId !== schedulePreviewRequestId) return;
+            if (ok && data.success) {
+                previewEl.textContent = data.next_run;
+                errorEl.classList.add('hidden');
+                errorEl.textContent = '';
+            } else {
+                previewEl.textContent = '—';
+                errorEl.textContent = data?.error || 'Не удалось рассчитать';
+                errorEl.classList.remove('hidden');
+            }
+        })
+        .catch(err => {
+            console.warn('Ошибка preview', err);
+            previewEl.textContent = '—';
+            errorEl.textContent = 'Ошибка соединения';
+            errorEl.classList.remove('hidden');
+        });
+}
+
+function getCsrfToken() {
+    const tokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    return tokenInput ? tokenInput.value : '';
+}
+
+function updateLoadWarning() {
+    const warningEl = document.getElementById('load-warning');
+    if (!warningEl) return;
+    const kind = document.getElementById('id_schedule_kind')?.value || 'daily';
+    if (kind !== 'interval') {
+        warningEl.classList.add('hidden');
+        warningEl.textContent = '';
+        return;
+    }
+    const minutes = Number(document.getElementById('id_interval_minutes')?.value);
+    const articles = Number(document.getElementById('id_articles_per_run')?.value) || 1;
+    if (!minutes || minutes <= 0) {
+        warningEl.classList.add('hidden');
+        warningEl.textContent = '';
+        return;
+    }
+    const perHour = (60 / minutes) * articles;
+    const limit = Number(warningEl.dataset.limit || 30);
+    warningEl.classList.remove('hidden');
+    warningEl.textContent = `~${perHour.toFixed(1)} запусков в час (лимит ${limit})`;
+    if (perHour > limit) {
+        warningEl.classList.add('text-rose-400');
+        warningEl.classList.remove('text-amber-300');
+    } else {
+        warningEl.classList.remove('text-rose-400');
+        warningEl.classList.add('text-amber-300');
+    }
+}
+
+// ========== ЗАГРУЗКА АВТОРОВ ДЛЯ ВЫБОРА ==========
+function loadAuthorsForSelection() {
+    // Создаём поле author_id с предупреждением о загрузке
+    addDynamicParam('author_id', 'random_choice', {
+        values: []  // Пока пустой список
+    });
+    
+    // AJAX запрос для получения списка активных авторов
+    fetch('/admin/auth/user/?is_active__exact=1&format=json')
+        .then(response => response.json())
+        .then(data => {
+            // Если API вернул список авторов
+            if (data && data.results) {
+                const authorIds = data.results.map(user => user.id);
+                // Обновляем поле с реальными ID
+                updateAuthorIdField(authorIds);
+            }
+        })
+        .catch(error => {
+            console.warn('Не удалось загрузить авторов, используйте ручной ввод:', error);
+            // При ошибке показываем подсказку с примером
+            alert('Введите ID авторов вручную через запятую.\n\nПример: 1, 2, 5, 8\n\nИли выберите тип "Циклический список" для перебора авторов.');
+        });
+}
+
+function updateAuthorIdField(authorIds) {
+    // Находим блок с author_id и обновляем значения
+    const container = document.getElementById('dynamic-params-container');
+    const blocks = container.querySelectorAll('div[id^="dynamic-"]');
+    
+    blocks.forEach(block => {
+        const keyInput = block.querySelector('.dynamic-key');
+        if (keyInput && keyInput.value === 'author_id') {
+            const valuesInput = block.querySelector('.config-values');
+            if (valuesInput) {
+                // Заполняем первыми 10 авторами
+                valuesInput.value = authorIds.slice(0, 10).join(', ');
+                valuesInput.placeholder = `Введите ID авторов через запятую (например: ${authorIds.slice(0, 3).join(', ')})`;
+            }
+        }
+    });
+}
+
+function clearAllParams() {
+    document.getElementById('static-params-container').innerHTML = '';
+    document.getElementById('dynamic-params-container').innerHTML = '';
+}
+</script>
+{% endblock %}

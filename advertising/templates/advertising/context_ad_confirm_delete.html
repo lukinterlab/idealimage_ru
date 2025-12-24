@@ -1,0 +1,51 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Удаление контекстной рекламы - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-white dark:bg-gray-900 py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                Подтверждение удаления
+            </h1>
+            
+            <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 p-4 mb-6">
+                <p class="text-gray-900 dark:text-white font-semibold mb-2">
+                    Вы уверены что хотите удалить контекстную рекламу?
+                </p>
+                <p class="text-gray-700 dark:text-gray-300">
+                    <strong>{{ context_ad.anchor_text }}</strong>
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    Ключевая фраза: {{ context_ad.keyword_phrase }}
+                </p>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="flex gap-3">
+                    <button type="submit" 
+                            class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">
+                        Да, удалить
+                    </button>
+                    <a href="{% url 'advertising:context_ads_manage' %}" 
+                       class="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg">
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+

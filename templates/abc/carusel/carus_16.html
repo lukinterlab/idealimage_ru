@@ -1,0 +1,22 @@
+{% load static %}
+<!-- Auto Play Start -->
+
+<div class="glide" id="glideAuto">
+  <div class="glide__track" data-glide-el="track">
+    <div class="glide__slides">
+        {% for post in post_list reversed %}
+            <a href="{{ post.get_absolute_url }}">
+                <div class="glide__slide">
+                    <div class="d-flex sw-40 sh-25 bg-gradient-primary mb-3 align-items-center justify-content-center rounded-xl">
+                       
+                            <img src="{{ post.kartinka.url }}" class="card-img h-100 scale" alt="card image" />
+                        
+                    </div>
+                    <p class="card-text mb-0 d-flex">{{ post.title }}</p>
+                    <p class="h4 text-center mb-0 d-flex text-primary">{{ post.category }}</p>   
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+  </div>
+</div>

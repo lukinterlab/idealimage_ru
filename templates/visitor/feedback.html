@@ -1,0 +1,135 @@
+{% extends 'base_tailwind.html' %} 
+{% load static %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8 fade-in">
+        <h1 class="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-4">
+            📧 Обратная связь
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+            Напишите нам письмо, и мы обязательно ответим!
+        </p>
+    </div>
+
+    <!-- Feedback Form Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 fade-in">
+        <form method="post" action="{% url 'Visitor:feedback' %}" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Custom Form Styles for Dark Mode -->
+            <style>
+                .dark form input[type="text"],
+                .dark form input[type="email"],
+                .dark form input[type="url"],
+                .dark form input[type="number"],
+                .dark form textarea,
+                .dark form select {
+                    background-color: #1f2937;
+                    border-color: #374151;
+                    color: #f9fafb;
+                }
+                
+                .dark form input[type="text"]:focus,
+                .dark form input[type="email"]:focus,
+                .dark form input[type="url"]:focus,
+                .dark form input[type="number"]:focus,
+                .dark form textarea:focus,
+                .dark form select:focus {
+                    border-color: #ec4899;
+                    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+                }
+                
+                .dark form label {
+                    color: #f9fafb;
+                }
+                
+                .dark form .helptext {
+                    color: #9ca3af;
+                }
+                
+                form input[type="text"],
+                form input[type="email"],
+                form input[type="url"],
+                form input[type="number"],
+                form textarea,
+                form select {
+                    width: 100%;
+                    padding: 0.75rem 1rem;
+                    border: 2px solid #e5e7eb;
+                    border-radius: 0.5rem;
+                    font-size: 1rem;
+                    transition: all 0.2s;
+                    margin-top: 0.5rem;
+                }
+                
+                form input[type="text"]:focus,
+                form input[type="email"]:focus,
+                form input[type="url"]:focus,
+                form input[type="number"]:focus,
+                form textarea:focus,
+                form select:focus {
+                    outline: none;
+                    border-color: #ec4899;
+                    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+                }
+                
+                form label {
+                    display: block;
+                    font-weight: 600;
+                    color: #374151;
+                    margin-bottom: 0.25rem;
+                }
+                
+                form p {
+                    margin-bottom: 1.5rem;
+                }
+                
+                form .helptext {
+                    display: block;
+                    font-size: 0.875rem;
+                    color: #6b7280;
+                    margin-top: 0.25rem;
+                }
+                
+                form textarea {
+                    min-height: 200px;
+                }
+            </style>
+            
+            <div class="text-gray-900 dark:text-white">
+                {{ form.as_p }}
+            </div>
+            
+            <div class="flex gap-4 pt-6 border-t dark:border-gray-700">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-primary to-secondary text-white font-semibold px-8 py-3 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Отправить письмо
+                </button>
+                <a href="/" class="px-8 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Info Card -->
+    <div class="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 fade-in">
+        <div class="flex items-start">
+            <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="text-gray-700 dark:text-gray-300">
+                <p class="font-semibold mb-2">Мы ценим ваше мнение!</p>
+                <p class="text-sm">
+                    Ваши отзывы и предложения помогают нам становиться лучше. 
+                    Мы постараемся ответить на ваше письмо в течение 24 часов.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,284 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block page_header %}
+<!-- Header -->
+<div class="gradient-primary rounded-2xl p-8 md:p-12 mb-8 text-white fade-in">
+    <div class="max-w-4xl">
+        <h1 class="text-4xl md:text-5xl font-heading font-bold mb-4">
+            Комментарии к моим статьям
+        </h1>
+        <p class="text-lg md:text-xl opacity-90">
+            Все комментарии читателей к вашим статьям. Отвечайте на них прямо здесь!
+        </p>
+        
+        <!-- Stats -->
+        <div class="flex flex-wrap gap-6 mt-6">
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3">
+                <div class="text-3xl font-bold">{{ page_obj.paginator.count }}</div>
+                <div class="text-sm opacity-90">Всего комментариев</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3">
+                <div class="text-3xl font-bold">{{ unanswered_count }}</div>
+                <div class="text-sm opacity-90">Без ответа</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Pagination Top -->
+{% if is_paginated %}
+<div class="mb-8">
+    <div class="text-center mb-6">
+        <p class="text-lg font-semibold text-gray-700 dark:text-gray-300">
+            Страница <span class="text-primary text-2xl font-bold">{{ page_obj.number }}</span> 
+            из <span class="text-primary text-2xl font-bold">{{ page_obj.paginator.num_pages }}</span>
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Показано {{ page_obj.start_index }}-{{ page_obj.end_index }} из {{ page_obj.paginator.count }} комментариев
+        </p>
+    </div>
+    
+    <nav class="flex justify-center" aria-label="Pagination">
+        <div class="flex items-center space-x-3">
+            {% if page_obj.has_previous %}
+            <a href="?page=1" class="group flex items-center gap-2 px-5 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-primary hover:text-white transition-all shadow-md hover:shadow-xl transform hover:scale-105">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                </svg>
+                <span class="hidden sm:inline font-medium">Первая</span>
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="group flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl hover:shadow-xl transition-all transform hover:scale-105">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                <span class="font-semibold">Назад</span>
+            </a>
+            {% endif %}
+            
+            <div class="hidden md:flex items-center space-x-2">
+                {% for p in paginator.page_range %}
+                    {% if page_obj.number == p %}
+                        <span class="px-5 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold shadow-xl text-lg">{{ p }}</span>
+                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+                        <a href="?page={{ p }}" class="px-5 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-primary hover:text-white transition-all shadow-md hover:shadow-xl transform hover:scale-105 font-semibold">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="group flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl hover:shadow-xl transition-all transform hover:scale-105">
+                <span class="font-semibold">Вперёд</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+</div>
+{% endif %}
+
+<!-- Comments List -->
+{% if comments %}
+<div class="space-y-6">
+    {% for comment in comments %}
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-700 overflow-hidden" id="comment-{{ comment.id }}">
+        <div class="p-6">
+            <!-- Article Info -->
+            <div class="flex items-center space-x-3 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                <a href="{{ comment.post.get_absolute_url }}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity flex-1">
+                    {% if comment.post.kartinka %}
+                    <img src="{{ comment.post.kartinka.url }}" alt="{{ comment.post.title }}" class="w-16 h-16 object-cover rounded-lg">
+                    {% endif %}
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-gray-900 dark:text-white line-clamp-2 text-sm">
+                            {{ comment.post.title }}
+                        </h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {{ comment.post.created|date:"d.m.Y" }} • {{ comment.post.views }} просмотров
+                        </p>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Comment -->
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
+                        {{ comment.author_comment|first|upper }}
+                    </div>
+                </div>
+                
+                <div class="flex-1">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <h4 class="font-semibold text-gray-900 dark:text-white">
+                            {{ comment.author_comment }}
+                        </h4>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ comment.created|date:"d.m.Y H:i" }}
+                        </span>
+                        {% if comment.parent %}
+                        <span class="px-2 py-0.5 bg-secondary/10 text-secondary text-xs rounded-full font-medium">
+                            Ответ
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Comment Text -->
+                    <div class="prose prose-sm max-w-none text-gray-700 dark:text-gray-300 mb-4">
+                        {{ comment.content|linebreaks }}
+                    </div>
+                    
+                    <!-- Reply Button -->
+                    {% if not comment.parent %}
+                    <button onclick="toggleReplyForm({{ comment.id }})" 
+                            class="flex items-center text-primary hover:text-secondary transition-colors text-sm font-medium">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                        </svg>
+                        Ответить
+                    </button>
+                    {% endif %}
+                    
+                    <!-- Reply Form -->
+                    <div id="reply-form-{{ comment.id }}" class="hidden mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                        <h5 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                            Ответ для {{ comment.author_comment }}:
+                        </h5>
+                        <form method="post" class="space-y-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="parent" value="{{ comment.id }}">
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input type="text" 
+                                       name="author_comment"
+                                       value="{{ user.get_full_name|default:user.username }}"
+                                       class="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary text-sm"
+                                       placeholder="Ваше имя"
+                                       readonly
+                                       required>
+                                
+                                <input type="email" 
+                                       name="email"
+                                       value="{{ user.email }}"
+                                       class="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary text-sm"
+                                       placeholder="Email"
+                                       readonly
+                                       required>
+                            </div>
+                            
+                            <textarea name="content" 
+                                      rows="3"
+                                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary resize-none text-sm"
+                                      placeholder="Напишите ответ..."
+                                      required></textarea>
+                            
+                            <div class="flex justify-end space-x-2">
+                                <button type="button" onclick="toggleReplyForm({{ comment.id }})" 
+                                        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 transition-all text-sm">
+                                    Отмена
+                                </button>
+                                <button type="submit" 
+                                        class="px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm">
+                                    Отправить ответ
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination Bottom -->
+{% if is_paginated %}
+<div class="my-12">
+    <nav class="flex justify-center">
+        <div class="flex items-center space-x-3">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-5 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl hover:shadow-xl transition-all transform hover:scale-105 font-semibold">
+                Назад
+            </a>
+            {% endif %}
+            
+            <span class="px-5 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-white rounded-xl font-bold">
+                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-5 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl hover:shadow-xl transition-all transform hover:scale-105 font-semibold">
+                Вперёд
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+</div>
+{% endif %}
+
+{% else %}
+<!-- No Comments -->
+<div class="text-center py-16">
+    <div class="text-8xl mb-6">💬</div>
+    <h3 class="text-3xl font-heading font-bold text-gray-900 dark:text-white mb-4">
+        Пока нет комментариев
+    </h3>
+    <p class="text-gray-600 dark:text-gray-400 mb-8 text-lg">
+        К вашим статьям еще не оставили комментариев
+    </p>
+    <a href="{% url 'blog:post_list' %}" 
+       class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 transition-all font-medium shadow-lg">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Вернуться к блогу
+    </a>
+</div>
+{% endif %}
+
+<script>
+function toggleReplyForm(commentId) {
+    // Скрываем все открытые формы
+    document.querySelectorAll('[id^="reply-form-"]').forEach(form => {
+        if (form.id !== 'reply-form-' + commentId) {
+            form.classList.add('hidden');
+        }
+    });
+    
+    // Переключаем текущую форму
+    const replyForm = document.getElementById('reply-form-' + commentId);
+    if (replyForm) {
+        replyForm.classList.toggle('hidden');
+        if (!replyForm.classList.contains('hidden')) {
+            const textarea = replyForm.querySelector('textarea');
+            if (textarea) {
+                textarea.focus();
+            }
+        }
+    }
+}
+
+// Автоматически скроллим к комментарию если есть хеш
+if (window.location.hash) {
+    setTimeout(() => {
+        const element = document.querySelector(window.location.hash);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.classList.add('ring-4', 'ring-primary/30');
+            setTimeout(() => {
+                element.classList.remove('ring-4', 'ring-primary/30');
+            }, 2000);
+        }
+    }, 100);
+}
+</script>
+{% endblock %}
+
+
+
+
+

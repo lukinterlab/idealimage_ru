@@ -1,0 +1,237 @@
+<!-- Info для разных ролей -->
+{% if current_user.is_superuser %}
+<div class="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border-l-4 border-orange-500">
+    <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+        </svg>
+        <div class="text-sm text-orange-900 dark:text-orange-300">
+            <strong>👑 Режим администратора</strong>
+            <p class="mt-1">Вы можете <strong>редактировать</strong> и <strong>удалять</strong> любые комментарии на сайте</p>
+        </div>
+    </div>
+</div>
+{% elif current_user.profile.is_moderator %}
+<div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
+    <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+        </svg>
+        <div class="text-sm text-blue-900 dark:text-blue-300">
+            <strong>🛡️ Режим модератора</strong>
+            <p class="mt-1">Вы можете <strong>редактировать</strong> комментарии для исправления нарушений</p>
+        </div>
+    </div>
+</div>
+{% elif is_author %}
+<div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
+    <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div class="text-sm text-blue-900 dark:text-blue-300">
+            <strong>Здесь отображаются только неотвеченные комментарии</strong>
+            <p class="mt-1">После вашего ответа комментарий автоматически исчезнет из списка</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if comments %}
+<div class="space-y-6">
+    {% for comment in comments %}
+    <article class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 fade-in" id="profile-comment-{{ comment.id }}">
+        <!-- Comment Header -->
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="font-semibold text-gray-900 dark:text-white">{{ comment.author_comment }}</span>
+                    <span class="text-sm text-gray-500">{{ comment.created|date:"d.m.Y H:i" }}</span>
+                </div>
+                <a href="{{ comment.post.get_absolute_url }}" class="text-sm text-primary hover:text-secondary transition-colors">
+                    → К статье: {{ comment.post.title }}
+                </a>
+            </div>
+            {% if comment.post.category %}
+            <span class="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full">
+                {{ comment.post.category.title }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <!-- Comment Content -->
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
+            <p class="text-gray-700 dark:text-gray-300">{{ comment.content }}</p>
+        </div>
+        
+        <!-- Comment Actions -->
+        <div class="flex items-center gap-4 flex-wrap">
+            {% if is_author %}
+            <button onclick="toggleReplyForm({{ comment.id }})" 
+                    class="inline-flex items-center text-sm text-primary hover:text-secondary font-medium transition-colors">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                </svg>
+                Ответить
+            </button>
+            {% endif %}
+            
+            <a href="{{ comment.post.get_absolute_url }}#comment-{{ comment.id }}" 
+               class="inline-flex items-center text-sm text-gray-600 hover:text-primary font-medium transition-colors">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                Перейти к статье
+            </a>
+            
+            <!-- Модерация: редактирование для модераторов и суперюзеров -->
+            {% if current_user.profile.is_moderator or current_user.is_superuser %}
+            <button onclick="toggleEditCommentForm({{ comment.id }})" 
+                    class="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Редактировать
+            </button>
+            {% endif %}
+            
+            <!-- Модерация: удаление только для суперюзеров -->
+            {% if current_user.is_superuser %}
+            <button onclick="deleteComment({{ comment.id }}, '{{ comment.author_comment|escapejs }}')" 
+                    class="inline-flex items-center text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium transition-colors">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                Удалить
+            </button>
+            {% endif %}
+        </div>
+        
+        <!-- Edit Form (hidden by default) - для модераторов и суперюзеров -->
+        {% if current_user.profile.is_moderator or current_user.is_superuser %}
+        <div id="edit-form-{{ comment.id }}" class="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700 hidden bg-blue-50 dark:bg-blue-900/10 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                <span class="font-semibold text-blue-900 dark:text-blue-300">
+                    {% if current_user.is_superuser %}👑 Редактирование (Администратор){% else %}🛡️ Редактирование (Модератор){% endif %}
+                </span>
+            </div>
+            <form onsubmit="submitEditComment(event, {{ comment.id }})" class="space-y-3">
+                <textarea 
+                    id="edit-text-{{ comment.id }}"
+                    name="content" 
+                    rows="4" 
+                    class="w-full px-4 py-2 border border-blue-300 dark:border-blue-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    required>{{ comment.content }}</textarea>
+                <div class="flex gap-2">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-medium">
+                        💾 Сохранить изменения
+                    </button>
+                    <button type="button" onclick="toggleEditCommentForm({{ comment.id }})" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-all">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+        
+        <!-- Reply Form (hidden by default) -->
+        {% if is_author %}
+        <div id="reply-form-{{ comment.id }}" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 hidden">
+            <form onsubmit="submitReply(event, {{ comment.id }}, {{ comment.post.id }})" class="space-y-3">
+                <textarea 
+                    id="reply-text-{{ comment.id }}"
+                    name="content" 
+                    rows="3" 
+                    placeholder="Ваш ответ..." 
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    required></textarea>
+                <div class="flex gap-2">
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition-all font-medium">
+                        Отправить ответ
+                    </button>
+                    <button type="button" onclick="toggleReplyForm({{ comment.id }})" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 transition-all">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+        
+        <!-- Replies -->
+        {% with active_replies=comment.replies.all %}
+        {% if active_replies %}
+        <div class="mt-4 pl-8 border-l-2 border-primary/50 space-y-3">
+            {% for reply in active_replies %}
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/10 rounded-lg p-4 border-l-4 border-primary">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                    </svg>
+                    <span class="font-semibold text-sm text-gray-900 dark:text-white">{{ reply.author_comment }}</span>
+                    <span class="text-xs text-gray-500">{{ reply.created|date:"d.m.Y H:i" }}</span>
+                    {% if reply.author_comment == user_profile.username %}
+                    <span class="px-2 py-0.5 bg-primary text-white text-xs rounded-full">Автор</span>
+                    {% endif %}
+                </div>
+                <p class="text-sm text-gray-700 dark:text-gray-300 ml-6">{{ reply.content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+    </article>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="mt-8">
+    <nav class="flex justify-center" aria-label="Pagination">
+        <div class="flex items-center space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" 
+               class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-primary hover:text-white transition-all">
+                Назад
+            </a>
+            {% endif %}
+            
+            <span class="px-4 py-2 bg-primary text-white rounded-lg font-bold">
+                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" 
+               class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-primary hover:text-white transition-all">
+                Вперёд
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+</div>
+{% endif %}
+
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-16">
+    <div class="text-6xl mb-4">💬</div>
+    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        {% if is_author %}
+        Нет неотвеченных комментариев
+        {% else %}
+        Нет комментариев
+        {% endif %}
+    </h3>
+    <p class="text-gray-600 dark:text-gray-400">
+        {% if is_author %}
+        Отлично! Вы ответили на все комментарии 🎉
+        {% else %}
+        Комментариев к статьям автора пока нет
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+

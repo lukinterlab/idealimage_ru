@@ -1,0 +1,256 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Журнал запусков AI расписаний{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between flex-wrap gap-4 mb-8">
+            <div>
+                <h1 class="text-4xl font-black text-white">Журнал запусков AI-расписаний</h1>
+                <p class="text-gray-300 mt-1">Мониторинг всех запусков генерации с возможностью фильтрации и детального просмотра.</p>
+            </div>
+            <a href="{% url 'asistent:admin_dashboard' %}" class="px-5 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl transition">← Назад в панель</a>
+        </div>
+
+        <form method="get" class="bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl p-6 mb-8 grid grid-cols-1 md:grid-cols-5 gap-4 text-white" id="runs-filter-form">
+            <input type="hidden" name="page" value="{{ page_obj.number }}" />
+            <div>
+                <label class="block text-sm text-gray-300 mb-2">Статус</label>
+                <select name="status" class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 focus:outline-none">
+                    <option value="">Все</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if value == status_filter %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-2">Стратегия</label>
+                <select name="strategy" class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 focus:outline-none">
+                    <option value="">Все</option>
+                    {% for value, label in strategy_choices %}
+                    <option value="{{ value }}" {% if value == strategy_filter %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-2">Расписание</label>
+                <input type="text" name="schedule" value="{{ schedule_query }}" placeholder="ID или название"
+                       class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 focus:outline-none" />
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-2">Дата от</label>
+                <input type="date" name="date_from" value="{{ date_from }}"
+                       class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 focus:outline-none" />
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-2">Дата до</label>
+                <input type="date" name="date_to" value="{{ date_to }}"
+                       class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 focus:outline-none" />
+            </div>
+            <div class="md:col-span-2 flex items-end gap-3">
+                <button type="submit" class="px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition font-semibold">Применить</button>
+                <a href="{% url 'asistent:schedule_runs' %}" class="px-5 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition">Сбросить</a>
+            </div>
+        </form>
+
+        <div class="bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-white/10 text-sm text-gray-200">
+                    <thead class="bg-white/5 text-xs uppercase tracking-wider text-gray-400">
+                        <tr>
+                            <th class="px-6 py-4 text-left">ID</th>
+                            <th class="px-6 py-4 text-left">Расписание</th>
+                            <th class="px-6 py-4 text-left">Стратегия</th>
+                            <th class="px-6 py-4 text-left">Статус</th>
+                            <th class="px-6 py-4 text-left">Создано</th>
+                            <th class="px-6 py-4 text-left">Старт</th>
+                            <th class="px-6 py-4 text-left">Завершено</th>
+                            <th class="px-6 py-4 text-right"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for run in page_obj %}
+                        <tr class="hover:bg-white/5">
+                            <td class="px-6 py-4 font-mono text-gray-300">#{{ run.id }}</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-white">{{ run.schedule.name }}</div>
+                                <div class="text-xs text-gray-400">ID: {{ run.schedule.id }}</div>
+                            </td>
+                            <td class="px-6 py-4 capitalize text-gray-200">{{ run.get_strategy_type_display }}</td>
+                            <td class="px-6 py-4">
+                                {% if run.status == 'success' %}
+                                    <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300">Успех</span>
+                                {% elif run.status == 'running' %}
+                                    <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-300">В процессе</span>
+                                {% elif run.status == 'partial' %}
+                                    <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300">Частично</span>
+                                {% else %}
+                                    <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-rose-500/20 text-rose-300">Ошибка</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">{{ run.created_count }}</td>
+                            <td class="px-6 py-4 text-gray-300">{{ run.started_at|date:"d.m.Y H:i" }}</td>
+                            <td class="px-6 py-4 text-gray-300">{% if run.finished_at %}{{ run.finished_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+                            <td class="px-6 py-4 text-right">
+                                <button type="button" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold"
+                                        data-run-detail data-run-id="{{ run.id }}">Подробнее</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-8 text-center text-gray-400">Записи не найдены</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-6 py-4 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-3 text-gray-300 text-sm">
+                <div>Всего записей: {{ page_obj.paginator.count }}</div>
+                <div class="flex items-center gap-2" data-pagination>
+                    {% if page_obj.has_previous %}
+                        <button type="button" class="px-3 py-1 bg-white/10 rounded" data-page-target="{{ page_obj.previous_page_number }}">←</button>
+                    {% endif %}
+                    <span>Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <button type="button" class="px-3 py-1 bg-white/10 rounded" data-page-target="{{ page_obj.next_page_number }}">→</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="run-detail-modal" class="fixed inset-0 bg-black/70 backdrop-blur hidden items-center justify-center z-50">
+    <div class="bg-gray-900 border border-purple-500/40 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-purple-500/40 flex items-center justify-between">
+            <div class="text-lg font-semibold text-white">Детали запуска</div>
+            <button type="button" class="text-gray-400 hover:text-white" data-modal-close>✕</button>
+        </div>
+        <div class="px-6 py-4 overflow-y-auto text-sm text-gray-200" id="run-detail-content">
+            <div class="text-center text-gray-400">Загрузка...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const modal = document.getElementById('run-detail-modal');
+    const modalContent = document.getElementById('run-detail-content');
+
+    function openModal() {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    modal.querySelector('[data-modal-close]').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    const filterForm = document.getElementById('runs-filter-form');
+    if (filterForm) {
+        document.querySelectorAll('[data-page-target]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const pageField = filterForm.querySelector('input[name="page"]');
+                if (pageField) {
+                    pageField.value = btn.dataset.pageTarget;
+                }
+                filterForm.submit();
+            });
+        });
+    }
+
+    const buttons = document.querySelectorAll('[data-run-detail]');
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const runId = btn.dataset.runId;
+            openModal();
+            modalContent.innerHTML = '<div class="text-center text-gray-400">Загрузка...</div>';
+            fetch(`{% url 'asistent:schedule_run_detail' 0 %}`.replace('/0/', `/${runId}/`))
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка загрузки');
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    if (!data.success) {
+                        throw new Error(data.error || 'Не удалось загрузить детали');
+                    }
+                    const run = data.run;
+                    const logs = (run.context.logs || []).map((log) => (
+                        `<div class="border border-white/10 rounded-lg p-3">
+                            <div class="text-xs text-gray-400">${log.timestamp || ''} · ${log.level || ''}${log.step ? ` · ${log.step}` : ''}</div>
+                            <div class="mt-1">${(log.message || '').replace(/</g, '&lt;')}</div>
+                            ${log.details && Object.keys(log.details).length ? `<pre class="mt-2 text-xs bg-black/30 rounded p-2 overflow-x-auto">${JSON.stringify(log.details, null, 2)}</pre>` : ''}
+                        </div>`
+                    )).join('');
+
+                    modalContent.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                                    <div class="text-xs text-gray-400">Расписание</div>
+                                    <div class="text-white font-semibold">${run.schedule.name} (#${run.schedule.id})</div>
+                                </div>
+                                <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                                    <div class="text-xs text-gray-400">Статус</div>
+                                    <div class="text-white font-semibold">${run.status}</div>
+                                </div>
+                                <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                                    <div class="text-xs text-gray-400">Старт</div>
+                                    <div class="text-white">${run.started_at ? new Date(run.started_at).toLocaleString() : '—'}</div>
+                                </div>
+                                <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                                    <div class="text-xs text-gray-400">Завершение</div>
+                                    <div class="text-white">${run.finished_at ? new Date(run.finished_at).toLocaleString() : '—'}</div>
+                                </div>
+                                <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                                    <div class="text-xs text-gray-400">Создано объектов</div>
+                                    <div class="text-white">${run.created_count}</div>
+                                </div>
+                                <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                                    <div class="text-xs text-gray-400">Ошибок</div>
+                                    <div class="text-white">${(run.errors || []).length}</div>
+                                </div>
+                            </div>
+
+                            ${(run.errors || []).length ? `
+                                <div class="space-y-2">
+                                    <h3 class="text-white text-lg font-semibold">Ошибки</h3>
+                                    <ul class="space-y-2 text-sm">
+                                        ${run.errors.map(err => `<li class="bg-rose-500/10 border border-rose-500/30 rounded p-3 text-rose-200">${err}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+
+                            <div class="space-y-2">
+                                <h3 class="text-white text-lg font-semibold">Результат</h3>
+                                <pre class="bg-black/40 border border-white/10 rounded-xl p-4 text-xs overflow-x-auto text-gray-200">${JSON.stringify(run.result, null, 2)}</pre>
+                            </div>
+
+                            <div class="space-y-2">
+                                <h3 class="text-white text-lg font-semibold">Логи</h3>
+                                <div class="space-y-2">
+                                    ${logs || '<div class="text-gray-400">Логи отсутствуют</div>'}
+                                </div>
+                            </div>
+                        </div>`;
+                })
+                .catch((error) => {
+                    modalContent.innerHTML = `<div class="text-center text-rose-300">${error.message}</div>`;
+                });
+        });
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends 'donations/base_bonuses.html' %}
+{% load static %}
+
+{% block title %}Реестр выплат - Админ{% endblock %}
+
+{% block bonuses_content %}
+<!-- Заголовок -->
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            📋 Реестр выплат авторам
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+            Управление выплатами бонусов
+        </p>
+    </div>
+    <div class="flex gap-3">
+        <a href="{% url 'donations:admin_bonuses_dashboard' %}" 
+           class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+            ← Дашборд бонусов
+        </a>
+        <a href="/admin/donations/weeklyreport/" 
+           class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+            📊 Все отчеты
+        </a>
+    </div>
+</div>
+
+<!-- Выбор недели -->
+<div class="stat-card mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Выберите отчетный период</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for report in all_reports|slice:":12" %}
+        <a href="?week_id={{ report.id }}"
+           class="p-4 rounded-lg border-2 transition-all {% if selected_report.id == report.id %}border-purple-500 bg-purple-50 dark:bg-purple-900/20{% else %}border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700{% endif %}">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ report.week_start|date:"d.m" }} - {{ report.week_end|date:"d.m.Y" }}</p>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white mt-1">{{ report.total_bonuses|floatformat:2 }}₽</p>
+            <div class="flex items-center gap-2 mt-2">
+                {% if report.is_finalized %}
+                <span class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 rounded">Зафиксирован</span>
+                {% else %}
+                <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">Черновик</span>
+                {% endif %}
+                {% if report.is_paid %}
+                <span class="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded">Оплачен</span>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+{% if selected_report %}
+<!-- Статистика по выбранному отчету -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="stat-card border-l-4 border-blue-500">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Авторов в отчете</p>
+        <p class="text-4xl font-bold text-blue-600 dark:text-blue-400">{{ payment_stats.total_entries }}</p>
+    </div>
+    
+    <div class="stat-card border-l-4 border-green-500">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">К выплате</p>
+        <p class="text-4xl font-bold text-green-600 dark:text-green-400">{{ payment_stats.total_to_pay|floatformat:2 }}₽</p>
+    </div>
+    
+    <div class="stat-card border-l-4 border-purple-500">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Выплачено</p>
+        <p class="text-4xl font-bold text-purple-600 dark:text-purple-400">{{ payment_stats.total_paid|floatformat:2 }}₽</p>
+    </div>
+    
+    <div class="stat-card border-l-4 border-orange-500">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Осталось</p>
+        <p class="text-4xl font-bold text-orange-600 dark:text-orange-400">{{ payment_stats.total_remaining|floatformat:2 }}₽</p>
+    </div>
+</div>
+
+<!-- Таблица выплат -->
+<div class="stat-card mb-8">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Выплаты за {{ selected_report.week_start|date:"d.m.Y" }} - {{ selected_report.week_end|date:"d.m.Y" }}
+        </h3>
+        <div class="flex gap-2">
+            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-full text-sm">
+                ✓ Оплачено: {{ payment_stats.paid_count }}
+            </span>
+            <span class="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 rounded-full text-sm">
+                ⏳ Ожидает: {{ payment_stats.pending_count }}
+            </span>
+        </div>
+    </div>
+    
+    {% if registry_entries %}
+    <div class="overflow-x-auto">
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Автор</th>
+                    <th>Роль</th>
+                    <th>К выплате</th>
+                    <th>Выплачено</th>
+                    <th>Остаток</th>
+                    <th>Статус</th>
+                    <th>Дата оплаты</th>
+                    <th>Способ</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in registry_entries %}
+                <tr>
+                    <td class="font-semibold">
+                        <a href="/admin/auth/user/{{ entry.author.id }}/change/" target="_blank"
+                           class="text-purple-600 dark:text-purple-400 hover:underline">
+                            {{ entry.author.get_full_name|default:entry.author.username }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if entry.bonus.role_at_calculation %}
+                        <span class="role-badge" style="background-color: {{ entry.bonus.role_at_calculation.color }}20; color: {{ entry.bonus.role_at_calculation.color }};">
+                            {{ entry.bonus.role_at_calculation.name }}
+                        </span>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td class="font-semibold text-gray-900 dark:text-white">{{ entry.amount_to_pay }}₽</td>
+                    <td class="font-semibold text-green-600 dark:text-green-400">{{ entry.paid_amount }}₽</td>
+                    <td class="font-semibold text-orange-600 dark:text-orange-400">
+                        {{ entry.amount_to_pay|add:"-"|add:entry.paid_amount|floatformat:2 }}₽
+                    </td>
+                    <td>
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold
+                            {% if entry.status == 'paid' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                            {% elif entry.status == 'partial' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400
+                            {% elif entry.status == 'pending' %}bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400
+                            {% else %}bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400{% endif %}">
+                            {{ entry.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ entry.payment_date|date:"d.m.Y"|default:"-" }}</td>
+                    <td>{{ entry.payment_method|default:"-" }}</td>
+                    <td>
+                        <a href="/admin/donations/bonuspaymentregistry/{{ entry.id }}/change/" target="_blank"
+                           class="text-purple-600 dark:text-purple-400 hover:underline text-sm">
+                            Редактировать
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center py-8 text-gray-500 dark:text-gray-400">Нет записей в реестре</p>
+    {% endif %}
+</div>
+
+<!-- Детали отчета -->
+{% if selected_report.is_finalized %}
+<div class="stat-card bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500">
+    <h4 class="font-semibold text-blue-900 dark:text-blue-300 mb-2">ℹ️ Информация об отчете</h4>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div>
+            <p class="text-blue-700 dark:text-blue-400">Зафиксирован:</p>
+            <p class="font-semibold text-blue-900 dark:text-blue-300">{{ selected_report.finalized_at|date:"d.m.Y H:i" }}</p>
+        </div>
+        <div>
+            <p class="text-blue-700 dark:text-blue-400">Кем:</p>
+            <p class="font-semibold text-blue-900 dark:text-blue-300">{{ selected_report.finalized_by.username|default:"-" }}</p>
+        </div>
+        <div>
+            <p class="text-blue-700 dark:text-blue-400">Всего донатов:</p>
+            <p class="font-semibold text-blue-900 dark:text-blue-300">{{ selected_report.total_donations|floatformat:2 }}₽</p>
+        </div>
+        <div>
+            <p class="text-blue-700 dark:text-blue-400">Оплачен:</p>
+            <p class="font-semibold text-blue-900 dark:text-blue-300">{% if selected_report.is_paid %}Да ✅{% else %}Нет ⏳{% endif %}</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="stat-card text-center py-12">
+    <svg class="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+    </svg>
+    <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Нет отчетов</h3>
+    <p class="text-gray-600 dark:text-gray-400 mb-4">Создайте первый недельный отчет</p>
+    <a href="/admin/donations/weeklyreport/" 
+       class="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
+        Создать отчет
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}
+

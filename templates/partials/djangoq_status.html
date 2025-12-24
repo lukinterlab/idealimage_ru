@@ -1,0 +1,125 @@
+<!-- Виджет статуса Django-Q -->
+<div class="card mb-4 {% if djangoq_status.is_running %}border-success{% else %}border-danger{% endif %}">
+    <div class="card-header {% if djangoq_status.is_running %}bg-success{% else %}bg-danger{% endif %} text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-cogs"></i> Django-Q Cluster
+            </h5>
+            <span class="badge bg-light {% if djangoq_status.is_running %}text-success{% else %}text-danger{% endif %}">
+                {% if djangoq_status.is_running %}
+                    <i class="fas fa-check-circle"></i> Работает
+                {% else %}
+                    <i class="fas fa-times-circle"></i> Остановлен
+                {% endif %}
+            </span>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if djangoq_status.is_running %}
+            <p class="mb-2"><i class="fas fa-info-circle text-success"></i> Django-Q Cluster активен и обрабатывает задачи</p>
+            
+            <div class="row text-center mt-3">
+                <div class="col-4">
+                    <div class="border rounded p-2">
+                        <h4 class="mb-0 text-primary">{{ djangoq_status.active_tasks }}</h4>
+                        <small class="text-muted">Выполняется</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="border rounded p-2">
+                        <h4 class="mb-0 text-info">{{ djangoq_status.queued_tasks }}</h4>
+                        <small class="text-muted">В очереди</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="border rounded p-2">
+                        <h4 class="mb-0 text-success">{{ djangoq_status.completed_today }}</h4>
+                        <small class="text-muted">Сегодня</small>
+                    </div>
+                </div>
+            </div>
+            
+            {% if djangoq_status.last_task %}
+            {% load djangoq_filters %}
+            <div class="mt-3">
+                <small class="text-muted">
+                    <i class="fas fa-clock"></i> Последняя задача: 
+                    <strong>{{ djangoq_status.last_task.name|task_formatted }}</strong>
+                    ({{ djangoq_status.last_task.stopped|timesince }} назад)
+                </small>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-danger mb-0">
+                <p class="mb-2"><i class="fas fa-exclamation-triangle"></i> <strong>Django-Q Cluster не запущен!</strong></p>
+                <p class="mb-2">Автоматические задачи не выполняются:</p>
+                <ul class="mb-3">
+                    <li>Генерация статей по расписанию</li>
+                    <li>Модерация контента</li>
+                    <li>Распределение бонусов</li>
+                </ul>
+                <p class="mb-0"><strong>Для запуска:</strong></p>
+                <code class="d-block bg-light p-2 rounded">python manage.py qcluster</code>
+            </div>
+        {% endif %}
+    </div>
+    <div class="card-footer">
+        <a href="/admin/django_q/" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-chart-line"></i> Мониторинг Django-Q
+        </a>
+        <button onclick="location.reload()" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-sync"></i> Обновить статус
+        </button>
+        <button onclick="startDjangoQ()" class="btn btn-sm btn-success" id="start-djangoq-btn">
+            <i class="fas fa-play"></i> Запустить Django-Q
+        </button>
+    </div>
+    
+    <script>
+    function startDjangoQ() {
+        const btn = document.getElementById('start-djangoq-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Запуск...';
+        
+        fetch('/asistent/api/start-djangoq/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                alert('❌ Ошибка: ' + data.error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play"></i> Запустить Django-Q';
+            }
+        })
+        .catch(error => {
+            alert('❌ Ошибка сети: ' + error);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-play"></i> Запустить Django-Q';
+        });
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    </script>
+</div>
+

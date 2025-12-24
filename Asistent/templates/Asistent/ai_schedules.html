@@ -1,0 +1,95 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Управление расписаниями{% endblock %}
+
+{% block content %}
+<!-- Админ навигация -->
+{% include 'partials/admin_navigation.html' %}
+
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white dark:text-white mb-2">
+                        <svg class="w-10 h-10 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13 7H7v6h6V7z"></path>
+                            <path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 010-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"></path>
+                        </svg>
+                        Управление расписаниями
+                    </h1>
+                    <p class="text-xl text-gray-300 dark:text-gray-300">AI-генерация и системные задачи Django-Q</p>
+                </div>
+                <div class="flex gap-3">
+                    {% if current_tab == 'ai' %}
+                    <a href="{% url 'asistent:create_ai_schedule' %}" 
+                       class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white dark:text-white font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-lg">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Создать AI-расписание
+                    </a>
+                    {% else %}
+                    <a href="{% url 'asistent:create_system_schedule' %}" 
+                       class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white dark:text-white font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-lg">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Создать системную задачу
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'asistent:schedule_runs' %}" 
+                       class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white dark:text-white font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-lg">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                        </svg>
+                        Журнал запусков
+                    </a>
+                    <a href="{% url 'Home:master_admin_dashboard' %}" 
+                       class="px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white dark:text-white font-semibold rounded-lg transition-colors border border-white/20 dark:border-white/20 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        Назад к дашборду
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ВКЛАДКИ -->
+        <div class="mb-6">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 dark:border-white/20 p-1 flex gap-2">
+                <a href="?tab=ai" 
+                   class="flex-1 px-6 py-3 rounded-lg font-semibold transition-all text-center {% if current_tab == 'ai' %}bg-purple-600 text-white dark:text-white shadow-lg{% else %}text-gray-300 dark:text-gray-300 hover:bg-white/10{% endif %}">
+                    <svg class="w-5 h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 7H7v6h6V7z"></path>
+                    </svg>
+                    AI-расписания ({{ ai_count }})
+                </a>
+                <a href="?tab=system" 
+                   class="flex-1 px-6 py-3 rounded-lg font-semibold transition-all text-center {% if current_tab == 'system' %}bg-purple-600 text-white dark:text-white shadow-lg{% else %}text-gray-300 dark:text-gray-300 hover:bg-white/10{% endif %}">
+                    <svg class="w-5 h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                    </svg>
+                    Системные задачи ({{ system_count }})
+                </a>
+            </div>
+        </div>
+
+        <!-- КОНТЕНТ ВКЛАДКИ AI-РАСПИСАНИЯ -->
+        {% if current_tab == 'ai' %}
+            {% include 'Asistent/partials/ai_schedules_tab.html' %}
+        {% endif %}
+
+        <!-- КОНТЕНТ ВКЛАДКИ СИСТЕМНЫЕ ЗАДАЧИ -->
+        {% if current_tab == 'system' %}
+            {% include 'Asistent/partials/system_schedules_tab.html' %}
+        {% endif %}
+        
+        
+    </div>
+</div>
+{% endblock %}

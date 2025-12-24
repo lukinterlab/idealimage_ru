@@ -1,0 +1,46 @@
+{% load static %}
+
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-xxl-3 g-2 mb-5">
+    {% for post in page_obj  %}
+    
+    <div class="col">
+       
+      <div class="card sh-35 hover-img-scale-up hover-reveal">
+        {% if post.kartinka %}
+        <img src="{{ post.kartinka.url }}" class="card-img h-100 scale" alt="card image" />
+        {% endif %}
+        <div class="card-img-overlay d-flex flex-column justify-content-between reveal-content">
+          <div class="row g-0">
+            <div class="col-auto pe-3">
+              <i data-cs-icon="eye" class="text-white me-1" data-cs-size="15"></i>
+              <span class="align-middle text-white">{{ post.views }}</span>
+            </div>
+            <div class="col-auto pe-3">
+              <i data-cs-icon="message" class="text-white me-1" data-cs-size="15"></i>
+              <span class="align-middle text-white">{{ post.comments.count }}</span>
+            </div>
+          </div>
+          <div class="row g-0">
+            <div class="col pe-2">
+              <a href="{{ post.get_absolute_url }}" class="stretched-link">
+                <h1>{{ post.title }}</h1>
+              </a>
+              <div class="d-inline-block">
+                <div class="text-white"><span>{{ post.description|truncatechars:200 }}</span></div>
+              </div>
+            </div>
+          </div>
+          {% if request.user.is_authenticated %}
+                <a href='{% url "blog:post_update" post.slug %}' >
+                    <span class="badge rounded-pill bg-primary me-1 position-absolute e-3 t-n2 z-index-1">
+                        <button type="button" class="btn btn-primary w-100 me-2">редактировать статью</button>
+                    </span>
+                </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+

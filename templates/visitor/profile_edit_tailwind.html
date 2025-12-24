@@ -1,0 +1,179 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-heading font-bold text-gray-900 mb-2">Редактирование профиля</h1>
+        <p class="text-gray-600">Обновите информацию о вашем профиле</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 fade-in">
+        <form method="post" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors or user_form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+                {{ form.non_field_errors }}
+                {{ user_form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            <!-- Avatar Upload -->
+            <div class="flex items-start space-x-6">
+                <div class="flex-shrink-0">
+                    <img id="avatar-preview" 
+                         src="{{ profile.get_avatar }}" 
+                         alt="Avatar" 
+                         class="w-32 h-32 rounded-full object-cover border-4 border-gray-200">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Фото профиля
+                    </label>
+                    <input type="file" 
+                           name="{{ form.avatar.name }}" 
+                           id="{{ form.avatar.id_for_label }}"
+                           accept="image/*"
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:opacity-90 transition-all"
+                           onchange="previewAvatar(event)">
+                    {% if form.avatar.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.avatar.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-2 text-xs text-gray-500">JPG, PNG или GIF. Максимум 5MB.</p>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-200 pt-8">
+                <h2 class="text-xl font-heading font-bold text-gray-900 mb-6">Основная информация</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Username -->
+                    <div>
+                        <label for="{{ user_form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Имя пользователя *
+                        </label>
+                        <input type="text" 
+                               name="{{ user_form.username.name }}" 
+                               id="{{ user_form.username.id_for_label }}"
+                               value="{{ user_form.username.value }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all {% if user_form.username.errors %}border-red-500{% endif %}"
+                               required>
+                        {% if user_form.username.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ user_form.username.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="{{ user_form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email *
+                        </label>
+                        <input type="email" 
+                               name="{{ user_form.email.name }}" 
+                               id="{{ user_form.email.id_for_label }}"
+                               value="{{ user_form.email.value }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all {% if user_form.email.errors %}border-red-500{% endif %}"
+                               required>
+                        {% if user_form.email.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ user_form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- First Name -->
+                    <div>
+                        <label for="{{ user_form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Имя
+                        </label>
+                        <input type="text" 
+                               name="{{ user_form.first_name.name }}" 
+                               id="{{ user_form.first_name.id_for_label }}"
+                               value="{{ user_form.first_name.value|default:'' }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                    </div>
+
+                    <!-- Last Name -->
+                    <div>
+                        <label for="{{ user_form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Фамилия
+                        </label>
+                        <input type="text" 
+                               name="{{ user_form.last_name.name }}" 
+                               id="{{ user_form.last_name.id_for_label }}"
+                               value="{{ user_form.last_name.value|default:'' }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bio -->
+            <div class="border-t border-gray-200 pt-8">
+                <label for="{{ form.bio.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    О себе
+                </label>
+                <textarea name="{{ form.bio.name }}" 
+                          id="{{ form.bio.id_for_label }}"
+                          rows="4"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all {% if form.bio.errors %}border-red-500{% endif %}"
+                          placeholder="Расскажите о себе...">{{ form.bio.value|default:'' }}</textarea>
+                {% if form.bio.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.bio.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-2 text-xs text-gray-500">Краткое описание для вашего профиля</p>
+            </div>
+
+            <!-- Specialty -->
+            {% if form.spez %}
+            <div>
+                <label for="{{ form.spez.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Специализация
+                </label>
+                <input type="text" 
+                       name="{{ form.spez.name }}" 
+                       id="{{ form.spez.id_for_label }}"
+                       value="{{ form.spez.value|default:'' }}"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                       placeholder="Например: писатель, блогер, фотограф">
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                <a href="{% url 'Visitor:profile_detail' slug=profile.slug %}" 
+                   class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium">
+                    Отмена
+                </a>
+                <button type="submit" 
+                        class="px-8 py-3 gradient-primary text-white rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg transform hover:scale-[1.02]">
+                    Сохранить изменения
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Password Change Link -->
+    <div class="mt-8 bg-gray-50 rounded-xl p-6 border border-gray-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-heading font-semibold text-gray-900 mb-1">Безопасность</h3>
+                <p class="text-sm text-gray-600">Измените свой пароль в настройках аккаунта</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewAvatar(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatar-preview').src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+{% endblock %}

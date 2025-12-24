@@ -1,0 +1,78 @@
+{% extends 'base_tailwind.html' %} 
+{% load static %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8 fade-in">
+        <h1 class="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-4">
+            Удаление статьи
+        </h1>
+        <nav class="flex text-sm text-gray-600 dark:text-gray-400" aria-label="breadcrumb">
+            <a href="/" class="hover:text-primary transition-colors">Главная</a>
+            <span class="mx-2">/</span>
+            <a href="{% url 'blog:post_list' %}" class="hover:text-primary transition-colors">Блог</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-900 dark:text-white">Удаление</span>
+        </nav>
+    </div>
+
+    <!-- Delete Confirmation Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden fade-in">
+        <!-- Warning Header -->
+        <div class="bg-gradient-to-r from-red-500 to-pink-600 p-6">
+            <div class="flex items-center text-white">
+                <svg class="w-12 h-12 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <div>
+                    <h2 class="text-2xl font-heading font-bold">Внимание!</h2>
+                    <p class="text-red-100 mt-1">Это действие необратимо</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-8">
+            <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-6 rounded-lg mb-8">
+                <p class="text-gray-900 dark:text-white text-lg">
+                    Вы собираетесь удалить статью:
+                </p>
+                <p class="text-red-600 dark:text-red-400 font-bold text-xl mt-2">
+                    {{ post.title }}
+                </p>
+                <p class="text-gray-600 dark:text-gray-400 mt-4">
+                    Вы подтверждаете свое действие?
+                </p>
+            </div>
+
+            <!-- Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold px-8 py-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Да, удалить статью
+                    </button>
+                    <a href="{{ post.get_absolute_url }}" class="flex-1 px-8 py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-center">
+                        Отменить
+                    </a>
+                </div>
+            </form>
+
+            <!-- Additional Info -->
+            <div class="mt-8 pt-6 border-t dark:border-gray-700">
+                <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    После удаления восстановить статью будет невозможно
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

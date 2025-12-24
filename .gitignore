@@ -1,0 +1,132 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Django
+*.log
+*.pot
+*.pyc
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media
+/staticfiles
+/static
+
+# Environment variables
+.env
+.envrc
+.env.local
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Media files (уже в git, но новые не добавляем автоматически)
+/media/*.jpg
+/media/*.png
+/media/*.gif
+/media/*.webp
+/media/*.mp4
+/media/*.avi
+
+# Temporary files
+tmp/
+*.tmp
+*.bak
+*.cache
+
+# System
+qcluster.pid
+runserver.pid
+*.pid
+
+# Node modules (если есть)
+node_modules/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+
+# Backup files
+*.backup
+*.sql
+*.dump
+
+# Python virtual environments
+*_venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Translations
+*.mo
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Database
+*.db
+*.sqlite
+
+# GigaIDE
+.gigaide/
+
+# Nested git repositories
+idealimage_ru/
+
+# Well-known (кроме важных файлов)
+.well-known/*.txt
+!google*.html
+!yandex*.html
+

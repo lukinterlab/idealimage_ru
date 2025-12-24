@@ -1,0 +1,61 @@
+<!-- Start ПАГИНАЦИЯ  -->
+<nav class="blog-pagination justify-content-center d-flex">
+	{% if is_paginated %}
+	<ul class="pagination">
+
+		<!-- СТРЕЛКА <<< -->
+		{% if page_obj.has_previous %}
+        <li class="page-item">
+            <a href="?page=1" class="page-link" aria-label="Previous">
+                <span aria-hidden="true">
+                    <span class="lnr lnr-chevron-left">1</span>
+                </span>
+            </a>
+        </li>
+        <li class="page-item">
+            <a href="?page={{ page_obj.previous_page_number }}"class="page-link" aria-label="Previous">
+                <span aria-hidden="true">
+                    <span class="lnr lnr-chevron-left"><<</span>
+                </span>
+            </a>
+        </li>
+        {% endif %}
+		<!-- СТРЕЛКА <<< -->
+
+		{% for p in paginator.page_range %}
+            {% if page_obj.number == p %}
+
+				<li class="page-item active">
+					<a href="?page={{ p }}" class="page-link">{{ p }}</a>
+				</li>
+
+        	{% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
+
+				<li class="page-item ">
+					<a href="?page={{ p }}" class="page-link">{{ p }}</a>
+				</li>
+
+            {% endif %}
+        {% endfor %}
+
+		<!-- СТРЕЛКА >>> -->
+		{% if page_obj.has_next %}
+        <li class="page-item">
+            <a href="?page={{ page_obj.next_page_number }}" class="page-link" aria-label="Next">
+                <span aria-hidden="true">
+					<span class="lnr lnr-chevron-right">>></span>
+				</span>
+            </a>
+        </li>
+        <li class="page-item">
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link" aria-label="Next">
+                <span aria-hidden="true">
+					<span class="lnr lnr-chevron-right">{{ page_obj.paginator.num_pages }}</span>
+				</span>
+            </a>
+        </li>
+        {% endif %}
+		<!-- СТРЕЛКА >>> -->
+		{%endif%}
+	</ul>
+</nav>

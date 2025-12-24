@@ -1,0 +1,423 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}Витрина рекламы - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12">
+    
+    <!-- Заголовок -->
+    <div class="text-center mb-12">
+        <div class="text-7xl mb-4">📢</div>
+        <h1 class="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            Витрина рекламы
+        </h1>
+        <p class="text-xl text-gray-600 dark:text-gray-300">
+            Разместите рекламу на сайте с аудиторией 50,000+ посетителей/месяц
+        </p>
+        <div class="mt-4 text-purple-600 dark:text-purple-400 font-semibold">
+            💡 Работает аукцион - кто больше заплатит, тот и размещается!
+        </div>
+    </div>
+
+    <!-- Статистика сайта -->
+    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-8 text-white mb-12">
+        <h3 class="text-2xl font-bold mb-6 text-center">Наша аудитория</h3>
+        <div class="grid md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="text-4xl font-bold mb-2">50K+</div>
+                <div class="text-sm opacity-90">посетителей/месяц</div>
+            </div>
+            <div class="text-center">
+                <div class="text-4xl font-bold mb-2">85%</div>
+                <div class="text-sm opacity-90">женщины 25-45 лет</div>
+            </div>
+            <div class="text-center">
+                <div class="text-4xl font-bold mb-2">18</div>
+                <div class="text-sm opacity-90">Telegram каналов</div>
+            </div>
+            <div class="text-center">
+                <div class="text-4xl font-bold mb-2">200+</div>
+                <div class="text-sm opacity-90">статей в неделю</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Рекламные места -->
+    <div class="mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+            Доступные рекламные места
+        </h2>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- Баннер на главной -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-gray-200 hover:shadow-xl transition-all duration-300">
+                <div class="mb-4">
+                    <div class="bg-gradient-to-r from-purple-400 to-pink-400 h-24 rounded-lg flex items-center justify-center text-white font-bold">
+                        728 × 90px
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    📢 Баннер на главной
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Топовое место - первое что видят посетители
+                </p>
+                
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4 text-sm">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">Показы/неделю:</span>
+                        <span class="font-bold text-gray-900 dark:text-white">~15,000</span>
+                    </div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">CTR (ожидаемый):</span>
+                        <span class="font-bold text-gray-900 dark:text-white">2-3%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Базовая цена:</span>
+                        <span class="font-bold text-purple-600">1000₽/неделя</span>
+                    </div>
+                </div>
+                
+                <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div class="text-xs text-gray-600 dark:text-gray-300 mb-2">Календарь занятости:</div>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                            <span class="text-gray-700 dark:text-gray-300">20-27 окт - Свободно</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+                            <span class="text-gray-700 dark:text-gray-300">27 окт - 3 ноя - Занято</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                            <span class="text-gray-700 dark:text-gray-300">3-10 ноя - Свободно</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-3">
+                    <div class="text-sm text-orange-600 dark:text-orange-400 font-semibold">
+                        🔥 Текущая ставка: 1500₽
+                    </div>
+                </div>
+                
+                <a href="{% url 'donations:donation_page' %}?purpose=ad_main_banner&amount=1500&title=Реклама:%20Баннер%20на%20главной&description=Размещение%20728×90%20на%207%20дней" 
+                   class="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition duration-200">
+                    Сделать ставку
+                </a>
+            </div>
+
+            <!-- Боковой блок -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-gray-200 hover:shadow-xl transition-all duration-300">
+                <div class="mb-4">
+                    <div class="bg-gradient-to-r from-blue-400 to-cyan-400 h-32 w-24 rounded-lg flex items-center justify-center text-white font-bold text-sm mx-auto">
+                        300×600
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    📍 Боковой блок (Sidebar)
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Постоянно в поле зрения при чтении
+                </p>
+                
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4 text-sm">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">Показы/неделю:</span>
+                        <span class="font-bold text-gray-900 dark:text-white">~20,000</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Базовая цена:</span>
+                        <span class="font-bold text-purple-600">1500₽/неделя</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'donations:donation_page' %}?purpose=ad_sidebar&amount=1500&title=Реклама:%20Боковой%20блок&description=Размещение%20300×600%20на%207%20дней" 
+                   class="block w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition duration-200">
+                    Купить место
+                </a>
+            </div>
+
+            <!-- В тексте статей -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-gray-200 hover:shadow-xl transition-all duration-300">
+                <div class="mb-4">
+                    <div class="bg-gradient-to-r from-orange-400 to-red-400 h-28 rounded-lg flex items-center justify-center text-white font-bold">
+                        336×280px
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    📝 Внутри статей
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Максимальное внимание читателей
+                </p>
+                
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4 text-sm">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">Показы/неделю:</span>
+                        <span class="font-bold text-gray-900 dark:text-white">~30,000</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Базовая цена:</span>
+                        <span class="font-bold text-purple-600">2000₽/неделя</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'donations:donation_page' %}?purpose=ad_in_content&amount=2000&title=Реклама:%20Внутри%20статей&description=Блок%20336×280%20в%20тексте%20на%207%20дней" 
+                   class="block w-full bg-gradient-to-r from-orange-600 to-red-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-orange-700 hover:to-red-700 transition duration-200">
+                    Купить место
+                </a>
+            </div>
+
+            <!-- Рекламная статья -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-gray-200 hover:shadow-xl transition-all duration-300">
+                <div class="mb-4 text-center">
+                    <div class="text-5xl">✍️</div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    Рекламная статья
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Нативная реклама с пометкой "Реклама"
+                </p>
+                
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4 text-sm">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">Просмотры:</span>
+                        <span class="font-bold text-gray-900 dark:text-white">2,000-5,000</span>
+                    </div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">Объём:</span>
+                        <span class="font-bold text-gray-900 dark:text-white">800+ слов</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Цена:</span>
+                        <span class="font-bold text-purple-600">от 2000₽</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'donations:donation_page' %}?purpose=ad_article&amount=2000&title=Рекламная%20статья&description=Нативная%20публикация%20с%20пометкой%20Реклама" 
+                   class="block w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition duration-200">
+                    Заказать статью
+                </a>
+            </div>
+
+            <!-- Бегущая строка -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-gray-200 hover:shadow-xl transition-all duration-300">
+                <div class="mb-4">
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-400 h-12 rounded-lg flex items-center px-4 overflow-hidden">
+                        <div class="text-white font-bold text-sm whitespace-nowrap animate-marquee">
+                            Ваша реклама здесь • Ваша реклама здесь • Ваша реклама здесь
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    📰 Бегущая строка (Ticker)
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Постоянно прокручивается вверху сайта
+                </p>
+                
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4 text-sm">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">Показы/неделю:</span>
+                        <span class="font-bold text-gray-900 dark:text-white">~50,000</span>
+                    </div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">Длина текста:</span>
+                        <span class="font-bold text-gray-900 dark:text-white">до 100 символов</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Базовая цена:</span>
+                        <span class="font-bold text-purple-600">3000₽/неделя</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'donations:donation_page' %}?purpose=ad_ticker&amount=3000&title=Бегущая%20строка&description=Текст%20до%20100%20символов%20на%207%20дней" 
+                   class="block w-full bg-gradient-to-r from-yellow-600 to-orange-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-yellow-700 hover:to-orange-700 transition duration-200">
+                    Купить место
+                </a>
+            </div>
+
+            <!-- Telegram-посты -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-gray-200 hover:shadow-xl transition-all duration-300">
+                <div class="mb-4 text-center">
+                    <div class="text-5xl">✈️</div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    Посты в Telegram
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Реклама в наших 18 каналах
+                </p>
+                
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4 text-sm">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">Охват:</span>
+                        <span class="font-bold text-gray-900 dark:text-white">~30,000 подписчиков</span>
+                    </div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600 dark:text-gray-300">Каналов:</span>
+                        <span class="font-bold text-gray-900 dark:text-white">18 тематических</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Цена:</span>
+                        <span class="font-bold text-purple-600">от 1500₽/пост</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'donations:donation_page' %}?purpose=ad_telegram&amount=1500&title=Пост%20в%20Telegram&description=Реклама%20в%2018%20каналах" 
+                   class="block w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition duration-200">
+                    Заказать пост
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Пакетные предложения -->
+    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-2xl p-8 mb-12 border-2 border-yellow-200">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+            🎁 Пакетные предложения (экономия до 30%)
+        </h2>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">Пакет "Старт"</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Баннер + Статья
+                </p>
+                <div class="text-3xl font-bold text-orange-600 mb-2">2700₽</div>
+                <div class="text-xs text-green-600 mb-4">Вместо 3000₽</div>
+                <a href="{% url 'donations:donation_page' %}?purpose=ad_pack_start&amount=2700&title=Пакет%20Старт&description=Баннер%20+%20Статья%20со%20скидкой" 
+                   class="block w-full bg-orange-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-700 transition">
+                    Купить
+                </a>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">Пакет "Профи"</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    2 баннера + 2 статьи (месяц)
+                </p>
+                <div class="text-3xl font-bold text-orange-600 mb-2">9900₽</div>
+                <div class="text-xs text-green-600 mb-4">Вместо 12000₽</div>
+                <a href="{% url 'donations:donation_page' %}?purpose=ad_pack_pro&amount=9900&title=Пакет%20Профи&description=2%20баннера%20+%202%20статьи%20на%20месяц" 
+                   class="block w-full bg-orange-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-700 transition">
+                    Купить
+                </a>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">Индивидуальное</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Персональный пакет под ваши цели
+                </p>
+                <div class="text-3xl font-bold text-orange-600 mb-2">?</div>
+                <div class="text-xs text-gray-500 mb-4">По договорённости</div>
+                <a href="mailto:idealimage.orel@yandex.ru" 
+                   class="block w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 transition">
+                    Написать
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Преимущества -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            Почему рекламироваться у нас выгодно:
+        </h2>
+        
+        <div class="grid md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="text-4xl mb-3">🎯</div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">Целевая аудитория</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    85% женщины 25-45 лет, интересующиеся модой и красотой
+                </p>
+            </div>
+
+            <div class="text-center">
+                <div class="text-4xl mb-3">📈</div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">Быстрый рост</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    +200% трафика за последние 3 месяца благодаря AI-контенту
+                </p>
+            </div>
+
+            <div class="text-center">
+                <div class="text-4xl mb-3">🤖</div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">AI-модерация</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Автоматическая проверка рекламы на соответствие правилам
+                </p>
+            </div>
+
+            <div class="text-center">
+                <div class="text-4xl mb-3">📊</div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">Статистика</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Личный кабинет с подробной аналитикой (показы, клики, CTR)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Как работает аукцион -->
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-8 mb-8 border-2 border-blue-200">
+        <div class="flex items-start gap-4">
+            <div class="text-5xl">💡</div>
+            <div class="flex-1">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                    Как работает аукцион?
+                </h3>
+                <div class="space-y-3 text-gray-700 dark:text-gray-300 text-sm">
+                    <p>
+                        <strong>1.</strong> У каждого рекламного места есть <strong>базовая цена</strong> (минимальная ставка)
+                    </p>
+                    <p>
+                        <strong>2.</strong> Если кто-то уже купил это место - вы видите <strong>текущую ставку</strong>
+                    </p>
+                    <p>
+                        <strong>3.</strong> Вы можете перебить ставку, предложив <strong>больше денег</strong>
+                    </p>
+                    <p>
+                        <strong>4.</strong> Кто предложил больше всех - тот и размещается!
+                    </p>
+                    <p class="text-purple-600 dark:text-purple-400 font-semibold">
+                        💰 Вытесненному рекламодателю возвращаются деньги или предлагаются альтернативные даты
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка назад -->
+    <div class="text-center">
+        <a href="{% url 'donations:services_page' %}" class="text-purple-600 dark:text-purple-400 hover:underline">
+            ← Вернуться к списку услуг
+        </a>
+    </div>
+
+</div>
+
+<style>
+@keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+.animate-marquee {
+    animation: marquee 10s linear infinite;
+}
+</style>
+{% endblock %}
+

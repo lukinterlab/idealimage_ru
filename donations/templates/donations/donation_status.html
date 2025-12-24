@@ -1,0 +1,147 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}Статус доната{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+        
+        <!-- Статус успешно -->
+        {% if donation.status == 'succeeded' %}
+        <div class="text-center">
+            <div class="mb-6">
+                <i class="fas fa-check-circle text-green-500 text-6xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">
+                Спасибо за вашу поддержку!
+            </h1>
+            <p class="text-lg text-gray-600 mb-6">
+                Ваш донат на сумму <span class="font-bold text-purple-600">{{ donation.amount }} ₽</span> успешно получен
+            </p>
+            
+            <div class="bg-green-50 rounded-lg p-6 mb-6">
+                <p class="text-green-800">
+                    <i class="fas fa-envelope mr-2"></i>
+                    Благодарственное письмо отправлено на {{ donation.user_email }}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Статус в обработке -->
+        {% elif donation.status == 'processing' or donation.status == 'pending' %}
+        <div class="text-center">
+            <div class="mb-6">
+                <i class="fas fa-spinner fa-spin text-orange-500 text-6xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">
+                Платеж в обработке
+            </h1>
+            <p class="text-lg text-gray-600 mb-6">
+                Мы ожидаем подтверждения платежа на сумму {{ donation.amount }} ₽
+            </p>
+            
+            <div class="bg-orange-50 rounded-lg p-6 mb-6">
+                <p class="text-orange-800">
+                    <i class="fas fa-clock mr-2"></i>
+                    Обычно подтверждение занимает несколько минут
+                </p>
+            </div>
+            
+            <button onclick="checkStatus()" 
+                    class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Обновить статус
+            </button>
+        </div>
+        
+        <!-- Статус отменено -->
+        {% elif donation.status == 'canceled' %}
+        <div class="text-center">
+            <div class="mb-6">
+                <i class="fas fa-times-circle text-red-500 text-6xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">
+                Платеж отменен
+            </h1>
+            <p class="text-lg text-gray-600 mb-6">
+                Платеж на сумму {{ donation.amount }} ₽ был отменен
+            </p>
+            
+            <a href="{% url 'donations:donation_page' %}" 
+               class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-redo mr-2"></i>
+                Попробовать снова
+            </a>
+        </div>
+        
+        <!-- Статус возврат -->
+        {% elif donation.status == 'refunded' %}
+        <div class="text-center">
+            <div class="mb-6">
+                <i class="fas fa-undo text-blue-500 text-6xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">
+                Средства возвращены
+            </h1>
+            <p class="text-lg text-gray-600 mb-6">
+                Возврат средств в размере {{ donation.amount }} ₽ выполнен
+            </p>
+        </div>
+        {% endif %}
+        
+        <!-- Детали доната -->
+        <div class="mt-8 border-t pt-6">
+            <h3 class="font-bold text-gray-900 mb-4">Детали платежа</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">ID транзакции:</span>
+                    <span class="font-mono text-gray-900">{{ donation.id }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Дата создания:</span>
+                    <span class="text-gray-900">{{ donation.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                {% if donation.completed_at %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Дата завершения:</span>
+                    <span class="text-gray-900">{{ donation.completed_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                {% endif %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Способ оплаты:</span>
+                    <span class="text-gray-900">{{ donation.get_payment_method_display }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопки действий -->
+        <div class="mt-8 flex justify-center space-x-4">
+            <a href="{% url 'donations:donation_list' %}" 
+               class="text-purple-600 hover:text-purple-700 font-semibold">
+                <i class="fas fa-list mr-2"></i>
+                Посмотреть все донаты
+            </a>
+            <a href="/" 
+               class="text-gray-600 hover:text-gray-700 font-semibold">
+                <i class="fas fa-home mr-2"></i>
+                На главную
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function checkStatus() {
+    location.reload();
+}
+
+// Автообновление для статусов в обработке
+{% if donation.status == 'processing' or donation.status == 'pending' %}
+setTimeout(function() {
+    location.reload();
+}, 10000); // Обновляем каждые 10 секунд
+{% endif %}
+</script>
+{% endblock %}

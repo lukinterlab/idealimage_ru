@@ -1,0 +1,42 @@
+{% load static %}
+
+<!-- Правый СИДИБАР-->
+{% block sidibar %}
+<div class="col-12 col-xl-2 col-xxl-2">
+  <div class="row">
+    
+     <!-- Yandex -->
+    
+    <!-- Yandex -->
+    
+    <!-- Categories Start include "meny/dop/categories.html"-->
+    {% block Categories %}
+    {% include "meny/dop/tags.html"  %}
+    {% endblock Categories %}
+    <!-- Categories End -->
+    
+    <!-- Yandex -->
+    
+    <!-- Yandex -->
+    
+    <!-- Tags Start include "meny/dop/tags.html"-->
+    {% block Tags %}
+    {% include "meny/dop/authors.html"  %}
+    {% endblock Tags %}
+    <!-- Tags End -->
+    
+    <!-- Yandex -->
+    
+    <!-- Yandex   -->
+
+    <!-- AUTHORS Start -->
+    {% block AUTHORS  %}
+    {
+    {% endblock AUTHORS  %}
+    <!-- AUTHORS End -->
+    
+    
+
+  </div>
+</div>
+{% endblock sidibar %}

@@ -1,0 +1,1483 @@
+{% extends 'donations/base_bonuses.html' %}
+{% load static %}
+
+{% block title %}Дашборд бонусов - Админ{% endblock %}
+
+{% block bonuses_content %}
+<!-- Заголовок и навигация -->
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            💰 Дашборд бонусов авторов
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+            Текущая неделя: {{ week_start|date:"d.m.Y" }} - {{ week_end|date:"d.m.Y" }}
+        </p>
+    </div>
+    <div class="flex gap-3">
+        <a href="{% url 'donations:payment_registry' %}" 
+           class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+            📋 Реестр выплат
+        </a>
+        <a href="/admin/donations/weeklyreport/" 
+           class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+            📊 Отчеты
+        </a>
+        <a href="/admin/donations/" 
+           class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+            ⚙️ Django Admin
+        </a>
+    </div>
+</div>
+
+<!-- Общая статистика текущей недели -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="stat-card border-l-4 border-blue-500">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Активных авторов</p>
+        <p class="text-4xl font-bold text-blue-600 dark:text-blue-400">
+            {{ current_week.active_authors_count|default:0 }}
+        </p>
+    </div>
+    
+    <div class="stat-card border-l-4 border-green-500">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Донатов за неделю</p>
+        <p class="text-4xl font-bold text-green-600 dark:text-green-400">
+            {{ current_week.total_donations|default:0|floatformat:2 }}₽
+        </p>
+        <p class="text-xs text-gray-500 mt-1">{{ current_week.donations_count|default:0 }} платежей</p>
+    </div>
+    
+    <div class="stat-card border-l-4 border-purple-500">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Статей за неделю</p>
+        <p class="text-4xl font-bold text-purple-600 dark:text-purple-400">
+            {{ current_week.authors_with_articles|default:0 }}
+        </p>
+    </div>
+    
+    <div class="stat-card border-l-4 border-orange-500">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Заданий выполнено</p>
+        <p class="text-4xl font-bold text-orange-600 dark:text-orange-400">
+            {{ current_week.authors_with_tasks|default:0 }}
+        </p>
+    </div>
+</div>
+
+<!-- Последний отчет -->
+{% if latest_report %}
+<div class="stat-card mb-8 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+    <h3 class="text-xl font-bold mb-4">📈 Последний зафиксированный отчет</h3>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <p class="opacity-75 text-sm">Период</p>
+            <p class="font-semibold">{{ latest_report.week_start|date:"d.m" }} - {{ latest_report.week_end|date:"d.m.Y" }}</p>
+        </div>
+        <div>
+            <p class="opacity-75 text-sm">Авторов</p>
+            <p class="font-semibold text-2xl">{{ latest_report.authors_count }}</p>
+        </div>
+        <div>
+            <p class="opacity-75 text-sm">Бонусов</p>
+            <p class="font-semibold text-2xl">{{ latest_report.total_bonuses|floatformat:2 }}₽</p>
+        </div>
+        <div>
+            <p class="opacity-75 text-sm">Статус</p>
+            <p class="font-semibold">
+                {% if latest_report.is_paid %}✅ Оплачен{% else %}⏳ Ожидает оплаты{% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Распределение по ролям -->
+<div class="stat-card mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">👥 Распределение авторов по ролям</h3>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {% for role_stat in roles_stats %}
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center">
+            <div class="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center" 
+                 style="background-color: {{ role_stat.role.color }}20;">
+                <span class="text-2xl">
+                    {% if role_stat.role.level == 1 %}🌱
+                    {% elif role_stat.role.level == 2 %}✍️
+                    {% elif role_stat.role.level == 3 %}📚
+                    {% else %}🏆{% endif %}
+                </span>
+            </div>
+            <p class="font-semibold text-gray-900 dark:text-white">{{ role_stat.role.name }}</p>
+            <p class="text-2xl font-bold" style="color: {{ role_stat.role.color }};">{{ role_stat.authors_count }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ role_stat.role.bonus_percentage }}% от донатов</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Таблица авторов -->
+<div class="stat-card mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">📊 Статистика авторов за текущую неделю</h3>
+    {% if authors_stats %}
+    <div class="overflow-x-auto">
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Автор</th>
+                    <th>Роль</th>
+                    <th>Статьи</th>
+                    <th>Лайки</th>
+                    <th>Комментарии</th>
+                    <th>Просмотры</th>
+                    <th>Задания</th>
+                    <th>Баллы</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stats in authors_stats %}
+                <tr>
+                    <td class="font-semibold">
+                        <a href="/admin/auth/user/{{ stats.author.id }}/change/" target="_blank"
+                           class="text-purple-600 dark:text-purple-400 hover:underline">
+                            {{ stats.author.get_full_name|default:stats.author.username }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if stats.current_role %}
+                        <span class="role-badge" style="background-color: {{ stats.current_role.color }}20; color: {{ stats.current_role.color }};">
+                            {{ stats.current_role.name }}
+                        </span>
+                        {% else %}
+                        <span class="role-badge bg-gray-100 text-gray-600">Стажёр</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ stats.articles_count }}</td>
+                    <td>{{ stats.total_likes }}</td>
+                    <td>{{ stats.total_comments }}</td>
+                    <td>{{ stats.total_views }}</td>
+                    <td>{{ stats.completed_tasks_count }}</td>
+                    <td class="font-bold text-yellow-600 dark:text-yellow-400">{{ stats.calculated_points|floatformat:1 }}</td>
+                    <td>
+                        <button onclick="showAuthorDetails({{ stats.author.id }})" 
+                                class="text-purple-600 dark:text-purple-400 hover:underline text-sm">
+                            Детали
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center py-8 text-gray-500 dark:text-gray-400">Нет активных авторов за эту неделю</p>
+    {% endif %}
+</div>
+
+<!-- Донаты за неделю -->
+<div class="stat-card mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">💝 Донаты за текущую неделю</h3>
+    {% if week_donations %}
+    <div class="overflow-x-auto">
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Донатер</th>
+                    <th>Сумма</th>
+                    <th>Статья</th>
+                    <th>Автор статьи</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donation in week_donations|slice:":20" %}
+                <tr>
+                    <td>{{ donation.completed_at|date:"d.m.Y H:i" }}</td>
+                    <td>{{ donation.get_donor_name|truncatechars:30 }}</td>
+                    <td class="font-semibold text-green-600 dark:text-green-400">{{ donation.amount }}₽</td>
+                    <td>
+                        {% if donation.article %}
+                        <a href="{% url 'blog:post_detail' donation.article.slug %}" target="_blank"
+                           class="text-purple-600 dark:text-purple-400 hover:underline">
+                            {{ donation.article.title|truncatechars:40 }}
+                        </a>
+                        {% else %}
+                        <span class="text-gray-500">Общий донат</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if donation.article_author %}
+                        <a href="/admin/auth/user/{{ donation.article_author.id }}/change/" target="_blank"
+                           class="text-purple-600 dark:text-purple-400 hover:underline">
+                            {{ donation.article_author.get_full_name|default:donation.article_author.username }}
+                        </a>
+                        {% else %}-{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if week_donations.count > 20 %}
+    <p class="text-center mt-4 text-gray-500 dark:text-gray-400 text-sm">
+        ...и ещё {{ week_donations.count|add:"-20" }} донатов
+    </p>
+    {% endif %}
+    {% else %}
+    <p class="text-center py-8 text-gray-500 dark:text-gray-400">Нет донатов за эту неделю</p>
+    {% endif %}
+</div>
+
+<!-- Неоплаченные выплаты -->
+{% if pending_payments %}
+<div class="stat-card mb-8 border-l-4 border-orange-500">
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">⏳ Неоплаченные выплаты</h3>
+    <div class="overflow-x-auto">
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Автор</th>
+                    <th>Период</th>
+                    <th>К выплате</th>
+                    <th>Выплачено</th>
+                    <th>Осталось</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in pending_payments %}
+                <tr>
+                    <td class="font-semibold">{{ payment.author.get_full_name|default:payment.author.username }}</td>
+                    <td>{{ payment.week_report.week_start|date:"d.m" }} - {{ payment.week_report.week_end|date:"d.m.Y" }}</td>
+                    <td class="font-semibold">{{ payment.amount_to_pay }}₽</td>
+                    <td class="text-green-600 dark:text-green-400">{{ payment.paid_amount }}₽</td>
+                    <td class="text-orange-600 dark:text-orange-400 font-semibold">
+                        {{ payment.amount_to_pay|add:"-"|add:payment.paid_amount }}₽
+                    </td>
+                    <td>
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold
+                            {% if payment.status == 'pending' %}bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400
+                            {% elif payment.status == 'partial' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400
+                            {% endif %}">
+                            {{ payment.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-4 text-center">
+        <a href="{% url 'donations:payment_registry' %}" 
+           class="inline-flex items-center px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors">
+            Обработать выплаты →
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Недавние штрафы и премии -->
+{% if recent_adjustments %}
+<div class="stat-card mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">⚖️ Недавние корректировки</h3>
+    <div class="space-y-3">
+        {% for adj in recent_adjustments %}
+        <div class="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                        {% if adj.type == 'penalty' %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
+                        {% else %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400{% endif %}">
+                        {% if adj.type == 'penalty' %}Штраф{% else %}Премия{% endif %}
+                    </span>
+                    <span class="font-semibold text-gray-900 dark:text-white">
+                        {{ adj.author.get_full_name|default:adj.author.username }}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ adj.reason|truncatechars:100 }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    {{ adj.get_applied_to_display }} | Создал: {{ adj.created_by.username|default:"AI Агент" }}
+                </p>
+            </div>
+            <div class="text-right ml-4">
+                <p class="text-xl font-bold {% if adj.type == 'penalty' %}text-red-600 dark:text-red-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+                    {% if adj.type == 'penalty' %}-{% else %}+{% endif %}{{ adj.amount }}{% if adj.amount_type == 'percentage' %}%{% else %}₽{% endif %}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Виджет ролей и формул -->
+<div class="stat-card mb-8">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">💎 Роли и формулы расчета</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Управление системой рангов и весов активности</p>
+        </div>
+        <button onclick="openCreateRoleModal()"
+                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+            + Новая роль
+        </button>
+    </div>
+    
+    <div id="rolesWidget" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for role in all_roles %}
+        <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 hover:border-purple-500 dark:hover:border-purple-400 transition-colors cursor-pointer"
+             onclick="openRoleModal({{ role.id }})"
+             data-role-id="{{ role.id }}">
+            <!-- Заголовок роли -->
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: {{ role.color }}"></div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">{{ role.name }}</h4>
+                </div>
+                <span class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                    Ур. {{ role.level }}
+                </span>
+            </div>
+            
+            <!-- Основные параметры -->
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">От донатов:</span>
+                    <span class="font-semibold text-gray-900 dark:text-white">{{ role.bonus_percentage }}%</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">Стоимость балла:</span>
+                    <span class="font-semibold text-gray-900 dark:text-white">{{ role.point_value }}₽</span>
+                </div>
+                
+                {% if role.formula %}
+                <div class="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Веса активности:</p>
+                    <div class="grid grid-cols-2 gap-1 text-xs">
+                        <span class="text-gray-600 dark:text-gray-400">📝 {{ role.formula.articles_weight }}</span>
+                        <span class="text-gray-600 dark:text-gray-400">❤️ {{ role.formula.likes_weight }}</span>
+                        <span class="text-gray-600 dark:text-gray-400">💬 {{ role.formula.comments_weight }}</span>
+                        <span class="text-gray-600 dark:text-gray-400">✅ {{ role.formula.tasks_weight }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-xs text-orange-600 dark:text-orange-400">⚠️ Формула не настроена</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">
+            Роли не созданы. Нажмите "+ Новая роль" чтобы начать.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Калькулятор бонусов автора -->
+<div class="stat-card mb-8">
+    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl p-8">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center flex items-center justify-center gap-2">
+            <span class="text-3xl">💰</span>
+            Калькулятор дохода автора (неделя)
+        </h3>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Левая колонка - входные данные -->
+            <div class="space-y-4">
+                <!-- Выбор роли -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">
+                        🏆 Роль автора
+                    </label>
+                    <select id="bonus-calc-role" 
+                            class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-center text-lg font-semibold"
+                            onchange="updateBonusCalculator()">
+                        <option value="">Выберите роль...</option>
+                        {% for role in all_roles %}
+                        <option value="{{ role.id }}" 
+                                data-point-value="{{ role.point_value }}"
+                                data-articles-weight="{{ role.formula.articles_weight|default:10 }}"
+                                data-likes-weight="{{ role.formula.likes_weight|default:0.5 }}"
+                                data-comments-weight="{{ role.formula.comments_weight|default:1 }}"
+                                data-views-weight="{{ role.formula.views_weight|default:0.01 }}"
+                                data-tasks-weight="{{ role.formula.tasks_weight|default:5 }}">
+                            {{ role.name }} (1 балл = {{ role.point_value }}₽)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Статей за неделю -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">
+                        📝 Статей за неделю
+                    </label>
+                    <input type="number" id="bonus-calc-articles" value="10" min="0" max="100"
+                           class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-center text-xl font-bold"
+                           oninput="calculateBonus()">
+                </div>
+                
+                <!-- Просмотров (общее) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">
+                        👁️ Просмотров (всего за неделю)
+                    </label>
+                    <input type="number" id="bonus-calc-views" value="5000" min="0" max="1000000" step="100"
+                           class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-center text-xl font-bold"
+                           oninput="calculateBonus()">
+                </div>
+                
+                <!-- Лайков (общее) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">
+                        ❤️ Лайков (всего за неделю)
+                    </label>
+                    <input type="number" id="bonus-calc-likes" value="500" min="0" max="50000" step="10"
+                           class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-center text-xl font-bold"
+                           oninput="calculateBonus()">
+                </div>
+                
+                <!-- Комментариев (общее) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">
+                        💬 Комментариев (всего за неделю)
+                    </label>
+                    <input type="number" id="bonus-calc-comments" value="300" min="0" max="50000" step="10"
+                           class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-center text-xl font-bold"
+                           oninput="calculateBonus()">
+                </div>
+                
+                <!-- Выполненных заданий -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">
+                        ✅ Выполненных заданий
+                    </label>
+                    <input type="number" id="bonus-calc-tasks" value="5" min="0" max="100"
+                           class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-center text-xl font-bold"
+                           oninput="calculateBonus()">
+                </div>
+            </div>
+            
+            <!-- Правая колонка - результаты -->
+            <div class="space-y-4">
+                <!-- Результат расчета -->
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-8 text-white text-center">
+                    <p class="text-sm opacity-90 mb-2">Потенциальный бонус за неделю</p>
+                    <p class="text-5xl font-bold mb-2" id="bonus-result">0₽</p>
+                    <p class="text-sm opacity-75">Только баллы активности</p>
+                </div>
+                
+                <!-- Детали расчета -->
+                <div class="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-3">
+                    <h4 class="font-bold text-gray-900 dark:text-white mb-3">📊 Детализация расчета</h4>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 dark:text-gray-300">📝 За статьи:</span>
+                            <span class="font-bold text-gray-900 dark:text-white" id="bonus-detail-articles">0 баллов</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 dark:text-gray-300">👁️ За просмотры:</span>
+                            <span class="font-bold text-gray-900 dark:text-white" id="bonus-detail-views">0 баллов</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 dark:text-gray-300">❤️ За лайки:</span>
+                            <span class="font-bold text-gray-900 dark:text-white" id="bonus-detail-likes">0 баллов</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 dark:text-gray-300">💬 За комментарии:</span>
+                            <span class="font-bold text-gray-900 dark:text-white" id="bonus-detail-comments">0 баллов</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 dark:text-gray-300">✅ За задания:</span>
+                            <span class="font-bold text-gray-900 dark:text-white" id="bonus-detail-tasks">0 баллов</span>
+                        </div>
+                        
+                        <div class="border-t-2 border-gray-300 dark:border-gray-600 pt-2 mt-3">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-gray-900 dark:text-white">ИТОГО баллов:</span>
+                                <span class="font-bold text-blue-600 dark:text-blue-400 text-lg" id="bonus-detail-total">0</span>
+                            </div>
+                            <div class="flex justify-between items-center mt-1">
+                                <span class="text-gray-700 dark:text-gray-300">Стоимость балла:</span>
+                                <span class="font-bold text-gray-900 dark:text-white" id="bonus-detail-rate">0₽</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Формула активной роли -->
+                <div id="bonus-formula-display" class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg hidden">
+                    <p class="text-sm text-purple-900 dark:text-purple-300 font-semibold mb-2">
+                        💡 Формула для выбранной роли:
+                    </p>
+                    <div class="text-xs text-purple-800 dark:text-purple-200 space-y-1">
+                        <div>📝 Статья = <span id="formula-articles">10</span> баллов</div>
+                        <div>👁️ Просмотр = <span id="formula-views">0.01</span> балла</div>
+                        <div>❤️ Лайк = <span id="formula-likes">0.5</span> балла</div>
+                        <div>💬 Комментарий = <span id="formula-comments">1</span> балл</div>
+                        <div>✅ Задание = <span id="formula-tasks">5</span> баллов</div>
+                    </div>
+                </div>
+                
+                <!-- Подсказка -->
+                <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                    <p class="text-xs text-yellow-900 dark:text-yellow-200">
+                        ℹ️ <strong>Примечание:</strong> Это базовый расчет баллов активности. 
+                        К нему могут добавляться донаты от читателей, премии и вычитаться штрафы.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Виджет штрафов и премий (аккордеон) -->
+<div class="stat-card mb-8">
+    <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="togglePenaltiesAccordion()">
+        <div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg id="penaltiesAccordionIcon" class="w-6 h-6 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+                ⚡ Штрафы и Премии
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Управление корректировками бонусов авторов</p>
+        </div>
+        <button onclick="event.stopPropagation(); openCreatePenaltyModal()"
+                class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors">
+            + Добавить
+        </button>
+    </div>
+    
+    <div id="penaltiesAccordionContent" class="hidden mt-4">
+        <div id="penaltiesWidget" class="space-y-3">
+            <!-- Список штрафов/премий будет загружаться через JavaScript -->
+            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                Загрузка...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<div class="grid grid-cols-1 gap-6 mb-8">
+    <div class="stat-card text-center cursor-pointer hover:scale-105 transition-transform"
+         onclick="generateWeeklyReport()">
+        <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Создать отчет</h4>
+        <p class="text-sm text-gray-600 dark:text-gray-400">За прошлую неделю</p>
+    </div>
+</div>
+
+<!-- Ссылки на другие разделы -->
+<div class="flex justify-center gap-4">
+    <a href="/asistent/admin-panel/" 
+       class="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
+        🤖 AI и задания
+    </a>
+    <a href="/admin/" 
+       class="inline-flex items-center px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors">
+        ⚙️ Django Admin
+    </a>
+</div>
+
+<!-- Модальное окно для просмотра/редактирования роли -->
+<div id="roleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeModals(event)">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white" id="roleModalTitle">Редактирование роли</h2>
+            <button onclick="closeModals()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <form id="roleForm" class="space-y-6">
+            <input type="hidden" id="roleId" name="roleId">
+            
+            <!-- Секция: Основные параметры роли -->
+            <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📌 Основные параметры</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Название роли</label>
+                        <input type="text" id="roleName" name="name" required
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Уровень (1-4)</label>
+                        <input type="number" id="roleLevel" name="level" min="1" max="10" required
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Процент от донатов (%)</label>
+                        <input type="number" id="roleBonusPercentage" name="bonus_percentage" step="0.01" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Стоимость балла (₽)</label>
+                        <input type="number" id="rolePointValue" name="point_value" step="0.01" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Цвет роли</label>
+                        <input type="color" id="roleColor" name="color"
+                               class="w-full h-10 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Описание</label>
+                    <textarea id="roleDescription" name="description" rows="2"
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+                </div>
+            </div>
+            
+            <!-- Секция: Формула расчета баллов -->
+            <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">⚙️ Формула расчета баллов</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">📝 Вес статьи</label>
+                        <input type="number" id="articlesWeight" name="articles_weight" step="0.1" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">❤️ Вес лайка</label>
+                        <input type="number" id="likesWeight" name="likes_weight" step="0.1" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">💬 Вес комментария</label>
+                        <input type="number" id="commentsWeight" name="comments_weight" step="0.1" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">👁️ Вес просмотра</label>
+                        <input type="number" id="viewsWeight" name="views_weight" step="0.001" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">✅ Вес задания</label>
+                        <input type="number" id="tasksWeight" name="tasks_weight" step="0.1" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Минимум баллов (требование)</label>
+                        <input type="number" id="minPointsRequired" name="min_points_required" step="0.1" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Минимум статей (требование)</label>
+                        <input type="number" id="minArticlesRequired" name="min_articles_required" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div class="flex justify-between gap-4">
+                <button type="button" onclick="deleteRole()" id="deleteRoleBtn"
+                        class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                    🗑️ Удалить роль
+                </button>
+                <div class="flex gap-4">
+                    <button type="button" onclick="closeModals()"
+                            class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                        Отмена
+                    </button>
+                    <button type="submit"
+                            class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+                        💾 Сохранить
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для создания роли -->
+<div id="createRoleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeModals(event)">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Создать новую роль</h2>
+            <button onclick="closeModals()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <form id="createRoleForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Название роли *</label>
+                    <input type="text" name="name" required placeholder="Например: Стажёр"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Уровень *</label>
+                    <input type="number" name="level" min="1" max="10" required placeholder="1"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Процент от донатов (%)</label>
+                    <input type="number" name="bonus_percentage" step="0.01" min="0" placeholder="10.00"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Стоимость балла (₽)</label>
+                    <input type="number" name="point_value" step="0.01" min="0" placeholder="1.00"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Цвет</label>
+                    <input type="color" name="color" value="#6B7280"
+                           class="w-full h-10 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="button" onclick="closeModals()"
+                        class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                    Отмена
+                </button>
+                <button type="submit"
+                        class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+                    ✨ Создать
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для создания штрафа/премии -->
+<div id="createPenaltyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeModals(event)">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Добавить штраф/премию</h2>
+            <button onclick="closeModals()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <form id="createPenaltyForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Автор *</label>
+                    <select name="author_id" required id="penaltyAuthorSelect"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">Выберите автора...</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Тип *</label>
+                    <select name="type" required
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="penalty">Штраф</option>
+                        <option value="reward">Премия</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Тип суммы *</label>
+                    <select name="amount_type" required
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="fixed">Фиксированная сумма (₽)</option>
+                        <option value="percentage">Процент от бонуса (%)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Сумма *</label>
+                    <input type="number" name="amount" step="0.01" min="0" required placeholder="100.00"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Применение *</label>
+                    <select name="applied_to" required
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="one_time">Разовый</option>
+                        <option value="weekly">Еженедельный</option>
+                        <option value="monthly">Ежемесячный</option>
+                    </select>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Причина *</label>
+                    <textarea name="reason" required rows="3" placeholder="Опишите причину штрафа/премии..."
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="button" onclick="closeModals()"
+                        class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                    Отмена
+                </button>
+                <button type="submit"
+                        class="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors">
+                    ✅ Добавить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования штрафа/премии -->
+<div id="editPenaltyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeModals(event)">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white" id="editPenaltyTitle">Редактировать</h2>
+            <button onclick="closeModals()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <form id="editPenaltyForm" class="space-y-4">
+            <input type="hidden" id="editPenaltyId" name="penalty_id">
+            
+            <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    <span class="font-semibold">Автор:</span> <span id="editPenaltyAuthor"></span>
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <span class="font-semibold">Тип:</span> <span id="editPenaltyType"></span>
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Сумма *</label>
+                    <input type="number" name="amount" id="editPenaltyAmount" step="0.01" min="0" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Применение *</label>
+                    <select name="applied_to" id="editPenaltyAppliedTo" required
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="one_time">Разовый</option>
+                        <option value="weekly">Еженедельный</option>
+                        <option value="monthly">Ежемесячный</option>
+                    </select>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Причина *</label>
+                    <textarea name="reason" id="editPenaltyReason" required rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+                </div>
+            </div>
+            
+            <div class="flex justify-between gap-4 mt-6">
+                <button type="button" onclick="deletePenalty()" id="deletePenaltyBtn"
+                        class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                    🗑️ Удалить
+                </button>
+                <div class="flex gap-4">
+                    <button type="button" onclick="closeModals()"
+                            class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                        Отмена
+                    </button>
+                    <button type="submit"
+                            class="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors">
+                        💾 Сохранить
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let currentRoles = [];
+let currentPenalties = [];
+let currentAuthors = [];
+
+// Загрузить данные при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    loadRoles();
+    loadAuthors();
+});
+
+// Загрузить список ролей
+async function loadRoles() {
+    try {
+        const response = await fetch('/donations/api/roles/');
+        const data = await response.json();
+        
+        if (data.success) {
+            currentRoles = data.roles;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки ролей:', error);
+    }
+}
+
+// Открыть модальное окно роли
+function openRoleModal(roleId) {
+    const role = currentRoles.find(r => r.id === roleId);
+    if (!role) return;
+    
+    // Заполняем форму
+    document.getElementById('roleId').value = role.id;
+    document.getElementById('roleName').value = role.name;
+    document.getElementById('roleLevel').value = role.level;
+    document.getElementById('roleBonusPercentage').value = role.bonus_percentage;
+    document.getElementById('rolePointValue').value = role.point_value;
+    document.getElementById('roleColor').value = role.color;
+    document.getElementById('roleDescription').value = role.description || '';
+    
+    // Заполняем формулу, если есть
+    if (role.formula) {
+        document.getElementById('articlesWeight').value = role.formula.articles_weight;
+        document.getElementById('likesWeight').value = role.formula.likes_weight;
+        document.getElementById('commentsWeight').value = role.formula.comments_weight;
+        document.getElementById('viewsWeight').value = role.formula.views_weight;
+        document.getElementById('tasksWeight').value = role.formula.tasks_weight;
+        document.getElementById('minPointsRequired').value = role.formula.min_points_required;
+        document.getElementById('minArticlesRequired').value = role.formula.min_articles_required;
+    } else {
+        // Значения по умолчанию
+        document.getElementById('articlesWeight').value = 10.0;
+        document.getElementById('likesWeight').value = 0.5;
+        document.getElementById('commentsWeight').value = 1.0;
+        document.getElementById('viewsWeight').value = 0.01;
+        document.getElementById('tasksWeight').value = 5.0;
+        document.getElementById('minPointsRequired').value = 0;
+        document.getElementById('minArticlesRequired').value = 0;
+    }
+    
+    document.getElementById('roleModalTitle').textContent = `Редактирование роли: ${role.name}`;
+    document.getElementById('roleModal').classList.remove('hidden');
+}
+
+// Открыть модальное окно создания роли
+function openCreateRoleModal() {
+    document.getElementById('createRoleModal').classList.remove('hidden');
+}
+
+// Закрыть все модальные окна
+function closeModals(event) {
+    if (!event || event.target.classList.contains('hidden') || event.currentTarget === event.target) {
+        document.getElementById('roleModal').classList.add('hidden');
+        document.getElementById('createRoleModal').classList.add('hidden');
+    }
+}
+
+// Обработка формы редактирования роли
+document.getElementById('roleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const roleId = document.getElementById('roleId').value;
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+        // Обновляем роль
+        const roleResponse = await fetch(`/donations/api/role/${roleId}/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const roleResult = await roleResponse.json();
+        
+        // Обновляем формулу
+        const formulaResponse = await fetch(`/donations/api/formula/${roleId}/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const formulaResult = await formulaResponse.json();
+        
+        if (roleResult.success && formulaResult.success) {
+            alert('✅ Роль и формула успешно обновлены!');
+            location.reload();
+        } else {
+            alert('❌ Ошибка: ' + (roleResult.error || formulaResult.error));
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка обновления роли');
+    }
+});
+
+// Обработка формы создания роли
+document.getElementById('createRoleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+        const response = await fetch('/donations/api/role/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message);
+            location.reload();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка создания роли');
+    }
+});
+
+// Удалить роль
+async function deleteRole() {
+    const roleId = document.getElementById('roleId').value;
+    const roleName = document.getElementById('roleName').value;
+    
+    if (!confirm(`Вы уверены, что хотите удалить роль "${roleName}"?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/donations/api/role/${roleId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message);
+            location.reload();
+        } else {
+            alert('❌ ' + result.error);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка удаления роли');
+    }
+}
+
+// Вспомогательная функция для получения CSRF токена
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showAuthorDetails(authorId) {
+    // В будущем можно сделать модальное окно с детальной статистикой
+    window.open(`/admin/donations/authorstats/?author__id__exact=${authorId}`, '_blank');
+}
+
+function generateWeeklyReport() {
+    if (confirm('Сгенерировать отчет за прошлую неделю?')) {
+        window.location.href = '/admin/donations/weeklyreport/';
+    }
+}
+
+// ================== КАЛЬКУЛЯТОР БОНУСОВ ==================
+
+let currentCalcRole = null;
+
+// Обновить калькулятор при выборе роли
+function updateBonusCalculator() {
+    const select = document.getElementById('bonus-calc-role');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (!selectedOption.value) {
+        currentCalcRole = null;
+        document.getElementById('bonus-formula-display').classList.add('hidden');
+        document.getElementById('bonus-result').textContent = '0₽';
+        return;
+    }
+    
+    // Извлекаем данные роли из data-атрибутов
+    currentCalcRole = {
+        id: selectedOption.value,
+        name: selectedOption.textContent,
+        point_value: parseFloat(selectedOption.dataset.pointValue),
+        articles_weight: parseFloat(selectedOption.dataset.articlesWeight),
+        likes_weight: parseFloat(selectedOption.dataset.likesWeight),
+        comments_weight: parseFloat(selectedOption.dataset.commentsWeight),
+        views_weight: parseFloat(selectedOption.dataset.viewsWeight),
+        tasks_weight: parseFloat(selectedOption.dataset.tasksWeight)
+    };
+    
+    // Обновляем отображение формулы
+    document.getElementById('formula-articles').textContent = currentCalcRole.articles_weight;
+    document.getElementById('formula-views').textContent = currentCalcRole.views_weight;
+    document.getElementById('formula-likes').textContent = currentCalcRole.likes_weight;
+    document.getElementById('formula-comments').textContent = currentCalcRole.comments_weight;
+    document.getElementById('formula-tasks').textContent = currentCalcRole.tasks_weight;
+    document.getElementById('bonus-formula-display').classList.remove('hidden');
+    
+    // Пересчитываем бонус
+    calculateBonus();
+}
+
+// Рассчитать бонус
+function calculateBonus() {
+    if (!currentCalcRole) {
+        document.getElementById('bonus-result').textContent = '0₽';
+        document.getElementById('bonus-detail-articles').textContent = '0 баллов';
+        document.getElementById('bonus-detail-views').textContent = '0 баллов';
+        document.getElementById('bonus-detail-likes').textContent = '0 баллов';
+        document.getElementById('bonus-detail-comments').textContent = '0 баллов';
+        document.getElementById('bonus-detail-tasks').textContent = '0 баллов';
+        document.getElementById('bonus-detail-total').textContent = '0';
+        document.getElementById('bonus-detail-rate').textContent = '0₽';
+        return;
+    }
+    
+    // Получаем значения из полей
+    const articles = parseInt(document.getElementById('bonus-calc-articles').value) || 0;
+    const views = parseInt(document.getElementById('bonus-calc-views').value) || 0;
+    const likes = parseInt(document.getElementById('bonus-calc-likes').value) || 0;
+    const comments = parseInt(document.getElementById('bonus-calc-comments').value) || 0;
+    const tasks = parseInt(document.getElementById('bonus-calc-tasks').value) || 0;
+    
+    // Рассчитываем баллы по каждой категории
+    const pointsArticles = articles * currentCalcRole.articles_weight;
+    const pointsViews = views * currentCalcRole.views_weight;
+    const pointsLikes = likes * currentCalcRole.likes_weight;
+    const pointsComments = comments * currentCalcRole.comments_weight;
+    const pointsTasks = tasks * currentCalcRole.tasks_weight;
+    
+    const totalPoints = pointsArticles + pointsViews + pointsLikes + pointsComments + pointsTasks;
+    
+    // Конвертация баллов в рубли
+    const earnings = Math.round(totalPoints * currentCalcRole.point_value);
+    
+    // Обновляем отображение результата
+    document.getElementById('bonus-result').textContent = earnings.toLocaleString('ru-RU') + '₽';
+    
+    // Обновляем детализацию
+    document.getElementById('bonus-detail-articles').textContent = Math.round(pointsArticles).toLocaleString('ru-RU') + ' баллов';
+    document.getElementById('bonus-detail-views').textContent = Math.round(pointsViews).toLocaleString('ru-RU') + ' баллов';
+    document.getElementById('bonus-detail-likes').textContent = Math.round(pointsLikes).toLocaleString('ru-RU') + ' баллов';
+    document.getElementById('bonus-detail-comments').textContent = Math.round(pointsComments).toLocaleString('ru-RU') + ' баллов';
+    document.getElementById('bonus-detail-tasks').textContent = Math.round(pointsTasks).toLocaleString('ru-RU') + ' баллов';
+    document.getElementById('bonus-detail-total').textContent = Math.round(totalPoints).toLocaleString('ru-RU');
+    document.getElementById('bonus-detail-rate').textContent = currentCalcRole.point_value + '₽';
+}
+
+// ================== ШТРАФЫ/ПРЕМИИ ==================
+
+// Загрузить список авторов (предзагрузка при старте страницы)
+async function loadAuthors() {
+    try {
+        const response = await fetch('/donations/api/authors/');
+        const data = await response.json();
+        
+        if (data.success && data.authors) {
+            currentAuthors = data.authors;
+            console.log(`📋 Предзагружено авторов: ${data.authors.length}`);
+            
+            // Опционально: можем заполнить select заранее
+            const select = document.getElementById('penaltyAuthorSelect');
+            if (select) {
+                select.innerHTML = '<option value="">Выберите автора...</option>';
+                
+                data.authors.forEach(author => {
+                    const option = document.createElement('option');
+                    option.value = author.id;
+                    option.textContent = `${author.full_name} (@${author.username})`;
+                    select.appendChild(option);
+                });
+            }
+        } else {
+            console.warn('⚠️ API авторов вернул пустой список');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка загрузки авторов:', error);
+    }
+}
+
+// Загрузить список штрафов/премий
+async function loadPenalties() {
+    try {
+        const response = await fetch('/donations/api/penalties/');
+        const data = await response.json();
+        
+        if (data.success) {
+            currentPenalties = data.penalties;
+            renderPenalties(data.penalties);
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки штрафов/премий:', error);
+    }
+}
+
+// Отобразить штрафы/премии
+function renderPenalties(penalties) {
+    const widget = document.getElementById('penaltiesWidget');
+    
+    if (penalties.length === 0) {
+        widget.innerHTML = `
+            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                Нет активных штрафов или премий
+            </div>
+        `;
+        return;
+    }
+    
+    widget.innerHTML = penalties.map(penalty => {
+        const isPenalty = penalty.type === 'penalty';
+        const bgColor = isPenalty ? 'bg-red-50 dark:bg-red-900/20' : 'bg-green-50 dark:bg-green-900/20';
+        const borderColor = isPenalty ? 'border-red-200 dark:border-red-800' : 'border-green-200 dark:border-green-800';
+        const textColor = isPenalty ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400';
+        const icon = isPenalty ? '⚠️' : '🎁';
+        
+        const amountText = penalty.amount_type === 'percentage' 
+            ? `${penalty.amount}%` 
+            : `${penalty.amount}₽`;
+        
+        return `
+            <div class="p-4 ${bgColor} border ${borderColor} rounded-lg cursor-pointer hover:shadow-md transition-shadow"
+                 onclick="openEditPenaltyModal(${penalty.id})">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-2xl">${icon}</span>
+                            <h4 class="font-bold ${textColor}">${penalty.type_display}</h4>
+                            <span class="text-lg font-bold ${textColor}">${amountText}</span>
+                        </div>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                            <span class="font-semibold">Автор:</span> ${penalty.author.full_name}
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            <span class="font-semibold">Применение:</span> ${penalty.applied_to_display}
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            ${penalty.reason}
+                        </p>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                        ${new Date(penalty.created_at).toLocaleDateString('ru-RU')}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Переключить аккордеон
+function togglePenaltiesAccordion() {
+    const content = document.getElementById('penaltiesAccordionContent');
+    const icon = document.getElementById('penaltiesAccordionIcon');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+        
+        // Загрузить штрафы/премии при открытии
+        loadPenalties();
+    } else {
+        content.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Открыть модальное окно создания штрафа/премии
+async function openCreatePenaltyModal() {
+    // Показываем индикатор загрузки в селекте
+    const select = document.getElementById('penaltyAuthorSelect');
+    select.innerHTML = '<option value="">Загрузка авторов...</option>';
+    
+    // Открываем модальное окно
+    document.getElementById('createPenaltyModal').classList.remove('hidden');
+    
+    // Загружаем авторов (если еще не загружены или обновляем)
+    try {
+        const response = await fetch('/donations/api/authors/');
+        const data = await response.json();
+        
+        if (data.success && data.authors) {
+            currentAuthors = data.authors;
+            
+            // Заполняем select
+            select.innerHTML = '<option value="">Выберите автора...</option>';
+            
+            data.authors.forEach(author => {
+                const option = document.createElement('option');
+                option.value = author.id;
+                option.textContent = `${author.full_name} (@${author.username})`;
+                select.appendChild(option);
+            });
+            
+            console.log(`✅ Загружено авторов: ${data.authors.length}`);
+        } else {
+            select.innerHTML = '<option value="">Ошибка загрузки авторов</option>';
+            console.error('Ошибка: API не вернул авторов');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки авторов:', error);
+        select.innerHTML = '<option value="">Ошибка загрузки авторов</option>';
+    }
+}
+
+// Открыть модальное окно редактирования
+function openEditPenaltyModal(penaltyId) {
+    const penalty = currentPenalties.find(p => p.id === penaltyId);
+    if (!penalty) return;
+    
+    document.getElementById('editPenaltyId').value = penalty.id;
+    document.getElementById('editPenaltyAuthor').textContent = penalty.author.full_name;
+    document.getElementById('editPenaltyType').textContent = penalty.type_display;
+    document.getElementById('editPenaltyAmount').value = penalty.amount;
+    document.getElementById('editPenaltyAppliedTo').value = penalty.applied_to;
+    document.getElementById('editPenaltyReason').value = penalty.reason;
+    
+    document.getElementById('editPenaltyTitle').textContent = `Редактировать: ${penalty.type_display}`;
+    document.getElementById('editPenaltyModal').classList.remove('hidden');
+}
+
+// Закрыть модальные окна (обновлено для штрафов)
+function closeModals(event) {
+    if (!event || event.target.classList.contains('hidden') || event.currentTarget === event.target) {
+        document.getElementById('roleModal')?.classList.add('hidden');
+        document.getElementById('createRoleModal')?.classList.add('hidden');
+        document.getElementById('createPenaltyModal')?.classList.add('hidden');
+        document.getElementById('editPenaltyModal')?.classList.add('hidden');
+    }
+}
+
+// Обработка формы создания штрафа/премии
+document.getElementById('createPenaltyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+        const response = await fetch('/donations/api/penalty/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message);
+            closeModals();
+            loadPenalties();
+            e.target.reset();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка создания');
+    }
+});
+
+// Обработка формы редактирования штрафа/премии
+document.getElementById('editPenaltyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const penaltyId = document.getElementById('editPenaltyId').value;
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+        const response = await fetch(`/donations/api/penalty/${penaltyId}/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message);
+            closeModals();
+            loadPenalties();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка обновления');
+    }
+});
+
+// Удалить штраф/премию
+async function deletePenalty() {
+    const penaltyId = document.getElementById('editPenaltyId').value;
+    
+    if (!confirm('Вы уверены, что хотите удалить эту запись?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/donations/api/penalty/${penaltyId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message);
+            closeModals();
+            loadPenalties();
+        } else {
+            alert('❌ ' + result.error);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка удаления');
+    }
+}
+</script>
+
+{% endblock %}
+

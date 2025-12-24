@@ -1,0 +1,131 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Список расписаний{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white mb-2">📋 Список расписаний</h1>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'schedule:schedule_create' %}" 
+                       class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors">
+                        ➕ Создать
+                    </a>
+                    <a href="{% url 'schedule:schedule_dashboard' %}" 
+                       class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">
+                        📊 Дашборд
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 mb-6">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">Поиск</label>
+                    <input type="text" name="search" value="{{ search }}" 
+                           class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                           placeholder="Название, теги...">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">Категория</label>
+                    <select name="category" class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white">
+                        <option value="">Все</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">Статус</label>
+                    <select name="is_active" class="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white">
+                        <option value="">Все</option>
+                        <option value="true" {% if is_active == "true" %}selected{% endif %}>Активные</option>
+                        <option value="false" {% if is_active == "false" %}selected{% endif %}>Неактивные</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                        🔍 Найти
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Таблица расписаний -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 overflow-hidden">
+            <table class="min-w-full divide-y divide-white/10">
+                <thead class="bg-white/5">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-300 uppercase">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-300 uppercase">Название</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-300 uppercase">Тип</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-300 uppercase">Статус</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-300 uppercase">Следующий запуск</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-300 uppercase">Действия</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/10">
+                    {% for schedule in schedules %}
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="px-6 py-4 text-white">#{{ schedule.id }}</td>
+                        <td class="px-6 py-4">
+                            <a href="{% url 'schedule:schedule_detail' schedule.id %}" class="text-white hover:text-blue-400 font-semibold">
+                                {{ schedule.name }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-gray-300">{{ schedule.get_strategy_type_display }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded text-xs {% if schedule.is_active %}bg-green-500/20 text-green-300{% else %}bg-gray-500/20 text-gray-300{% endif %}">
+                                {% if schedule.is_active %}Активно{% else %}Неактивно{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-300">
+                            {{ schedule.next_run|date:"d.m.Y H:i"|default:"—" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex gap-2">
+                                <a href="{% url 'schedule:schedule_detail' schedule.id %}" 
+                                   class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">
+                                    👁️
+                                </a>
+                                <form method="post" action="{% url 'schedule:schedule_toggle' schedule.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            class="px-3 py-1 {% if schedule.is_active %}bg-gray-600{% else %}bg-green-600{% endif %} hover:opacity-80 text-white text-xs rounded">
+                                        {% if schedule.is_active %}⏸️{% else %}▶️{% endif %}
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'schedule:schedule_run_now' schedule.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded">
+                                        🚀
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                            Расписания не найдены
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+

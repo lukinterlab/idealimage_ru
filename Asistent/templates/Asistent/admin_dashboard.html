@@ -1,0 +1,675 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Админ-панель AI-ассистента{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-5xl font-black text-white mb-2">
+                        📊 Админ-панель AI-ассистента
+                    </h1>
+                    <p class="text-xl text-gray-300">Полный мониторинг системы и метрики эффективности</p>
+                </div>
+                <div class="flex gap-3 flex-wrap">
+                    <a href="{% url 'asistent:ai_chat' %}" 
+                       class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        💬 AI-Чат
+                    </a>
+                    <a href="{% url 'asistent:ai_message_log' %}" 
+                       class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        📜 Журнал AI
+                    </a>
+                    <a href="{% url 'asistent:ai_schedules' %}" 
+                       class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        🤖 Расписания AI
+                    </a>
+                    <a href="{% url 'admin:Moderation_articlemoderationsettings_changelist' %}" 
+                       class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        🛡️ Модерация
+                    </a>
+                    <a href="{% url 'Home:master_admin_dashboard' %}" 
+                       class="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20 flex items-center gap-2">
+                        🏠 Главная панель
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Период выбора -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8">
+            <form method="get" class="flex items-center gap-4">
+                <label for="period" class="text-white font-semibold">Период анализа:</label>
+                <select name="period" id="period" onchange="this.form.submit()" 
+                        class="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    {% for p in available_periods %}
+                    <option value="{{ p }}" {% if p == period_days %}selected{% endif %} class="bg-gray-800">{{ p }} дней</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        <!-- Мониторинг запусков AI-расписаний -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
+            <div class="col-span-1 xl:col-span-2 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/15 shadow-lg shadow-purple-900/30">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-semibold text-white">Запуски расписаний</h2>
+                    <div class="flex items-center gap-3 text-sm">
+                        <span class="text-gray-300">Ошибок за 24 часа: <span class="text-rose-300 font-semibold">{{ failed_runs_24h }}</span></span>
+                        <a href="{% url 'asistent:schedule_runs' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">Открыть журнал →</a>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-white/10">
+                        <thead>
+                            <tr class="text-gray-300 uppercase text-xs tracking-wider">
+                                <th class="py-3 pr-6 text-left">Расписание</th>
+                                <th class="py-3 pr-6 text-left">Стратегия</th>
+                                <th class="py-3 pr-6 text-left">Статус</th>
+                                <th class="py-3 pr-6 text-left">Создано</th>
+                                <th class="py-3 text-left">Запуск</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/10 text-sm text-gray-100">
+                            {% for run in recent_schedule_runs %}
+                                <tr class="hover:bg-white/5 transition">
+                                    <td class="py-3 pr-6">
+                                        <div class="font-semibold text-white">{{ run.schedule.name }}</div>
+                                    </td>
+                                    <td class="py-3 pr-6 capitalize text-gray-200">{{ run.get_strategy_type_display }}</td>
+                                    <td class="py-3 pr-6">
+                                        {% if run.status == 'success' %}
+                                            <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300">Успех</span>
+                                        {% elif run.status == 'running' %}
+                                            <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-300">В процессе</span>
+                                        {% elif run.status == 'partial' %}
+                                            <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300">Частично</span>
+                                        {% else %}
+                                            <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-rose-500/20 text-rose-300">Ошибка</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 pr-6 text-gray-200">{{ run.created_count }}</td>
+                                    <td class="py-3 text-gray-300">{{ run.started_at|date:"d.m.Y H:i" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="py-6 text-center text-gray-400">Запусков пока не было</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-span-1 space-y-6">
+                <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/15">
+                    <h3 class="text-xl font-semibold text-white mb-4">Статистика за 24 часа</h3>
+                    {% with stats=schedule_run_stats_today %}
+                        <dl class="space-y-3 text-sm text-gray-200">
+                            <div class="flex justify-between">
+                                <dt class="text-gray-400">Всего запусков</dt>
+                                <dd class="font-semibold text-white">{{ stats.total|default:0 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-400">Успешных</dt>
+                                <dd class="font-semibold text-emerald-300">{{ stats.success|default:0 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-400">Частичных</dt>
+                                <dd class="font-semibold text-amber-300">{{ stats.partial|default:0 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-400">Ошибок</dt>
+                                <dd class="font-semibold text-rose-300">{{ stats.failed|default:0 }}</dd>
+                            </div>
+                        </dl>
+                    {% endwith %}
+                </div>
+                <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/15">
+                    <h3 class="text-xl font-semibold text-white mb-4">Статистика за 7 дней</h3>
+                    {% with stats=schedule_run_stats_week %}
+                        <dl class="space-y-3 text-sm text-gray-200">
+                            <div class="flex justify-between">
+                                <dt class="text-gray-400">Всего запусков</dt>
+                                <dd class="font-semibold text-white">{{ stats.total|default:0 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-400">Успешных</dt>
+                                <dd class="font-semibold text-emerald-300">{{ stats.success|default:0 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-400">Частичных</dt>
+                                <dd class="font-semibold text-amber-300">{{ stats.partial|default:0 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-400">Ошибок</dt>
+                                <dd class="font-semibold text-rose-300">{{ stats.failed|default:0 }}</dd>
+                            </div>
+                        </dl>
+                    {% endwith %}
+                </div>
+                <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/15">
+                    <h3 class="text-xl font-semibold text-white mb-4">Частые ошибки (7 дней)</h3>
+                    <ul class="space-y-2 text-sm text-gray-200">
+                        {% for item in schedule_run_failures %}
+                            <li class="flex justify-between">
+                                <span class="text-gray-300">{{ item.schedule__name }}</span>
+                                <span class="font-semibold text-rose-300">{{ item.total }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="text-gray-400">Ошибок за неделю не было</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/15">
+                    <h3 class="text-xl font-semibold text-white mb-4">Последние неуспешные запуски</h3>
+                    <ul class="space-y-3 text-sm text-gray-200">
+                        {% for run in recent_failed_runs %}
+                            <li class="border border-rose-500/30 bg-rose-500/10 rounded-xl p-3">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-white font-semibold">{{ run.schedule.name }}</span>
+                                    <span class="text-xs text-gray-200">{{ run.started_at|date:"d.m H:i" }}</span>
+                                </div>
+                                <div class="text-xs text-gray-200 mt-1">Статус: {{ run.get_status_display }}</div>
+                                {% if run.errors %}
+                                    <div class="text-xs text-rose-200 mt-2">{{ run.errors|first }}</div>
+                                {% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="text-gray-400">Ошибок пока нет 🎉</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        {% if dashboard_schedules %}
+        <h2 class="text-3xl font-bold text-white mb-4 flex items-center gap-3">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2V9.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0010.586 3H5zm5 7a1 1 0 011-1h4v5a1 1 0 01-1 1H6a1 1 0 01-1-1V5h5v4z" clip-rule="evenodd"></path>
+            </svg>
+            Управление расписаниями
+        </h2>
+
+        <div id="schedule-actions-toast" class="hidden mb-6 px-4 py-3 rounded-xl border text-sm font-medium"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6 mb-12">
+            {% for item in dashboard_schedules %}
+                {% with schedule=item.schedule latest=item.latest_run %}
+                <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/15 p-6 shadow-lg shadow-purple-900/20 flex flex-col gap-4" data-schedule-card="{{ schedule.id }}">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-xl font-semibold text-white">{{ schedule.name }}</h3>
+                            <p class="text-sm text-gray-300">
+                                {{ schedule.get_strategy_type_display }}{% if schedule.category %} • {{ schedule.category.title }}{% endif %}
+                            </p>
+                        </div>
+                        <span data-role="active-badge" class="px-3 py-1 rounded-lg text-xs font-semibold border {% if schedule.is_active %}bg-emerald-500/20 text-emerald-300 border-emerald-500/40{% else %}bg-gray-700/70 text-gray-300 border-gray-500/40{% endif %}">
+                            {% if schedule.is_active %}Активно{% else %}На паузе{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-200">
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between text-xs text-gray-400">
+                                <span>Последний запуск</span>
+                                <span data-role="last-run-time" class="text-gray-200">{{ item.last_run_display }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span data-role="last-run-status" class="px-3 py-1 rounded-lg text-xs font-semibold {{ item.latest_status_classes }}">{{ item.latest_status_label }}</span>
+                                {% if latest %}
+                                    <span class="text-xs text-gray-400">Создано: {{ latest.created_count }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between text-xs text-gray-400">
+                                <span>Следующий запуск</span>
+                                <span data-role="next-run-time" class="text-gray-200">{{ item.next_run_display }}</span>
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                Статей за запуск: <span class="text-gray-100 font-semibold">{{ schedule.articles_per_run }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        <button type="button"
+                                class="px-4 py-2 rounded-lg font-semibold text-sm bg-purple-600 hover:bg-purple-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                data-schedule-action="run"
+                                data-url="{% url 'asistent:run_ai_schedule' schedule.id %}">
+                            Запустить сейчас
+                        </button>
+                        <button type="button"
+                                class="px-4 py-2 rounded-lg font-semibold text-sm border border-white/30 text-white/90 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                data-schedule-action="toggle"
+                                data-role="toggle-btn"
+                                data-url="{% url 'asistent:toggle_ai_schedule' schedule.id %}">
+                            {% if schedule.is_active %}Поставить на паузу{% else %}Активировать{% endif %}
+                        </button>
+                        <a href="{% url 'asistent:edit_ai_schedule' schedule.id %}"
+                           class="px-3 py-2 rounded-lg text-sm text-blue-300 hover:text-blue-200 transition-colors border border-blue-400/30">
+                            Настроить →
+                        </a>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ================================================================== -->
+        <!-- GIGACHAT CONTROL CENTER - Полный мониторинг всех AI-процессов -->
+        <!-- ================================================================== -->
+        {% include 'Asistent/partials/_gigachat_control_center.html' %}
+        
+        <!-- Быстрая статистика заданий -->
+        <h2 class="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+            </svg>
+            Управление заданиями
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">На проверке</div>
+                <div class="text-4xl font-bold text-yellow-300 mb-2">{{ tasks_stats.tasks_for_review }}</div>
+                <a href="{% url 'asistent:tasks_management' %}" class="text-blue-400 hover:text-blue-300 text-sm">Перейти к проверке →</a>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Просрочено</div>
+                <div class="text-4xl font-bold text-red-300">{{ tasks_stats.overdue_tasks }}</div>
+                <div class="text-gray-400 text-sm mt-2">Требуют внимания</div>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Активных авторов</div>
+                <div class="text-4xl font-bold text-green-300">{{ tasks_stats.active_authors }}</div>
+                <div class="text-gray-400 text-sm mt-2">Работают над заданиями</div>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">AI статей сегодня</div>
+                <div class="text-4xl font-bold text-purple-300">{{ tasks_stats.ai_articles_today }}</div>
+                <div class="text-gray-400 text-sm mt-2">Сгенерировано</div>
+            </div>
+        </div>
+        
+        <!-- Ежедневная статистика AI -->
+        <h2 class="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+            </svg>
+            Статистика AI за сегодня
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Сгенерировано статей</div>
+                <div class="text-4xl font-bold text-white">{{ daily_stats.generated_today }}</div>
+                <div class="text-gray-400 text-sm mt-2">Опубликовано: {{ daily_stats.published_count }}</div>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Среднее время</div>
+                <div class="text-3xl font-bold text-white">{{ daily_stats.avg_generation_time }}</div>
+                <div class="text-gray-400 text-sm mt-2">{{ daily_stats.avg_generation_time_raw }} секунд</div>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Success Rate</div>
+                <div class="text-4xl font-bold {% if daily_stats.success_rate >= 90 %}text-green-300{% elif daily_stats.success_rate >= 70 %}text-yellow-300{% else %}text-red-300{% endif %}">
+                    {{ daily_stats.success_rate }}%
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style="width: {{ daily_stats.success_rate }}%"></div>
+                </div>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Средняя длина</div>
+                <div class="text-4xl font-bold text-white">{{ daily_stats.avg_word_count }}</div>
+                <div class="text-gray-400 text-sm mt-2">слов</div>
+            </div>
+        </div>
+        
+        <!-- Качество контента AI -->
+        <h2 class="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+            </svg>
+            Качество контента AI
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Всего статей</div>
+                <div class="text-4xl font-bold text-white">{{ quality_metrics.total_posts }}</div>
+                <div class="text-gray-400 text-sm mt-2">Опубликовано</div>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Средние просмотры</div>
+                <div class="text-3xl font-bold text-white">{{ quality_metrics.avg_views }}</div>
+                <div class="text-gray-400 text-sm mt-2">Всего: {{ quality_metrics.total_views }}</div>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Средние лайки</div>
+                <div class="text-3xl font-bold text-white">{{ quality_metrics.avg_likes }}</div>
+                <div class="text-gray-400 text-sm mt-2">Всего: {{ quality_metrics.total_likes }}</div>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Engagement Rate</div>
+                <div class="text-3xl font-bold text-purple-300">{{ quality_metrics.engagement_rate }}%</div>
+                <div class="text-gray-400 text-sm mt-2">Вовлеченность</div>
+            </div>
+        </div>
+        
+        <!-- AI vs Живые авторы -->
+        <h2 class="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            AI vs Живые авторы
+        </h2>
+        
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 overflow-hidden mb-12">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-white/5 border-b border-white/20">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-white font-semibold">Метрика</th>
+                            <th class="px-6 py-4 text-center text-white font-semibold">🤖 AI-Ассистент</th>
+                            <th class="px-6 py-4 text-center text-white font-semibold">👥 Живые авторы</th>
+                            <th class="px-6 py-4 text-center text-white font-semibold">Разница</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        <tr class="hover:bg-white/5">
+                            <td class="px-6 py-4 text-white font-semibold">Количество статей</td>
+                            <td class="px-6 py-4 text-center text-white">{{ ai_vs_human.ai.count }}</td>
+                            <td class="px-6 py-4 text-center text-white">{{ ai_vs_human.human.count }}</td>
+                            <td class="px-6 py-4 text-center">
+                                {% if ai_vs_human.ai.count > ai_vs_human.human.count %}
+                                <span class="text-green-300">↑ Лучше</span>
+                                {% else %}
+                                <span class="text-red-300">↓ Хуже</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-white/5">
+                            <td class="px-6 py-4 text-white font-semibold">Средние просмотры</td>
+                            <td class="px-6 py-4 text-center text-white">{{ ai_vs_human.ai.avg_views }}</td>
+                            <td class="px-6 py-4 text-center text-white">{{ ai_vs_human.human.avg_views }}</td>
+                            <td class="px-6 py-4 text-center">
+                                {% if ai_vs_human.ai.avg_views > ai_vs_human.human.avg_views %}
+                                <span class="text-green-300">↑ Лучше</span>
+                                {% else %}
+                                <span class="text-red-300">↓ Хуже</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-white/5">
+                            <td class="px-6 py-4 text-white font-semibold">Engagement Rate</td>
+                            <td class="px-6 py-4 text-center text-white">{{ ai_vs_human.ai.engagement_rate }}%</td>
+                            <td class="px-6 py-4 text-center text-white">{{ ai_vs_human.human.engagement_rate }}%</td>
+                            <td class="px-6 py-4 text-center">
+                                {% if ai_vs_human.ai.engagement_rate > ai_vs_human.human.engagement_rate %}
+                                <span class="text-green-300">↑ Лучше</span>
+                                {% else %}
+                                <span class="text-red-300">↓ Хуже</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Задания на проверке -->
+        {% if tasks_for_review %}
+        <h2 class="text-3xl font-bold text-white mb-6">Последние задания на проверке</h2>
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 overflow-hidden mb-12">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-white/5 border-b border-white/20">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-white font-semibold">Задание</th>
+                            <th class="px-6 py-4 text-left text-white font-semibold">Автор</th>
+                            <th class="px-6 py-4 text-left text-white font-semibold">Сдано</th>
+                            <th class="px-6 py-4 text-right text-white font-semibold">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for assignment in tasks_for_review %}
+                        <tr class="hover:bg-white/5">
+                            <td class="px-6 py-4 text-white">{{ assignment.task.title }}</td>
+                            <td class="px-6 py-4 text-white">{{ assignment.author.username }}</td>
+                            <td class="px-6 py-4 text-gray-300">{{ assignment.submitted_at|date:"d.m.Y H:i" }}</td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'asistent:tasks_management' %}" 
+                                   class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">
+                                    Проверить
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Просроченные задания -->
+        {% if overdue_tasks %}
+        <h2 class="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+            <svg class="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            Просроченные задания
+        </h2>
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-red-500/30 overflow-hidden mb-12">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-white/5 border-b border-white/20">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-white font-semibold">Задание</th>
+                            <th class="px-6 py-4 text-left text-white font-semibold">Deadline</th>
+                            <th class="px-6 py-4 text-left text-white font-semibold">Статус</th>
+                            <th class="px-6 py-4 text-right text-white font-semibold">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for task in overdue_tasks %}
+                        <tr class="hover:bg-white/5">
+                            <td class="px-6 py-4 text-white">{{ task.title }}</td>
+                            <td class="px-6 py-4 text-red-300">{{ task.deadline|date:"d.m.Y H:i" }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 bg-red-500/30 text-red-200 rounded-full text-xs font-semibold">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'asistent:edit_task' task.id %}" 
+                                   class="px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm">
+                                    Редактировать
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Футер -->
+        <div class="mt-12 p-6 bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 text-center">
+            <p class="text-gray-300">
+                📊 Обновлено: {{ now|date:"d.m.Y H:i" }} | 
+                🔄 <a href="?period={{ period_days }}" class="text-blue-400 hover:text-blue-300">Обновить данные</a> | 
+                📈 <a href="{% url 'asistent:ai_analytics_dashboard' %}" class="text-purple-400 hover:text-purple-300">Полная аналитика</a>
+            </p>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    const cards = document.querySelectorAll('[data-schedule-card]');
+    if (!cards.length) {
+        return;
+    }
+
+    const toastEl = document.getElementById('schedule-actions-toast');
+    let toastTimeout = null;
+
+    function getCookie(name) {
+        const value = document.cookie ? document.cookie.split('; ') : [];
+        for (let i = 0; i < value.length; i += 1) {
+            const parts = value[i].split('=');
+            const key = decodeURIComponent(parts[0]);
+            if (key === name) {
+                return decodeURIComponent(parts.slice(1).join('='));
+            }
+        }
+        return '';
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    function showToast(message, isSuccess) {
+        if (!toastEl) {
+            return;
+        }
+        toastEl.textContent = message;
+        toastEl.className = 'mb-6 px-4 py-3 rounded-xl border text-sm font-medium';
+        toastEl.classList.remove('hidden');
+        if (isSuccess) {
+            toastEl.classList.add('border-emerald-400/60', 'bg-emerald-500/10', 'text-emerald-200');
+        } else {
+            toastEl.classList.add('border-rose-400/60', 'bg-rose-500/10', 'text-rose-200');
+        }
+        if (toastTimeout) {
+            clearTimeout(toastTimeout);
+        }
+        toastTimeout = setTimeout(() => {
+            toastEl.classList.add('hidden');
+        }, 5000);
+    }
+
+    function setButtonState(button, loading) {
+        if (!button) {
+            return;
+        }
+        button.disabled = loading;
+        if (loading) {
+            button.classList.add('opacity-60', 'cursor-wait');
+        } else {
+            button.classList.remove('opacity-60', 'cursor-wait');
+        }
+    }
+
+    function updateCardState(card, data) {
+        const activeBadge = card.querySelector('[data-role="active-badge"]');
+        if (activeBadge) {
+            activeBadge.textContent = data.is_active ? 'Активно' : 'На паузе';
+            activeBadge.className = 'px-3 py-1 rounded-lg text-xs font-semibold border ' +
+                (data.is_active
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-gray-700/70 text-gray-300 border-gray-500/40');
+        }
+
+        const lastRunTime = card.querySelector('[data-role="last-run-time"]');
+        if (lastRunTime && data.last_run_display) {
+            lastRunTime.textContent = data.last_run_display;
+        }
+
+        const nextRunTime = card.querySelector('[data-role="next-run-time"]');
+        if (nextRunTime && data.next_run_display) {
+            nextRunTime.textContent = data.next_run_display;
+        }
+
+        const statusBadge = card.querySelector('[data-role="last-run-status"]');
+        if (statusBadge) {
+            const baseClasses = 'px-3 py-1 rounded-lg text-xs font-semibold ';
+            const extraClasses = data.latest_status_classes || 'bg-gray-600/60 text-gray-200';
+            statusBadge.className = baseClasses + extraClasses;
+            statusBadge.textContent = data.latest_status_label || 'Нет данных';
+        }
+
+        const toggleBtn = card.querySelector('[data-role="toggle-btn"]');
+        if (toggleBtn && data.toggle_label) {
+            toggleBtn.textContent = data.toggle_label;
+        }
+    }
+
+    function handleAction(event) {
+        const button = event.currentTarget;
+        const card = button.closest('[data-schedule-card]');
+        if (!card) {
+            return;
+        }
+
+        const url = button.dataset.url;
+        if (!url) {
+            return;
+        }
+
+        setButtonState(button, true);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ source: 'admin_dashboard' }),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((payload) => {
+                        throw new Error(payload.error || 'Ошибка сервера');
+                    }).catch(() => {
+                        throw new Error('Ошибка сервера');
+                    });
+                }
+                return response.json();
+            })
+            .then((payload) => {
+                if (!payload.success) {
+                    throw new Error(payload.error || 'Не удалось выполнить действие');
+                }
+                updateCardState(card, payload);
+                showToast(payload.message || 'Действие выполнено', true);
+            })
+            .catch((error) => {
+                console.error(error);
+                showToast(error.message || 'Не удалось выполнить действие', false);
+            })
+            .finally(() => {
+                setButtonState(button, false);
+            });
+    }
+
+    cards.forEach((card) => {
+        card.querySelectorAll('[data-schedule-action]').forEach((button) => {
+            button.addEventListener('click', handleAction);
+        });
+    });
+})();
+</script>
+{% endblock %}

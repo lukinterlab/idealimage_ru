@@ -1,0 +1,114 @@
+{% extends 'Asistent/base.html' %}
+
+{% block title %}Календарь заданий{% endblock %}
+
+{% block extra_css %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+<style>
+    #calendar {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .fc-event {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2><i class="fas fa-calendar"></i> Календарь заданий</h2>
+        <p class="text-muted">Планируйте и отслеживайте задания для авторов</p>
+    </div>
+    
+    <div class="col-md-12 mb-3">
+        <a href="{% url 'asistent:create_task' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Создать задание
+        </a>
+        <a href="{% url 'asistent:admin_dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад
+        </a>
+    </div>
+    
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно с информацией о задании -->
+<div class="modal fade" id="taskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskModalTitle">Информация о задании</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="taskModalBody">
+                <!-- Будет заполнено через JS -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/ru.global.min.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var events = {{ events|safe }};
+    
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'ru',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: events,
+        eventClick: function(info) {
+            var event = info.event;
+            var props = event.extendedProps;
+            
+            var html = `
+                <div class="mb-3">
+                    <strong>Название:</strong> ${event.title}
+                </div>
+                <div class="mb-3">
+                    <strong>Срок:</strong> ${event.start.toLocaleString('ru-RU')}
+                </div>
+                <div class="mb-3">
+                    <strong>Статус:</strong> <span class="badge" style="background-color: ${event.backgroundColor}">${props.status}</span>
+                </div>
+                ${props.assigned_to ? `<div class="mb-3"><strong>Автор:</strong> ${props.assigned_to}</div>` : ''}
+                <div class="mb-3">
+                    <strong>Награда:</strong> ${props.reward} ₽
+                </div>
+            `;
+            
+            document.getElementById('taskModalTitle').textContent = event.title;
+            document.getElementById('taskModalBody').innerHTML = html;
+            
+            var modal = new bootstrap.Modal(document.getElementById('taskModal'));
+            modal.show();
+        },
+        eventDidMount: function(info) {
+            info.el.style.borderLeft = '4px solid ' + info.event.backgroundColor;
+        }
+    });
+    
+    calendar.render();
+});
+</script>
+{% endblock %}
+

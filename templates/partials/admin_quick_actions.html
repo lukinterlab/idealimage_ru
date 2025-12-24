@@ -1,0 +1,154 @@
+<!-- Floating Action Button (FAB) - Панель быстрых действий для СУПЕРЮЗЕРА -->
+{% if user.is_superuser %}
+<div id="admin-fab" class="fixed bottom-24 right-6 z-[9999]">
+    
+    <!-- Меню быстрых действий (скрыто по умолчанию) -->
+    <div id="admin-fab-menu" class="mb-4 space-y-3" style="display: none;">
+        
+        <!-- Создать статью -->
+        <a href="/blog/post/create/" 
+           class="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white px-4 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+           data-tippy-content="Создать новую статью">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"></path>
+            </svg>
+            <span class="font-medium">Создать статью</span>
+        </a>
+        
+        <!-- Создать расписание -->
+        <a href="{% url 'asistent:create_ai_schedule' %}" 
+           class="flex items-center gap-3 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white px-4 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+           data-tippy-content="Создать расписание AI">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 7H7v6h6V7z"></path>
+                <path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="font-medium">Расписание AI</span>
+        </a>
+        
+        <!-- AI Чат -->
+        <a href="{% url 'asistent:ai_chat' %}" 
+           class="flex items-center gap-3 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white px-4 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+           data-tippy-content="Открыть AI-чат с суперюзером">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="font-medium">AI Чат</span>
+        </a>
+        
+        <!-- Синхронизация -->
+        <button onclick="syncSchedules()" 
+           class="flex items-center gap-3 bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-800 text-white px-4 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+           data-tippy-content="Синхронизировать расписания с Django-Q">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="font-medium">Синхронизация</span>
+        </button>
+        
+        <!-- Мониторинг -->
+        <a href="/admin/django_q/" target="_blank"
+           class="flex items-center gap-3 bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 text-white px-4 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+           data-tippy-content="Открыть мониторинг Django-Q">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+            </svg>
+            <span class="font-medium">Мониторинг</span>
+        </a>
+    </div>
+    
+    <!-- Главная кнопка FAB -->
+    <button id="admin-fab-btn" 
+            class="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 dark:from-purple-700 dark:to-pink-700 dark:hover:from-purple-800 dark:hover:to-pink-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 hover:rotate-90"
+            data-tippy-content="Быстрые действия">
+        <svg id="admin-fab-icon" class="w-8 h-8 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+        </svg>
+    </button>
+</div>
+
+<script>
+// Админская FAB панель (не путать с кнопкой донатов!)
+(function() {
+    const adminFabBtn = document.getElementById('admin-fab-btn');
+    const adminFabMenu = document.getElementById('admin-fab-menu');
+    const adminFabIcon = document.getElementById('admin-fab-icon');
+    
+    if (!adminFabBtn || !adminFabMenu) {
+        console.error('Админская FAB панель не найдена!');
+        return;
+    }
+    
+    console.log('✅ Админская FAB панель инициализирована');
+    
+    // Открытие/закрытие меню при клике на кнопку
+    adminFabBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        // Переключаем видимость меню
+        if (adminFabMenu.style.display === 'none' || adminFabMenu.style.display === '') {
+            adminFabMenu.style.display = 'block';
+            adminFabIcon.style.transform = 'rotate(45deg)';
+            console.log('📂 Админское меню открыто');
+        } else {
+            adminFabMenu.style.display = 'none';
+            adminFabIcon.style.transform = 'rotate(0deg)';
+            console.log('📁 Админское меню закрыто');
+        }
+    });
+    
+    // Закрытие меню при клике вне его
+    document.addEventListener('click', function(e) {
+        const adminFab = document.getElementById('admin-fab');
+        if (adminFab && !adminFab.contains(e.target)) {
+            adminFabMenu.style.display = 'none';
+            adminFabIcon.style.transform = 'rotate(0deg)';
+        }
+    });
+    
+    // Закрытие меню при нажатии Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            adminFabMenu.style.display = 'none';
+            adminFabIcon.style.transform = 'rotate(0deg)';
+        }
+    });
+})();
+
+// Синхронизация расписаний
+async function syncSchedules() {
+    try {
+        const response = await fetch('/asistent/admin-panel/sync-schedules/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        if (response.ok) {
+            alert('✅ Расписания синхронизированы с Django-Q!');
+        } else {
+            alert('❌ Ошибка синхронизации');
+        }
+    } catch (error) {
+        alert('❌ Ошибка: ' + error);
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endif %}
+

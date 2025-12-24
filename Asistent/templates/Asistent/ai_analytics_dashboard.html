@@ -1,0 +1,295 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8 px-4">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-2">
+                    📊 Аналитика AI-Ассистента
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Сравнение эффективности AI vs Авторы-люди
+                </p>
+            </div>
+            
+            <!-- Period Selector -->
+            <div class="flex items-center gap-3">
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Период:</label>
+                <select onchange="window.location.href='?period=' + this.value" 
+                        class="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary">
+                    {% for period in available_periods %}
+                    <option value="{{ period }}" {% if period == period_days %}selected{% endif %}>
+                        {{ period }} дней
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ROI Block -->
+    <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl shadow-xl p-8 mb-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">💰 Окупаемость AI-системы (ROI)</h2>
+                <div class="grid grid-cols-4 gap-6 mt-4">
+                    <div>
+                        <p class="text-sm opacity-80">Доход (донаты)</p>
+                        <p class="text-3xl font-bold">{{ analytics.roi.revenue|floatformat:0 }}₽</p>
+                    </div>
+                    <div>
+                        <p class="text-sm opacity-80">Расходы (API)</p>
+                        <p class="text-3xl font-bold">{{ analytics.roi.api_cost|floatformat:0 }}₽</p>
+                    </div>
+                    <div>
+                        <p class="text-sm opacity-80">Прибыль</p>
+                        <p class="text-3xl font-bold {% if analytics.roi.profit >= 0 %}text-white{% else %}text-red-200{% endif %}">
+                            {{ analytics.roi.profit|floatformat:0 }}₽
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm opacity-80">ROI</p>
+                        <p class="text-3xl font-bold">{{ analytics.roi.roi_percent|floatformat:1 }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-6 pt-6 border-t border-white/20">
+            <div class="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                    <span class="opacity-80">Статей сгенерировано:</span>
+                    <span class="font-bold ml-2">{{ analytics.roi.articles_generated }}</span>
+                </div>
+                <div>
+                    <span class="opacity-80">Стоимость/статья:</span>
+                    <span class="font-bold ml-2">{{ analytics.roi.cost_per_article|floatformat:2 }}₽</span>
+                </div>
+                <div>
+                    <span class="opacity-80">Доход/статья:</span>
+                    <span class="font-bold ml-2">{{ analytics.roi.revenue_per_article|floatformat:2 }}₽</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comparison: AI vs Authors -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- AI Statistics -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    🤖 AI-Ассистент
+                </h2>
+                <span class="px-4 py-2 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-lg font-bold text-lg">
+                    {{ analytics.comparison.ai.posts_count }} статей
+                </span>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-4 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg">
+                    <span class="text-gray-700 dark:text-gray-300 font-medium">Среднее просмотров</span>
+                    <span class="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{{ analytics.comparison.ai.avg_views|floatformat:0 }}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg">
+                    <span class="text-gray-700 dark:text-gray-300 font-medium">Среднее лайков</span>
+                    <span class="text-2xl font-bold text-red-600 dark:text-red-400">{{ analytics.comparison.ai.avg_likes|floatformat:0 }}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg">
+                    <span class="text-gray-700 dark:text-gray-300 font-medium">Среднее комментариев</span>
+                    <span class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ analytics.comparison.ai.avg_comments|floatformat:0 }}</span>
+                </div>
+                <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Общая активность</div>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                            <div class="text-lg font-bold text-cyan-600">{{ analytics.comparison.ai.total_views }}</div>
+                            <div class="text-xs text-gray-500">Просмотров</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-red-600">{{ analytics.comparison.ai.total_likes }}</div>
+                            <div class="text-xs text-gray-500">Лайков</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-purple-600">{{ analytics.comparison.ai.total_comments }}</div>
+                            <div class="text-xs text-gray-500">Комментариев</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Human Authors Statistics -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    ✍️ Авторы-люди
+                </h2>
+                <span class="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg font-bold text-lg">
+                    {{ analytics.comparison.human.posts_count }} статей
+                </span>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-4 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg">
+                    <span class="text-gray-700 dark:text-gray-300 font-medium">Среднее просмотров</span>
+                    <span class="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{{ analytics.comparison.human.avg_views|floatformat:0 }}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg">
+                    <span class="text-gray-700 dark:text-gray-300 font-medium">Среднее лайков</span>
+                    <span class="text-2xl font-bold text-red-600 dark:text-red-400">{{ analytics.comparison.human.avg_likes|floatformat:0 }}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg">
+                    <span class="text-gray-700 dark:text-gray-300 font-medium">Среднее комментариев</span>
+                    <span class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ analytics.comparison.human.avg_comments|floatformat:0 }}</span>
+                </div>
+                <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Общая активность</div>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                            <div class="text-lg font-bold text-cyan-600">{{ analytics.comparison.human.total_views }}</div>
+                            <div class="text-xs text-gray-500">Просмотров</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-red-600">{{ analytics.comparison.human.total_likes }}</div>
+                            <div class="text-xs text-gray-500">Лайков</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-purple-600">{{ analytics.comparison.human.total_comments }}</div>
+                            <div class="text-xs text-gray-500">Комментариев</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comparison Ratios -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            ⚖️ Сравнительный анализ
+        </h2>
+        <div class="grid grid-cols-3 gap-6">
+            <div class="text-center p-6 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Доля AI-статей</p>
+                <p class="text-4xl font-bold text-purple-600 dark:text-purple-400">
+                    {{ analytics.comparison.comparison.ai_posts_share|floatformat:1 }}%
+                </p>
+            </div>
+            <div class="text-center p-6 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Соотношение просмотров</p>
+                <p class="text-4xl font-bold text-cyan-600 dark:text-cyan-400">
+                    {{ analytics.comparison.comparison.ai_vs_human_views_ratio|floatformat:2 }}x
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {% if analytics.comparison.comparison.ai_vs_human_views_ratio > 1 %}
+                    AI просматривают больше
+                    {% elif analytics.comparison.comparison.ai_vs_human_views_ratio < 1 %}
+                    Авторов просматривают больше
+                    {% else %}
+                    Одинаково
+                    {% endif %}
+                </p>
+            </div>
+            <div class="text-center p-6 bg-gradient-to-br from-pink-50 to-red-50 dark:from-pink-900/20 dark:to-red-900/20 rounded-xl">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Соотношение вовлечённости</p>
+                <p class="text-4xl font-bold text-pink-600 dark:text-pink-400">
+                    {{ analytics.comparison.comparison.ai_vs_human_engagement_ratio|floatformat:2 }}x
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Лайки + Комментарии
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Best Topics -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            🏆 Топ-10 тем AI-статей
+        </h2>
+        {% if analytics.best_topics %}
+        <div class="space-y-3">
+            {% for topic in analytics.best_topics %}
+            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-750 rounded-lg hover:shadow-md transition-shadow">
+                <div class="flex-1">
+                    <a href="{{ topic.url }}" target="_blank" class="font-semibold text-gray-900 dark:text-white hover:text-primary">
+                        {{ forloop.counter }}. {{ topic.topic }}
+                    </a>
+                    <div class="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        <span>📁 {{ topic.category }}</span>
+                        <span>📅 {{ topic.created|date:"d.m.Y" }}</span>
+                    </div>
+                </div>
+                <div class="flex gap-4 text-sm">
+                    <div class="text-center">
+                        <p class="font-bold text-cyan-600">{{ topic.views }}</p>
+                        <p class="text-xs text-gray-500">Просмотры</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold text-red-600">{{ topic.likes }}</p>
+                        <p class="text-xs text-gray-500">Лайки</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold text-purple-600">{{ topic.comments }}</p>
+                        <p class="text-xs text-gray-500">Комм.</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold text-green-600">{{ topic.engagement_score }}</p>
+                        <p class="text-xs text-gray-500">Рейтинг</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-center text-gray-500 dark:text-gray-400 py-8">
+            Нет AI-статей за выбранный период
+        </p>
+        {% endif %}
+    </div>
+    
+    <!-- Task Statistics -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            ✍️ Статистика заданий для авторов
+        </h2>
+        <div class="grid grid-cols-5 gap-4">
+            <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ analytics.task_stats.total_tasks }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Всего заданий</p>
+            </div>
+            <div class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ analytics.task_stats.completed_tasks }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Завершено</p>
+            </div>
+            <div class="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{{ analytics.task_stats.active_tasks }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Активно</p>
+            </div>
+            <div class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ analytics.task_stats.total_authors }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Авторов</p>
+            </div>
+            <div class="text-center p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg">
+                <p class="text-3xl font-bold text-pink-600 dark:text-pink-400">{{ analytics.task_stats.total_reward_paid|floatformat:0 }}₽</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Выплачено</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back Button -->
+    <div class="text-center">
+        <a href="{% url 'asistent:admin_dashboard' %}" 
+           class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Назад к панели управления
+        </a>
+    </div>
+</div>
+{% endblock %}
+

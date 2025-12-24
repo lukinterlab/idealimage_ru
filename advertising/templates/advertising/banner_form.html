@@ -1,0 +1,879 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="container mx-auto px-4">
+        <!-- Хлебные крошки -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="{% url 'advertising:dashboard' %}" class="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400">
+                        Реклама
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <a href="{% url 'advertising:banners_manage' %}" class="ml-1 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 md:ml-2">
+                            Баннеры
+                        </a>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="ml-1 text-gray-500 dark:text-gray-400 md:ml-2">{% if banner %}Редактирование{% else %}Создание{% endif %}</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Заголовок -->
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    {% if banner %}✏️ Редактирование баннера{% else %}➕ Создание баннера{% endif %}
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400">{{ page_description }}</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="{% url 'advertising:dashboard' %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg transition-colors">
+                    📢 Рекламный дашборд
+                </a>
+                <a href="/dashboard/" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-lg transition-colors">
+                    📊 Главный дашборд
+                </a>
+            </div>
+        </div>
+
+        <!-- Панель управления Popup (только для popup_modal) -->
+        {% if place_code == 'popup_modal' %}
+        <div class="mb-6 bg-gradient-to-r from-orange-50 to-pink-50 dark:from-orange-900/20 dark:to-pink-900/20 border-2 border-orange-300 dark:border-orange-700 rounded-xl p-6 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-orange-900 dark:text-orange-300 mb-2">
+                        🎯 Управление всплывающей рекламой
+                    </h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-2">
+                        <strong>Текущий режим:</strong> 
+                        <span id="popup-status-text" class="font-semibold">Загрузка...</span>
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <strong>Тестовый режим:</strong> popup всплывает каждые <span id="test-interval">15</span> сек (для проверки)<br>
+                        <strong>Стандартный режим:</strong> popup 1 раз → cookie на <span id="cookie-hours">24</span> часа
+                    </p>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <!-- Кнопка тестового режима -->
+                    <button type="button" id="toggle-test-mode" 
+                            class="px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
+                            onclick="togglePopupTestMode()">
+                        <span id="test-mode-icon">🧪</span>
+                        <span id="test-mode-text">Переключить режим</span>
+                    </button>
+                    
+                    <!-- Кнопка настроек -->
+                    <a href="/admin/advertising/adplace/" target="_blank"
+                       class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg transition-colors text-center">
+                        ⚙️ Детальные настройки
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Индикатор загрузки -->
+            <div id="popup-loading" class="hidden mt-4 text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">Переключение режима...</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Форма -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Сообщения об ошибках -->
+                {% if form.errors %}
+                <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p class="text-red-800 dark:text-red-300 font-semibold mb-2">Пожалуйста, исправьте следующие ошибки:</p>
+                    <ul class="list-disc list-inside text-red-700 dark:text-red-400">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Название -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Название баннера *
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.help_text %}
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.name.help_text }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Кампания -->
+                    <div>
+                        <label for="{{ form.campaign.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Кампания *
+                        </label>
+                        {{ form.campaign }}
+                    </div>
+
+                    <!-- Место размещения -->
+                    <div>
+                        <label for="{{ form.place.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Место размещения *
+                        </label>
+                        {{ form.place }}
+                    </div>
+
+                    <!-- Тип баннера -->
+                    <div>
+                        <label for="{{ form.banner_type.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Тип баннера *
+                        </label>
+                        {{ form.banner_type }}
+                    </div>
+
+                    <!-- Активность -->
+                    <div class="flex items-center">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Активен
+                        </label>
+                    </div>
+
+                    <!-- Безлимитное отображение -->
+                    <div>
+                        <div class="flex items-center">
+                            {{ form.unlimited_impressions }}
+                            <label for="{{ form.unlimited_impressions.id_for_label }}" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Безлимитное отображение
+                            </label>
+                        </div>
+                        {% if form.unlimited_impressions.help_text %}
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.unlimited_impressions.help_text }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Высота баннера -->
+                    <div>
+                        <label for="{{ form.banner_height.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Высота баннера (px)
+                        </label>
+                        {{ form.banner_height }}
+                        {% if form.banner_height.help_text %}
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.banner_height.help_text }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Изображение -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Изображение
+                        </label>
+                        {{ form.image }}
+                        {% if banner.image %}
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            Текущее: <a href="{{ banner.image.url }}" target="_blank" class="text-orange-600 hover:underline">{{ banner.image.name }}</a>
+                        </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Для баннеров типа "Изображение"</p>
+                    </div>
+
+                    <!-- Видео -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.video.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Видео
+                        </label>
+                        {{ form.video }}
+                        {% if banner.video %}
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            Текущее: <a href="{{ banner.video.url }}" target="_blank" class="text-orange-600 hover:underline">{{ banner.video.name }}</a>
+                        </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Для баннеров типа "Видео"</p>
+                    </div>
+
+                    <!-- HTML контент -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.html_content.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            HTML контент
+                        </label>
+                        {{ form.html_content }}
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Для баннеров типа "HTML"</p>
+                    </div>
+
+                    <!-- Целевой URL -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.target_url.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Целевой URL
+                        </label>
+                        {{ form.target_url }}
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Ссылка при клике на баннер</p>
+                    </div>
+
+                    <!-- Alt текст -->
+                    <div>
+                        <label for="{{ form.alt_text.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Alt текст
+                        </label>
+                        {{ form.alt_text }}
+                    </div>
+
+                    <!-- Приоритет -->
+                    <div>
+                        <label for="{{ form.priority.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Приоритет (1-10)
+                        </label>
+                        {{ form.priority }}
+                    </div>
+
+                    <!-- Вес -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.weight.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Вес (для ротации)
+                        </label>
+                        {{ form.weight }}
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Чем больше вес, тем чаще показывается баннер</p>
+                    </div>
+                </div>
+
+                <!-- Секции для карточек (для header/footer и баннеров в статьях) -->
+                <div class="mt-8 space-y-6" id="cards-sections">
+                    <!-- Карточка 1 -->
+                    <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-xl">
+                        <h3 class="text-lg font-bold text-purple-900 dark:text-purple-300 mb-4">📸 Карточка 1</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Тип карточки</label>
+                                {{ form.card1_type }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Иконка (эмодзи)</label>
+                                {{ form.card1_icon }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Заголовок</label>
+                                {{ form.card1_title }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Текст</label>
+                                {{ form.card1_text }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Изображение</label>
+                                {{ form.card1_image }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Видео</label>
+                                {{ form.card1_video }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="{{ form.card1_url.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    🔗 Ссылка карточки 1
+                                </label>
+                                {{ form.card1_url }}
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Если не указана, используется общая ссылка баннера</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Карточка 2 -->
+                    <div class="bg-pink-50 dark:bg-pink-900/20 p-6 rounded-xl">
+                        <h3 class="text-lg font-bold text-pink-900 dark:text-pink-300 mb-4">🎥 Карточка 2</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Тип карточки</label>
+                                {{ form.card2_type }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Иконка (эмодзи)</label>
+                                {{ form.card2_icon }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Заголовок</label>
+                                {{ form.card2_title }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Текст</label>
+                                {{ form.card2_text }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Изображение</label>
+                                {{ form.card2_image }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Видео</label>
+                                {{ form.card2_video }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="{{ form.card2_url.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    🔗 Ссылка карточки 2
+                                </label>
+                                {{ form.card2_url }}
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Если не указана, используется общая ссылка баннера</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Карточка 3 -->
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl">
+                        <h3 class="text-lg font-bold text-blue-900 dark:text-blue-300 mb-4">🎨 Карточка 3</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Тип карточки</label>
+                                {{ form.card3_type }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Иконка (эмодзи)</label>
+                                {{ form.card3_icon }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Заголовок</label>
+                                {{ form.card3_title }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Текст</label>
+                                {{ form.card3_text }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Изображение</label>
+                                {{ form.card3_image }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Видео</label>
+                                {{ form.card3_video }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="{{ form.card3_url.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    🔗 Ссылка карточки 3
+                                </label>
+                                {{ form.card3_url }}
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Если не указана, используется общая ссылка баннера</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Карточка 4 -->
+                    <div class="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-xl" id="card4-section">
+                        <h3 class="text-lg font-bold text-yellow-900 dark:text-yellow-300 mb-4">✨ Карточка 4 (только для header/footer)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Тип карточки</label>
+                                {{ form.card4_type }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Иконка (эмодзи)</label>
+                                {{ form.card4_icon }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Заголовок</label>
+                                {{ form.card4_title }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Текст</label>
+                                {{ form.card4_text }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Изображение</label>
+                                {{ form.card4_image }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Видео</label>
+                                {{ form.card4_video }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="{{ form.card4_url.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    🔗 Ссылка карточки 4
+                                </label>
+                                {{ form.card4_url }}
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Если не указана, используется общая ссылка баннера</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="mt-8 flex gap-4">
+                    <button type="submit" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg shadow-lg transition-colors">
+                        {% if banner %}💾 Сохранить изменения{% else %}➕ Создать баннер{% endif %}
+                    </button>
+                    <a href="{% url 'advertising:banners_manage' %}" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg transition-colors">
+                        ❌ Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Секция расписания показа (только при редактировании) -->
+        {% if banner %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mt-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">📅 Расписание показа</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {% if banner.unlimited_impressions %}
+                            <span class="text-green-600 font-semibold">✅ Безлимитное отображение включено</span> - расписание не используется
+                        {% else %}
+                            Управление временем показа баннера (дни недели, часы)
+                        {% endif %}
+                    </p>
+                </div>
+                <button type="button" onclick="openScheduleModal()" 
+                        class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-lg transition-colors flex items-center gap-2">
+                    ➕ Добавить расписание
+                </button>
+            </div>
+
+            <!-- Список расписаний -->
+            <div id="schedules-list">
+                {% if schedules %}
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-gray-300 font-semibold">День недели</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-gray-300 font-semibold">Время показа</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-gray-300 font-semibold">Лимит/день</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-gray-300 font-semibold">Сегодня показано</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-gray-300 font-semibold">Статус</th>
+                                <th class="px-4 py-3 text-center text-gray-700 dark:text-gray-300 font-semibold">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            {% for schedule in schedules %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">
+                                    {% if schedule.day_of_week is None %}
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 rounded-full text-sm font-semibold">Каждый день</span>
+                                    {% else %}
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full text-sm font-semibold">{{ schedule.get_day_of_week_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-gray-900 dark:text-white font-mono">
+                                    {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
+                                </td>
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">
+                                    {% if schedule.max_impressions_per_day %}
+                                        {{ schedule.max_impressions_per_day }}
+                                    {% else %}
+                                        <span class="text-gray-500">Без лимита</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">
+                                    <span class="font-semibold">{{ schedule.current_impressions }}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    {% if schedule.is_active %}
+                                        <span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 rounded-full text-sm font-semibold">✓ Активно</span>
+                                    {% else %}
+                                        <span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 rounded-full text-sm font-semibold">✗ Выключено</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex justify-center gap-2">
+                                        <button type="button" onclick="editSchedule({{ schedule.id }})" 
+                                                class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
+                                            ✏️ Изменить
+                                        </button>
+                                        <button type="button" onclick="toggleSchedule({{ schedule.id }}, {{ schedule.is_active|yesno:'false,true' }})" 
+                                                class="px-3 py-1 {% if schedule.is_active %}bg-yellow-600 hover:bg-yellow-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white text-sm rounded-lg transition-colors">
+                                            {% if schedule.is_active %}⏸️ Выкл{% else %}▶️ Вкл{% endif %}
+                                        </button>
+                                        <button type="button" onclick="deleteSchedule({{ schedule.id }})" 
+                                                class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-12 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                    <p class="text-gray-500 dark:text-gray-400 text-lg">📅 Расписание не настроено</p>
+                    <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                        {% if banner.unlimited_impressions %}
+                            Баннер показывается всегда (безлимитный режим)
+                        {% else %}
+                            Нажмите "Добавить расписание" чтобы настроить время показа
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Модальное окно расписания -->
+{% if banner %}
+<div id="schedule-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+                <span id="schedule-modal-title">📅 Добавить расписание</span>
+            </h3>
+            <button onclick="closeScheduleModal()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <form id="schedule-form" onsubmit="saveSchedule(event)">
+            <input type="hidden" id="schedule-id" value="">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- День недели -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">День недели</label>
+                    <select id="schedule-day" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500">
+                        <option value="">Каждый день</option>
+                        <option value="0">Понедельник</option>
+                        <option value="1">Вторник</option>
+                        <option value="2">Среда</option>
+                        <option value="3">Четверг</option>
+                        <option value="4">Пятница</option>
+                        <option value="5">Суббота</option>
+                        <option value="6">Воскресенье</option>
+                    </select>
+                </div>
+                
+                <!-- Время начала -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Время начала</label>
+                    <input type="time" id="schedule-start" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500">
+                </div>
+                
+                <!-- Время окончания -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Время окончания</label>
+                    <input type="time" id="schedule-end" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500">
+                </div>
+                
+                <!-- Лимит показов -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Лимит показов в день</label>
+                    <input type="number" id="schedule-limit" min="0" placeholder="Без лимита"
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500">
+                    <p class="text-xs text-gray-500 mt-1">Оставьте пустым для безлимита</p>
+                </div>
+                
+                <!-- Активность -->
+                <div class="flex items-center">
+                    <input type="checkbox" id="schedule-active" checked 
+                           class="w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+                    <label for="schedule-active" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Активно
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Кнопки -->
+            <div class="mt-6 flex gap-3">
+                <button type="submit" class="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors">
+                    💾 Сохранить
+                </button>
+                <button type="button" onclick="closeScheduleModal()" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors">
+                    ❌ Отмена
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// Динамическое отображение полей в зависимости от типа баннера и места
+document.addEventListener('DOMContentLoaded', function() {
+    const bannerType = document.getElementById('{{ form.banner_type.id_for_label }}');
+    const placeSelect = document.getElementById('{{ form.place.id_for_label }}');
+    const imageField = document.getElementById('{{ form.image.id_for_label }}').closest('.md\\:col-span-2');
+    const videoField = document.getElementById('{{ form.video.id_for_label }}').closest('.md\\:col-span-2');
+    const htmlField = document.getElementById('{{ form.html_content.id_for_label }}').closest('.md\\:col-span-2');
+    const cardsSections = document.getElementById('cards-sections');
+    const card4Section = document.getElementById('card4-section');
+    
+    // Получаем place_code из контекста (серверная переменная)
+    let currentPlaceCode = '{{ place_code|default:"" }}';
+    
+    console.log('Current place code:', currentPlaceCode);
+    
+    function toggleFields() {
+        const type = bannerType.value;
+        imageField.style.display = type === 'image' ? 'block' : 'none';
+        videoField.style.display = type === 'video' ? 'block' : 'none';
+        htmlField.style.display = type === 'html' ? 'block' : 'none';
+    }
+    
+    function toggleCardsSections() {
+        // Баннеры с карточками (проверяем по коду места)
+        const cardsPlaces = [
+            'header_banner', 'footer_banner',
+            'in_post_middle', 'in_post_middle_1', 'in_post_middle_2',
+            'before_article_content', 'after_comments'
+        ];
+        const hasCards = cardsPlaces.includes(currentPlaceCode);
+        
+        console.log('Has cards:', hasCards, 'for place:', currentPlaceCode);
+        
+        // Показываем/скрываем секции карточек
+        if (cardsSections) {
+            cardsSections.style.display = hasCards ? 'block' : 'none';
+        }
+        
+        // 4 карточки только для header и footer
+        const show4Cards = ['header_banner', 'footer_banner'].includes(currentPlaceCode);
+        if (card4Section) {
+            card4Section.style.display = show4Cards ? 'block' : 'none';
+        }
+        
+        console.log('Show 4 cards:', show4Cards);
+    }
+    
+    bannerType.addEventListener('change', toggleFields);
+    placeSelect.addEventListener('change', function() {
+        // При изменении места показываем предупреждение
+        if (currentPlaceCode !== '') {
+            alert('Сохраните форму, чтобы обновить секции карточек для нового места');
+        }
+    });
+    
+    toggleFields();
+    toggleCardsSections();
+    
+    // ========== POPUP УПРАВЛЕНИЕ ==========
+    {% if place_code == 'popup_modal' %}
+    // Загрузить текущий статус popup при загрузке страницы
+    loadPopupStatus();
+    {% endif %}
+});
+
+{% if place_code == 'popup_modal' %}
+// Функция загрузки статуса popup
+function loadPopupStatus() {
+    fetch('/advertising/api/popup-status/')
+        .then(response => response.json())
+        .then(data => {
+            updatePopupUI(data);
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки статуса:', error);
+            document.getElementById('popup-status-text').textContent = 'Ошибка загрузки';
+        });
+}
+
+// Функция переключения тестового режима
+function togglePopupTestMode() {
+    const loading = document.getElementById('popup-loading');
+    const button = document.getElementById('toggle-test-mode');
+    
+    // Показываем индикатор загрузки
+    loading.classList.remove('hidden');
+    button.disabled = true;
+    
+    fetch('/advertising/api/popup-toggle-test/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updatePopupUI(data);
+            
+            // Показываем уведомление
+            const message = data.test_mode 
+                ? '🧪 Тестовый режим ВКЛЮЧЕН! Popup будет всплывать каждые ' + data.test_interval + ' сек'
+                : '✅ Стандартный режим ВКЛЮЧЕН! Popup работает с cookie на ' + data.cookie_hours + ' часов';
+            
+            alert(message);
+        } else {
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка переключения:', error);
+        alert('Ошибка переключения режима');
+    })
+    .finally(() => {
+        loading.classList.add('hidden');
+        button.disabled = false;
+    });
+}
+
+// Функция обновления UI
+function updatePopupUI(data) {
+    const statusText = document.getElementById('popup-status-text');
+    const icon = document.getElementById('test-mode-icon');
+    const buttonText = document.getElementById('test-mode-text');
+    const testInterval = document.getElementById('test-interval');
+    const cookieHours = document.getElementById('cookie-hours');
+    
+    if (data.test_mode) {
+        statusText.innerHTML = '<span class="text-orange-600 font-bold">🧪 ТЕСТОВЫЙ РЕЖИМ</span>';
+        statusText.classList.add('animate-pulse');
+        icon.textContent = '✅';
+        buttonText.textContent = 'Выключить тестовый режим';
+    } else {
+        statusText.innerHTML = '<span class="text-green-600 font-bold">✅ Стандартный режим</span>';
+        statusText.classList.remove('animate-pulse');
+        icon.textContent = '🧪';
+        buttonText.textContent = 'Включить тестовый режим';
+    }
+    
+    testInterval.textContent = data.test_interval;
+    cookieHours.textContent = data.cookie_hours;
+}
+{% endif %}
+
+// ========== УПРАВЛЕНИЕ РАСПИСАНИЕМ ==========
+{% if banner %}
+function openScheduleModal(scheduleId = null) {
+    document.getElementById('schedule-modal').classList.remove('hidden');
+    document.getElementById('schedule-form').reset();
+    
+    if (scheduleId) {
+        // Редактирование существующего расписания
+        document.getElementById('schedule-modal-title').textContent = '✏️ Редактировать расписание';
+        document.getElementById('schedule-id').value = scheduleId;
+        
+        // Загрузить данные расписания
+        fetch(`/advertising/api/schedule/${scheduleId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('schedule-day').value = data.day_of_week || '';
+                    document.getElementById('schedule-start').value = data.start_time;
+                    document.getElementById('schedule-end').value = data.end_time;
+                    document.getElementById('schedule-limit').value = data.max_impressions_per_day || '';
+                    document.getElementById('schedule-active').checked = data.is_active;
+                }
+            });
+    } else {
+        // Создание нового расписания
+        document.getElementById('schedule-modal-title').textContent = '📅 Добавить расписание';
+        document.getElementById('schedule-id').value = '';
+    }
+}
+
+function closeScheduleModal() {
+    document.getElementById('schedule-modal').classList.add('hidden');
+}
+
+function saveSchedule(event) {
+    event.preventDefault();
+    
+    const scheduleId = document.getElementById('schedule-id').value;
+    const data = {
+        banner_id: {{ banner.id }},
+        day_of_week: document.getElementById('schedule-day').value || null,
+        start_time: document.getElementById('schedule-start').value,
+        end_time: document.getElementById('schedule-end').value,
+        max_impressions_per_day: document.getElementById('schedule-limit').value || null,
+        is_active: document.getElementById('schedule-active').checked
+    };
+    
+    const url = scheduleId 
+        ? `/advertising/api/schedule/${scheduleId}/update/` 
+        : '/advertising/api/schedule/create/';
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(scheduleId ? '✅ Расписание обновлено!' : '✅ Расписание создано!');
+            location.reload();  // Перезагрузить страницу
+        } else {
+            alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Ошибка сохранения расписания');
+    });
+}
+
+function editSchedule(scheduleId) {
+    openScheduleModal(scheduleId);
+}
+
+function toggleSchedule(scheduleId, newStatus) {
+    if (!confirm(newStatus ? 'Включить расписание?' : 'Выключить расписание?')) {
+        return;
+    }
+    
+    fetch(`/advertising/api/schedule/${scheduleId}/toggle/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ is_active: newStatus })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            location.reload();
+        } else {
+            alert('Ошибка: ' + result.error);
+        }
+    });
+}
+
+function deleteSchedule(scheduleId) {
+    if (!confirm('Удалить это расписание?')) {
+        return;
+    }
+    
+    fetch(`/advertising/api/schedule/${scheduleId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✅ Расписание удалено!');
+            location.reload();
+        } else {
+            alert('Ошибка: ' + result.error);
+        }
+    });
+}
+{% endif %}
+</script>
+{% endblock %}
+

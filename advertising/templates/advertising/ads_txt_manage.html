@@ -1,0 +1,175 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Управление ads.txt - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="max-w-5xl mx-auto px-4">
+        
+        <!-- Хлебные крошки -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="{% url 'advertising:dashboard' %}" class="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400">
+                        Реклама
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="ml-1 text-gray-500 dark:text-gray-400 md:ml-2">ads.txt</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                📄 Управление ads.txt
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                Автоматическое управление файлом ads.txt для Ezoic
+            </p>
+        </div>
+
+        <!-- Статус -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Статус</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Активность</div>
+                    <div class="text-lg font-bold">
+                        {% if settings.is_active %}
+                            <span class="text-green-600 dark:text-green-400">✓ Активен</span>
+                        {% else %}
+                            <span class="text-red-600 dark:text-red-400">✗ Выключен</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Автообновление</div>
+                    <div class="text-lg font-bold">
+                        {% if settings.auto_update %}
+                            <span class="text-green-600 dark:text-green-400">✓ Включено</span>
+                        {% else %}
+                            <span class="text-gray-400">✗ Выключено</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Последнее обновление</div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-white">
+                        {% if settings.last_successful_update %}
+                            {{ settings.last_successful_update|date:"d.m.Y H:i:s" }}
+                        {% else %}
+                            <span class="text-gray-400">Никогда</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Обновлений всего</div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-white">{{ settings.update_count }}</div>
+                </div>
+            </div>
+            
+            {% if settings.last_error %}
+            <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <div class="text-sm text-red-800 dark:text-red-300">
+                    <strong>Последняя ошибка:</strong> {{ settings.last_error }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Настройки -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Настройки</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Домен</label>
+                    <div class="px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                        {{ settings.domain }}
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">URL менеджера Ezoic</label>
+                    <div class="px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white break-all">
+                        {{ settings.ezoic_manager_url }}
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Интервал обновления</label>
+                    <div class="px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                        Каждые {{ settings.update_interval_hours }} часов
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Содержимое файла -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Содержимое файла</h2>
+                <div class="flex gap-2 items-center">
+                    <a href="/ads.txt" target="_blank" 
+                       class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">
+                        👁️ Просмотреть
+                    </a>
+                    <form method="post" action="{% url 'advertising:ads_txt_update' %}" class="inline-block">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm cursor-pointer">
+                            🔄 Обновить сейчас
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            {% if settings.content %}
+            <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <pre>{{ settings.content }}</pre>
+            </div>
+            <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                Строк: {{ settings.content|linebreaksbr|length|add:"-1"|default:0 }}
+            </div>
+            {% else %}
+            <div class="text-center py-12 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <p class="text-gray-500 dark:text-gray-400">Содержимое отсутствует</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                    Нажмите "Обновить сейчас" чтобы загрузить файл от Ezoic
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Информация -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">ℹ️ Информация</h3>
+            <div class="space-y-2 text-gray-700 dark:text-gray-300 text-sm">
+                <p><strong>Что такое ads.txt?</strong> Файл ads.txt сообщает рекламодателям, какие компании имеют право продавать рекламу на вашем сайте.</p>
+                <p><strong>Автоматическое обновление:</strong> Файл автоматически обновляется каждые {{ settings.update_interval_hours }} часов от Ezoic.</p>
+                <p><strong>Публичный доступ:</strong> Файл доступен по адресу <a href="/ads.txt" target="_blank" class="text-blue-600 hover:underline">idealimage.ru/ads.txt</a></p>
+                <p><strong>Управление:</strong> Измените настройки через <a href="/admin/advertising/adstxtsettings/" class="text-blue-600 hover:underline">Django Admin</a></p>
+            </div>
+        </div>
+
+        <!-- Кнопки -->
+        <div class="flex gap-4">
+            <a href="{% url 'advertising:dashboard' %}" 
+               class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg transition-colors">
+                ← Назад к дашборду
+            </a>
+            <a href="/admin/advertising/adstxtsettings/" 
+               class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg transition-colors">
+                ⚙️ Редактировать в админке
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+

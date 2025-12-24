@@ -1,0 +1,258 @@
+{% load static %}
+
+<div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-6 my-8" id="likes-widget-{{ post.id }}">
+    
+    
+    <!-- Reactions -->
+    <div class="flex items-center justify-center flex-wrap gap-4 py-4">
+        <!-- Like Button -->
+        <button class="reaction-btn flex flex-col items-center group" 
+                data-reaction="like" 
+                data-post-id="{{ post.id }}"
+                onclick="toggleReaction(this, 'like')">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200 reaction-icon">
+                <span class="text-3xl">👍</span>
+            </div>
+            <span class="mt-2 text-sm font-semibold text-gray-700 group-hover:text-pink-500 transition-colors">Нравится</span>
+            <span class="text-xs text-gray-500 reaction-count" data-type="like">0</span>
+        </button>
+
+        <!-- Love Button -->
+        <button class="reaction-btn flex flex-col items-center group" 
+                data-reaction="love" 
+                data-post-id="{{ post.id }}"
+                onclick="toggleReaction(this, 'love')">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200 reaction-icon">
+                <span class="text-3xl">❤️</span>
+            </div>
+            <span class="mt-2 text-sm font-semibold text-gray-700 group-hover:text-red-500 transition-colors">Люблю</span>
+            <span class="text-xs text-gray-500 reaction-count" data-type="love">0</span>
+        </button>
+
+        <!-- Laugh Button -->
+        <button class="reaction-btn flex flex-col items-center group" 
+                data-reaction="laugh" 
+                data-post-id="{{ post.id }}"
+                onclick="toggleReaction(this, 'laugh')">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200 reaction-icon">
+                <span class="text-3xl">😂</span>
+            </div>
+            <span class="mt-2 text-sm font-semibold text-gray-700 group-hover:text-yellow-600 transition-colors">Смешно</span>
+            <span class="text-xs text-gray-500 reaction-count" data-type="laugh">0</span>
+        </button>
+
+        <!-- Wow Button -->
+        <button class="reaction-btn flex flex-col items-center group" 
+                data-reaction="wow" 
+                data-post-id="{{ post.id }}"
+                onclick="toggleReaction(this, 'wow')">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200 reaction-icon">
+                <span class="text-3xl">😮</span>
+            </div>
+            <span class="mt-2 text-sm font-semibold text-gray-700 group-hover:text-purple-600 transition-colors">Вау!</span>
+            <span class="text-xs text-gray-500 reaction-count" data-type="wow">0</span>
+        </button>
+
+        <!-- Sad Button -->
+        <button class="reaction-btn flex flex-col items-center group" 
+                data-reaction="sad" 
+                data-post-id="{{ post.id }}"
+                onclick="toggleReaction(this, 'sad')">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200 reaction-icon">
+                <span class="text-3xl">😢</span>
+            </div>
+            <span class="mt-2 text-sm font-semibold text-gray-700 group-hover:text-blue-500 transition-colors">Грустно</span>
+            <span class="text-xs text-gray-500 reaction-count" data-type="sad">0</span>
+        </button>
+
+        <!-- Angry Button -->
+        <button class="reaction-btn flex flex-col items-center group" 
+                data-reaction="angry" 
+                data-post-id="{{ post.id }}"
+                onclick="toggleReaction(this, 'angry')">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200 reaction-icon">
+                <span class="text-3xl">😠</span>
+            </div>
+            <span class="mt-2 text-sm font-semibold text-gray-700 group-hover:text-orange-600 transition-colors">Злюсь</span>
+            <span class="text-xs text-gray-500 reaction-count" data-type="angry">0</span>
+        </button>
+    </div>
+    
+    <!-- Total Reactions
+    <div class="text-center mt-4 pt-4 border-t border-gray-300">
+        <p class="text-sm text-gray-600">
+            Всего реакций: <span class="font-bold text-primary" id="total-reactions">{{ post.get_likes_count }}</span>
+        </p>
+    </div> -->
+</div>
+
+<style>
+.reaction-btn.active .reaction-icon {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.3);
+}
+</style>
+
+<script>
+// Получаем CSRF токен
+function getCSRFToken() {
+    // Сначала пробуем получить из куки
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, 'csrftoken='.length) === 'csrftoken=') {
+                cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length));
+                break;
+            }
+        }
+    }
+    
+    // Если не нашли в куки, пробуем получить из скрытого input
+    if (!cookieValue) {
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput) {
+            cookieValue = csrfInput.value;
+        }
+    }
+    
+    return cookieValue;
+}
+
+const csrftoken = getCSRFToken();
+console.log('CSRF Token:', csrftoken);
+console.log('CSRF Token length:', csrftoken ? csrftoken.length : 0);
+
+// Переключение реакции
+async function toggleReaction(button, reactionType) {
+    const postId = button.getAttribute('data-post-id');
+    const icon = button.querySelector('.reaction-icon');
+    
+    console.log('Post ID:', postId);
+    console.log('Reaction Type:', reactionType);
+    console.log('CSRF Token:', csrftoken);
+    
+    // Анимация
+    icon.classList.add('animate-bounce');
+    setTimeout(() => icon.classList.remove('animate-bounce'), 500);
+    
+    try {
+        const response = await fetch(`/blog/api/post/${postId}/like/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({
+                reaction_type: reactionType
+            })
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response URL:', response.url);
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (data.success) {
+            // Обновляем UI
+            updateReactionsUI(data, postId);
+            
+            // Показываем уведомление
+            showNotification(data.action, reactionType);
+        } else {
+            console.error('API Error:', data.error);
+            alert('Ошибка: ' + (data.error || 'Произошла ошибка'));
+        }
+    } catch (error) {
+        console.error('Fetch Error:', error);
+        console.error('Error details:', error.message);
+        alert('Произошла ошибка при отправке реакции: ' + error.message);
+    }
+}
+
+// Обновление UI реакций
+function updateReactionsUI(data, postId) {
+    // Находим контейнер реакций для конкретной статьи
+    const reactionsContainer = document.getElementById(`likes-widget-${postId}`);
+    if (!reactionsContainer) return;
+    
+    // Убираем активный класс со всех кнопок в этом контейнере
+    reactionsContainer.querySelectorAll('.reaction-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Если есть активная реакция пользователя, выделяем её
+    if (data.user_reaction) {
+        const activeBtn = reactionsContainer.querySelector(`[data-reaction="${data.user_reaction}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+    }
+    
+    // Обновляем счетчики в этом контейнере
+    reactionsContainer.querySelectorAll('.reaction-count').forEach(el => {
+        el.textContent = '0';
+    });
+    
+    data.likes_by_type.forEach(item => {
+        const countEl = reactionsContainer.querySelector(`.reaction-count[data-type="${item.reaction_type}"]`);
+        if (countEl) {
+            countEl.textContent = item.count;
+        }
+    });
+    
+    // Обновляем общий счетчик (если есть)
+    const totalReactionsEl = reactionsContainer.querySelector('#total-reactions');
+    if (totalReactionsEl) {
+        totalReactionsEl.textContent = data.likes_count;
+    }
+}
+
+// Показать уведомление
+function showNotification(action, reactionType) {
+    const messages = {
+        'added': 'Реакция добавлена!',
+        'updated': 'Реакция изменена!',
+        'removed': 'Реакция убрана'
+    };
+    
+    // Простое уведомление (можно заменить на более красивое)
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-20 right-4 bg-primary text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+    notification.textContent = messages[action] || 'Готово!';
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('opacity-0', 'transition-opacity');
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
+}
+
+// Загрузка текущего состояния реакций при загрузке страницы
+document.addEventListener('DOMContentLoaded', async function() {
+    // Загружаем состояние для всех статей на странице
+    const allReactionButtons = document.querySelectorAll('.reaction-btn');
+    
+    for (const button of allReactionButtons) {
+        const postId = button.getAttribute('data-post-id');
+        if (!postId) continue;
+        
+        try {
+            const response = await fetch(`/blog/api/post/${postId}/stats/`);
+            const data = await response.json();
+            
+            if (data.success) {
+                updateReactionsUI({
+                    user_reaction: data.likes.user_reaction,
+                    likes_by_type: data.likes.by_type,
+                    likes_count: data.likes.count
+                }, postId);
+            }
+        } catch (error) {
+            console.error(`Error loading reactions for post ${postId}:`, error);
+        }
+    }
+});
+</script>

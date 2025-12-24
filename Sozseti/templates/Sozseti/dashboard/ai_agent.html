@@ -1,0 +1,169 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}AI-Агент - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 text-gray-900 dark:text-gray-100">
+    <!-- Хлебные крошки -->
+    <div class="mb-4 text-sm text-gray-600 dark:text-gray-300">
+        <a href="/dashboard/" class="text-blue-600 dark:text-blue-400 hover:underline">Главный дашборд</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <a href="{% url 'sozseti:dashboard' %}" class="text-blue-600 dark:text-blue-400 hover:underline">Соцсети</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <span class="text-gray-600 dark:text-gray-300">AI-Агент</span>
+    </div>
+    
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">AI-Агент управления каналами</h1>
+            <p class="text-gray-500 dark:text-gray-300 mt-2">Умное управление публикациями и аналитика</p>
+        </div>
+        <a href="{% url 'sozseti:dashboard' %}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg">
+            <i class="fas fa-arrow-left mr-2"></i>Назад к Соцсетям
+        </a>
+    </div>
+    
+    <!-- AI Чат -->
+    <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg shadow-lg p-6 mb-8 text-white">
+        <div class="flex items-center mb-4">
+            <i class="fas fa-robot text-4xl mr-4"></i>
+            <div>
+                <h2 class="text-2xl font-bold">AI Помощник</h2>
+                <p class="text-purple-100">Задайте вопрос или попросите помощь с управлением каналами</p>
+            </div>
+        </div>
+        
+        <!-- Чат интерфейс -->
+        <div class="bg-white dark:bg-gray-900 rounded-lg p-4 text-gray-800 dark:text-gray-200" style="min-height: 400px;">
+            <div id="chat-messages" class="mb-4 h-80 overflow-y-auto space-y-4">
+                <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                    <p class="font-semibold text-purple-600 dark:text-purple-300">AI:</p>
+                    <p>Привет! Я AI-ассистент для управления вашими Telegram каналами. Чем могу помочь?</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Примеры команд:</p>
+                    <ul class="text-sm text-gray-600 dark:text-gray-400 ml-4 mt-1 list-disc">
+                        <li>• "Покажи статистику канала @ideal_image_ru"</li>
+                        <li>• "Какой канал лучше подходит для статьи о красоте?"</li>
+                        <li>• "Оптимизируй расписание публикаций"</li>
+                        <li>• "Предложи стратегию для увеличения подписчиков"</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <form id="ai-chat-form" class="flex gap-2">
+                <input type="text" id="chat-input" placeholder="Напишите ваш вопрос..." 
+                       class="flex-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <button type="submit" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">
+                    <i class="fas fa-paper-plane mr-2"></i>Отправить
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Рекомендации AI -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Рекомендации</h3>
+            <ul class="space-y-3">
+                <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Канал @KOSICHKI_GIRLS показывает высокую вовлечённость (620 подписчиков)</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 mt-1 mr-2"></i>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Оптимальное время для публикаций: 10:00, 14:00, 19:00</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-chart-line text-purple-500 mt-1 mr-2"></i>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Рекомендуется увеличить частоту публикаций в @ideal_image_ru</span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white"><i class="fas fa-chart-bar text-blue-500 mr-2"></i>Аналитика</h3>
+            <ul class="space-y-3">
+                <li class="flex justify-between">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Всего каналов:</span>
+                    <span class="font-semibold text-gray-900 dark:text-gray-100">{{ channels.count }}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Публикаций за неделю:</span>
+                    <span class="font-semibold text-gray-900 dark:text-gray-100">{{ recent_publications.count }}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Средняя вовлечённость:</span>
+                    <span class="font-semibold text-green-600 dark:text-green-400">2.5%</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Каналы под управлением AI -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Telegram каналы</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {% for channel in channels %}
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-lg transition">
+                <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ channel.channel_name }}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ channel.channel_id }}</p>
+                <p class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ channel.subscribers_count|default:0 }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">подписчиков</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Публикаций: {{ channel.publications_count|default:0 }}</p>
+                <a href="{% url 'sozseti:channel_detail' channel.pk %}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2 block">
+                    Подробнее →
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Последние действия AI -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Последние публикации</h2>
+        <div class="space-y-2">
+            {% for pub in recent_publications|slice:":10" %}
+            <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ pub.post.title|truncatewords:10 }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ pub.channel.channel_name }} • {{ pub.published_at|date:"d.m.Y H:i" }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">👁️ {{ pub.views_count|default:0 }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('ai-chat-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const message = input.value;
+    
+    if (message.trim()) {
+        // Добавляем сообщение пользователя
+        const messagesDiv = document.getElementById('chat-messages');
+        const userMsg = document.createElement('div');
+        userMsg.className = 'bg-blue-100 dark:bg-blue-900/40 rounded-lg p-4 ml-auto max-w-md text-gray-900 dark:text-blue-100';
+        userMsg.innerHTML = '<p class="font-semibold text-blue-600 dark:text-blue-300">Вы:</p><p>' + message + '</p>';
+        messagesDiv.appendChild(userMsg);
+        
+        // Ответ AI (демо)
+        setTimeout(() => {
+            const aiMsg = document.createElement('div');
+            aiMsg.className = 'bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-gray-800 dark:text-gray-200';
+            aiMsg.innerHTML = '<p class="font-semibold text-purple-600 dark:text-purple-300">AI:</p><p>Функция AI-чата находится в разработке. Скоро здесь будет полноценный ассистент для управления каналами!</p>';
+            messagesDiv.appendChild(aiMsg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }, 1000);
+        
+        input.value = '';
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+});
+</script>
+{% endblock %}
+

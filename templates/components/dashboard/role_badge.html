@@ -1,0 +1,14 @@
+<!-- Бейдж роли автора -->
+<!-- Использование: {% include 'components/dashboard/role_badge.html' with role=current_role %} -->
+
+{% if role %}
+<span class="role-badge" style="background-color: {{ role.color }}20; color: {{ role.color }};">
+    {% if role.level == 1 %}🌱{% elif role.level == 2 %}✍️{% elif role.level == 3 %}📚{% else %}🏆{% endif %}
+    {{ role.name }}
+</span>
+{% else %}
+<span class="role-badge bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+    🌱 Стажёр
+</span>
+{% endif %}
+

@@ -1,0 +1,21 @@
+{% if bg.type == 'image' and bg.inline_style %}
+<div class="absolute inset-0 section-bg-image" style="{{ bg.inline_style }}">
+    {% if bg.overlay %}<div class="absolute inset-0" style="{{ bg.overlay }}"></div>{% endif %}
+</div>
+{% elif bg.type == 'video' and bg.video_url %}
+<video autoplay muted loop playsinline preload="auto" 
+       class="absolute inset-0 w-full h-full object-cover section-bg-video"
+       data-autoplay="true"
+       webkit-playsinline="true"
+       x5-playsinline="true"
+       x-webkit-airplay="allow">
+    <source src="{{ bg.video_url }}" type="video/mp4">
+    Ваш браузер не поддерживает видео.
+</video>
+<div class="absolute inset-0 bg-black/30"></div>
+{% elif bg.type == 'gradient' and bg.classes %}
+<div class="absolute inset-0 bg-gradient-to-br {{ bg.classes }}"></div>
+{% else %}
+<div class="absolute inset-0 bg-gradient-to-br {{ default_gradient|default:'from-gray-100 to-white' }} opacity-90"></div>
+{% endif %}
+

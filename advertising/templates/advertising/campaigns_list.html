@@ -1,0 +1,107 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Рекламные кампании - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-5xl font-black text-white mb-2">
+                        📋 Рекламные кампании
+                    </h1>
+                    <p class="text-xl text-gray-300">Управление рекламными кампаниями</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'advertising:campaign_create' %}" 
+                       class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        ➕ Создать кампанию
+                    </a>
+                    <a href="{% url 'advertising:advertisers_list' %}" 
+                       class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        👥 Рекламодатели
+                    </a>
+                    <a href="{% url 'advertising:dashboard' %}" 
+                       class="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20">
+                        ← Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Таблица кампаний -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 overflow-hidden">
+            {% if campaigns %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-white/5 border-b border-white/20">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-white font-semibold">Название</th>
+                            <th class="px-6 py-4 text-left text-white font-semibold">Рекламодатель</th>
+                            <th class="px-6 py-4 text-center text-white font-semibold">Бюджет</th>
+                            <th class="px-6 py-4 text-center text-white font-semibold">Потрачено</th>
+                            <th class="px-6 py-4 text-center text-white font-semibold">Период</th>
+                            <th class="px-6 py-4 text-center text-white font-semibold">Статус</th>
+                            <th class="px-6 py-4 text-right text-white font-semibold">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for campaign in campaigns %}
+                        <tr class="hover:bg-white/5">
+                            <td class="px-6 py-4 text-white font-semibold">{{ campaign.name }}</td>
+                            <td class="px-6 py-4 text-gray-300">{{ campaign.advertiser.name }}</td>
+                            <td class="px-6 py-4 text-center text-white">{{ campaign.budget|floatformat:0 }}₽</td>
+                            <td class="px-6 py-4 text-center">
+                                <div>
+                                    <span class="text-yellow-300 font-bold">{{ campaign.spent_amount|floatformat:0 }}₽</span>
+                                    <div class="text-xs text-gray-400">
+                                        {{ campaign.get_budget_usage_percent|floatformat:1 }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-center text-gray-300 text-sm">
+                                {{ campaign.start_date|date:"d.m.Y" }} - {{ campaign.end_date|date:"d.m.Y" }}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                {% if campaign.is_active_now %}
+                                <span class="px-3 py-1 bg-green-500/30 text-green-200 rounded-full text-xs font-semibold">Активна</span>
+                                {% else %}
+                                <span class="px-3 py-1 bg-red-500/30 text-red-200 rounded-full text-xs font-semibold">Неактивна</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex gap-2 justify-end">
+                                    <a href="{% url 'advertising:campaign_detail' campaign.id %}" 
+                                       class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
+                                        📊 Подробнее
+                                    </a>
+                                    <a href="{% url 'advertising:campaign_edit' campaign.id %}" 
+                                       class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors">
+                                        ✏️ Редактировать
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-12 text-center">
+                <p class="text-gray-400 text-lg mb-4">Кампаний пока нет</p>
+                <a href="{% url 'advertising:campaign_create' %}" 
+                   class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">
+                    Создать первую кампанию
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+

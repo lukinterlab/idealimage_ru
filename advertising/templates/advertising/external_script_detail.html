@@ -1,0 +1,88 @@
+{% extends "base_tailwind.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <!-- Заголовок -->
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    {{ script.name }}
+                </h1>
+                {% if script.is_active %}
+                <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-semibold rounded">✓ Активен</span>
+                {% else %}
+                <span class="px-3 py-1 bg-gray-100 text-gray-600 text-sm font-semibold rounded">✗ Выключен</span>
+                {% endif %}
+            </div>
+            <a href="{% url 'advertising:external_scripts_list' %}" 
+               class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                ← Назад к списку
+            </a>
+        </div>
+
+        <!-- Информация -->
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <div>
+                <label class="text-sm text-gray-600 dark:text-gray-400">Тип скрипта</label>
+                <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ script.get_script_type_display }}</div>
+            </div>
+            <div>
+                <label class="text-sm text-gray-600 dark:text-gray-400">Провайдер</label>
+                <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ script.provider|default:"—" }}</div>
+            </div>
+            <div>
+                <label class="text-sm text-gray-600 dark:text-gray-400">Позиция на странице</label>
+                <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ script.get_position_display }}</div>
+            </div>
+            <div>
+                <label class="text-sm text-gray-600 dark:text-gray-400">Приоритет</label>
+                <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ script.priority }}</div>
+            </div>
+        </div>
+
+        {% if script.description %}
+        <div class="mb-6">
+            <label class="text-sm text-gray-600 dark:text-gray-400">Описание</label>
+            <div class="text-gray-900 dark:text-white">{{ script.description }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Код скрипта -->
+        <div class="mb-6">
+            <label class="text-sm text-gray-600 dark:text-gray-400 mb-2 block">Код скрипта</label>
+            <pre class="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto text-sm"><code>{{ script.code }}</code></pre>
+        </div>
+
+        <!-- Служебная информация -->
+        <div class="border-t pt-4 mb-6 text-sm text-gray-600 dark:text-gray-400">
+            <div>Добавлен: {{ script.created_at|date:"d.m.Y H:i" }}{% if script.created_by %} пользователем {{ script.created_by.username }}{% endif %}</div>
+            <div>Обновлён: {{ script.updated_at|date:"d.m.Y H:i" }}</div>
+        </div>
+
+        <!-- Действия -->
+        <div class="flex gap-4">
+            <a href="{% url 'advertising:external_script_edit' script.id %}" 
+               class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                ✏️ Редактировать
+            </a>
+            <form method="post" action="{% url 'advertising:external_script_toggle' script.id %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="px-6 py-3 {% if script.is_active %}bg-orange-600 hover:bg-orange-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white rounded-lg">
+                    {% if script.is_active %}⏸️ Выключить{% else %}▶️ Включить{% endif %}
+                </button>
+            </form>
+            <form method="post" action="{% url 'advertising:external_script_delete' script.id %}" 
+                  onsubmit="return confirm('Удалить скрипт {{ script.name }}?')" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    🗑️ Удалить
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

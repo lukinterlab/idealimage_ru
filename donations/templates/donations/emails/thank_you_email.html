@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ settings.thank_you_subject }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .donation-info {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .donation-info p {
+            margin: 5px 0;
+        }
+        .amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>❤️ {{ settings.thank_you_subject }}</h1>
+        </div>
+        
+        <div class="content">
+            <p>Здравствуйте{% if donation.user_name %}, {{ donation.user_name }}{% endif %}!</p>
+            
+            <p>{{ settings.thank_you_message }}</p>
+            
+            <div class="amount">
+                {{ donation.amount }} ₽
+            </div>
+            
+            <div class="donation-info">
+                <p><strong>Детали платежа:</strong></p>
+                <p>ID транзакции: {{ donation.id }}</p>
+                <p>Дата: {{ donation.completed_at|date:"d.m.Y в H:i" }}</p>
+                <p>Способ оплаты: {{ donation.get_payment_method_display }}</p>
+            </div>
+            
+            {% if donation.message %}
+            <p><strong>Ваше сообщение:</strong></p>
+            <blockquote style="border-left: 3px solid #ccc; padding-left: 15px; color: #666; font-style: italic;">
+                {{ donation.message }}
+            </blockquote>
+            {% endif %}
+            
+            <p>Ваша поддержка очень важна для нас! Она помогает развивать проект и создавать качественный контент.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ site_url }}" class="button">
+                    Посетить сайт
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 IdealImage.ru. Все права защищены.</p>
+            <p>
+                <a href="{{ site_url }}" style="color: #667eea; text-decoration: none;">idealimage.ru</a>
+            </p>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">
+                Это автоматическое письмо, отвечать на него не нужно.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

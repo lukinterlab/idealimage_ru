@@ -1,0 +1,27 @@
+{% load static %}
+<!-- No Controls Start -->
+    <h2 >abc/carusel/carus_1</h2>
+   
+        <div class="glide" id="glideNoControls">
+          <div class="glide__track" data-glide-el="track">
+            <div class="glide__slides">
+            {% for post in post_list reversed %}
+                <div class="col-12 ">
+                    <div class="card w-100 sw-sm-40 sh-40 sh-sm-50 hover-img-scale-up">
+                    <img src="{{ post.kartinka.url }}" class="card-img h-100 scale" alt="card image" />
+                    <div class="card-img-overlay d-flex flex-column justify-content-between bg-transparent">
+                        <div>
+                        <div class="cta-1 mb-5 text-black w-90">{{ post.title }}</div>
+                        <a href="#" class="btn btn-icon btn-icon-start btn-primary mt-3 stretched-link">
+                            <i data-cs-icon="chevron-right"></i>
+                            <span>View</span>
+                        </a>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+            </div>
+          </div>
+        </div>

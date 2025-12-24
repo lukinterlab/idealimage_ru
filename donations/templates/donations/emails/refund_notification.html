@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Возврат средств - IdealImage.ru</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .refund-info {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #f59e0b;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Возврат средств</h1>
+        </div>
+        
+        <div class="content">
+            <p>Здравствуйте{% if donation.user_name %}, {{ donation.user_name }}{% endif %}!</p>
+            
+            <p>Мы обработали ваш запрос на возврат средств.</p>
+            
+            <div class="amount">
+                {{ donation.amount }} ₽
+            </div>
+            
+            <div class="refund-info">
+                <p><strong>Информация о возврате:</strong></p>
+                <p>ID транзакции: {{ donation.id }}</p>
+                <p>Дата возврата: {{ donation.updated_at|date:"d.m.Y в H:i" }}</p>
+                <p>Способ оплаты: {{ donation.get_payment_method_display }}</p>
+            </div>
+            
+            <p>Средства будут зачислены на ваш счет в течение 5-10 рабочих дней в зависимости от вашего банка.</p>
+            
+            <p>Если у вас есть вопросы, пожалуйста, свяжитесь с нами.</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 IdealImage.ru. Все права защищены.</p>
+            <p>
+                <a href="{{ site_url }}" style="color: #f59e0b; text-decoration: none;">idealimage.ru</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

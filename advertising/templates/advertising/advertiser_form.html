@@ -1,0 +1,110 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-white dark:bg-gray-900 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    ➕ Создание рекламодателя
+                </h1>
+                <a href="{% url 'advertising:advertisers_list' %}" 
+                   class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg">
+                    ← Назад
+                </a>
+            </div>
+            
+            {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400{% else %}bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400{% endif %} p-4 rounded">
+                    <p class="{% if message.tags == 'error' %}text-red-700 dark:text-red-300{% else %}text-green-700 dark:text-green-300{% endif %}">
+                        {{ message }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Основная информация -->
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-4 mb-6">
+                    <h3 class="text-lg font-bold text-white">Информация о компании</h3>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Название компании *
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Email *
+                        </label>
+                        {{ form.contact_email }}
+                        {% if form.contact_email.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.contact_email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Телефон
+                        </label>
+                        {{ form.contact_phone }}
+                        {% if form.contact_phone.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.contact_phone.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Информация о компании
+                    </label>
+                    {{ form.company_info }}
+                    {% if form.company_info.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.company_info.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-center">
+                    <label class="flex items-center cursor-pointer">
+                        {{ form.is_active }}
+                        <span class="ml-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Активен
+                        </span>
+                    </label>
+                </div>
+                
+                <!-- Кнопки -->
+                <div class="flex gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <button type="submit" 
+                            class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all">
+                        ➕ Создать рекламодателя
+                    </button>
+                    <a href="{% url 'advertising:advertisers_list' %}" 
+                       class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all">
+                        Отмена
+                    </a>
+                </div>
+            </form>
+            
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+

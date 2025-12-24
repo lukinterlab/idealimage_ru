@@ -1,0 +1,381 @@
+{% extends 'base_tailwind.html' %} 
+{% load static %}
+
+{% block extra_head %}
+{{ form.media.css }}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8 fade-in">
+        <h1 class="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-4">
+            Добавление статьи
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+            Заполните форму ниже, чтобы создать новую статью
+        </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 fade-in">
+        <form method="post" action="{% url 'blog:post_create' %}" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if ai_disabled %}
+            <div class="rounded-xl border border-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 dark:border-yellow-600 p-4 flex gap-3 items-start">
+                <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.66 1.73-3L13.73 5c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.34.19 3 1.73 3z"/>
+                </svg>
+                <div>
+                    <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+                        AI-обработка временно отключена. Вы можете сохранить статью вручную и запустить задачи позже.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Custom Form Styles for Dark Mode -->
+            <style>
+                .dark form input[type="text"],
+                .dark form input[type="email"],
+                .dark form input[type="url"],
+                .dark form input[type="number"],
+                .dark form textarea,
+                .dark form select {
+                    background-color: #1f2937;
+                    border-color: #374151;
+                    color: #f9fafb;
+                }
+                
+                .dark form input[type="text"]:focus,
+                .dark form input[type="email"]:focus,
+                .dark form input[type="url"]:focus,
+                .dark form input[type="number"]:focus,
+                .dark form textarea:focus,
+                .dark form select:focus {
+                    border-color: #ec4899;
+                    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+                }
+                
+                .dark form label {
+                    color: #f9fafb;
+                }
+                
+                .dark form .helptext {
+                    color: #9ca3af;
+                }
+                
+                form input[type="text"],
+                form input[type="email"],
+                form input[type="url"],
+                form input[type="number"],
+                form textarea,
+                form select {
+                    width: 100%;
+                    padding: 0.75rem 1rem;
+                    border: 2px solid #e5e7eb;
+                    border-radius: 0.5rem;
+                    font-size: 1rem;
+                    transition: all 0.2s;
+                    margin-top: 0.5rem;
+                }
+                
+                form input[type="text"]:focus,
+                form input[type="email"]:focus,
+                form input[type="url"]:focus,
+                form input[type="number"]:focus,
+                form textarea:focus,
+                form select:focus {
+                    outline: none;
+                    border-color: #ec4899;
+                    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+                }
+                
+                form label {
+                    display: block;
+                    font-weight: 600;
+                    color: #374151;
+                    margin-bottom: 0.25rem;
+                }
+                
+                form p {
+                    margin-bottom: 1.5rem;
+                }
+                
+                form .helptext {
+                    display: block;
+                    font-size: 0.875rem;
+                    color: #6b7280;
+                    margin-top: 0.25rem;
+                }
+                
+                form textarea {
+                    min-height: 150px;
+                }
+                
+                form input[type="file"] {
+                    display: block;
+                    width: 100%;
+                    padding: 0.75rem;
+                    margin-top: 0.5rem;
+                    border: 2px dashed #e5e7eb;
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                
+                form input[type="file"]:hover {
+                    border-color: #ec4899;
+                    background-color: #fdf2f8;
+                }
+                
+                .dark form input[type="file"] {
+                    border-color: #374151;
+                    background-color: #1f2937;
+                    color: #f9fafb;
+                }
+                
+                .dark form input[type="file"]:hover {
+                    border-color: #ec4899;
+                    background-color: #374151;
+                }
+            </style>
+            
+            <div class="text-gray-900 dark:text-white">
+                <!-- Поле контента (основной текст) - выводим явно в первую очередь -->
+                <div class="mb-6" id="content-field-wrapper">
+                    <label for="id_content" class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                        {{ form.content.label }}
+                    </label>
+                    <div id="content-widget-wrapper">
+                        {{ form.content }}
+                    </div>
+                    {% if form.content.help_text %}
+                        <span class="helptext block mt-1 text-sm text-gray-600 dark:text-gray-400">{{ form.content.help_text }}</span>
+                    {% endif %}
+                    {% if form.content.errors %}
+                        <span class="text-red-500 text-sm block mt-1">{{ form.content.errors }}</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Остальные поля формы -->
+                {% for field in form %}
+                    {% if field.name not in 'content,use_ai_assistant,ai_improvement_style,ai_custom_prompt,generate_image,image_generation_prompt' %}
+                        <p>
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.help_text %}
+                                <span class="helptext">{{ field.help_text }}</span>
+                            {% endif %}
+                            {% if field.errors %}
+                                <span class="text-red-500 text-sm">{{ field.errors }}</span>
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <!-- AI-помощник блок -->
+            <div class="mt-8 p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border-2 border-purple-200 dark:border-purple-900">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="p-2 bg-purple-500 rounded-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                            🤖 AI-помощник для улучшения текста
+                        </h3>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                            Активируйте AI-помощника, чтобы улучшить ваш черновик. Искусственный интеллект проанализирует текст и предложит улучшения, сохраняя ваш авторский стиль.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Чекбокс AI -->
+                    <div class="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-lg">
+                        {{ form.use_ai_assistant }}
+                        <label for="{{ form.use_ai_assistant.id_for_label }}" class="text-base font-medium text-gray-900 dark:text-white cursor-pointer">
+                            {{ form.use_ai_assistant.label }}
+                        </label>
+                    </div>
+                    
+                    <!-- Стиль улучшения -->
+                    <div class="p-4 bg-white dark:bg-gray-800 rounded-lg {% if not form.use_ai_assistant.value %}hidden{% endif %}" data-ai-settings>
+                        <label for="{{ form.ai_improvement_style.id_for_label }}" class="block text-base font-semibold text-gray-900 dark:text-white mb-3">
+                            {{ form.ai_improvement_style.label }}
+                        </label>
+                        {{ form.ai_improvement_style }}
+                        
+                        <!-- Описания стилей -->
+                        <div class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                            <p>⚖️ <strong>Сбалансированный:</strong> Универсальный стиль для большинства статей</p>
+                            <p>✍️ <strong>Литературный:</strong> Художественный язык, образные выражения</p>
+                            <p>🔍 <strong>SEO-оптимизированный:</strong> С ключевыми словами для поисковых систем</p>
+                            <p>💖 <strong>Эмоциональный:</strong> Вдохновляющий и эмоционально насыщенный текст</p>
+                        </div>
+                        
+                        {% if form.ai_improvement_style.help_text %}
+                            <span class="helptext mt-2 block">{{ form.ai_improvement_style.help_text }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Дополнительные критерии для AI -->
+                    <div class="p-4 bg-white dark:bg-gray-800 rounded-lg {% if not form.use_ai_assistant.value %}hidden{% endif %}" data-ai-settings>
+                        <label for="{{ form.ai_custom_prompt.id_for_label }}" class="block text-base font-semibold text-gray-900 dark:text-white mb-3">
+                            📝 {{ form.ai_custom_prompt.label }}
+                        </label>
+                        {{ form.ai_custom_prompt }}
+                        {% if form.ai_custom_prompt.help_text %}
+                            <span class="helptext mt-2 block">{{ form.ai_custom_prompt.help_text }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Генерация изображения -->
+                    <div class="p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-pink-200 dark:border-pink-900">
+                        <div class="flex items-center gap-3 mb-4">
+                            {{ form.generate_image }}
+                            <label for="{{ form.generate_image.id_for_label }}" class="text-base font-medium text-gray-900 dark:text-white cursor-pointer">
+                                {{ form.generate_image.label }}
+                            </label>
+                        </div>
+                        
+                        <div class="pl-7 {% if not form.generate_image.value %}hidden{% endif %}" data-ai-image-settings>
+                            <label for="{{ form.image_generation_prompt.id_for_label }}" class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                {{ form.image_generation_prompt.label }}
+                            </label>
+                            {{ form.image_generation_prompt }}
+                            {% if form.image_generation_prompt.help_text %}
+                                <span class="helptext mt-1 block">{{ form.image_generation_prompt.help_text }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div class="text-sm text-blue-800 dark:text-blue-300">
+                                <strong>Важно:</strong> AI-помощник работает только для статей со статусом "Черновик". После улучшения вы получите уведомление и сможете принять или отклонить изменения.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 pt-6 border-t dark:border-gray-700">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-primary to-secondary text-white font-semibold px-8 py-3 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    <svg class="inline-block w-5 h-5 mr-2 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Добавить статью
+                </button>
+                <a href="{% url 'blog:post_list' %}" class="px-8 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const aiCheckbox = document.getElementById('id_use_ai_assistant');
+        const aiSections = document.querySelectorAll('[data-ai-settings]');
+        const imageCheckbox = document.getElementById('id_generate_image');
+        const imageSections = document.querySelectorAll('[data-ai-image-settings]');
+
+        const toggleSections = (checked, sections) => {
+            sections.forEach((section) => {
+                section.classList.toggle('hidden', !checked);
+                section.setAttribute('aria-hidden', String(!checked));
+            });
+        };
+
+        if (aiCheckbox) {
+            toggleSections(aiCheckbox.checked, aiSections);
+            aiCheckbox.addEventListener('change', (event) => {
+                toggleSections(event.target.checked, aiSections);
+            });
+        }
+
+        if (imageCheckbox) {
+            toggleSections(imageCheckbox.checked, imageSections);
+            imageCheckbox.addEventListener('change', (event) => {
+                toggleSections(event.target.checked, imageSections);
+            });
+        }
+    });
+</script>
+
+{% block extra_scripts %}
+{{ form.media.js }}
+<script>
+    // Явная инициализация CKEditor после загрузки всех скриптов
+    (function() {
+        function initCKEditor() {
+            if (typeof CKEDITOR === 'undefined') {
+                // Если CKEditor еще не загружен, ждем еще
+                setTimeout(initCKEditor, 100);
+                return;
+            }
+            
+            // Ищем виджет CKEditor
+            var widget = document.querySelector('.django-ckeditor-widget[data-field-id="id_content"]');
+            var textarea = document.getElementById('id_content');
+            
+            console.log('Инициализация CKEditor:', {
+                widget: widget,
+                textarea: textarea,
+                ckeditorLoaded: typeof CKEDITOR !== 'undefined',
+                alreadyInitialized: CKEDITOR.instances['id_content'] ? true : false
+            });
+            
+            if (textarea) {
+                // Проверяем, не инициализирован ли уже
+                if (!CKEDITOR.instances['id_content']) {
+                    try {
+                        // Убеждаемся, что виджет виден
+                        if (widget) {
+                            widget.style.display = 'block';
+                            widget.style.visibility = 'visible';
+                        }
+                        
+                        // Инициализируем CKEditor
+                        var editor = CKEDITOR.replace('id_content');
+                        console.log('CKEditor инициализирован для id_content', editor);
+                    } catch (e) {
+                        console.error('Ошибка инициализации CKEditor:', e);
+                    }
+                } else {
+                    console.log('CKEditor уже инициализирован для id_content');
+                }
+            } else {
+                console.warn('Textarea id_content не найден');
+            }
+        }
+        
+        // Пробуем инициализировать после загрузки DOM и всех скриптов
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                // Ждем загрузки всех скриптов CKEditor
+                setTimeout(initCKEditor, 500);
+            });
+        } else {
+            // DOM уже загружен
+            setTimeout(initCKEditor, 500);
+        }
+        
+        // Дополнительная попытка через window.onload
+        window.addEventListener('load', function() {
+            setTimeout(initCKEditor, 300);
+        });
+    })();
+</script>
+{% endblock %}
+
+{% endblock content %}

@@ -1,0 +1,105 @@
+{% extends "base_tailwind.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                {% if is_edit %}✏️ Редактировать скрипт{% else %}➕ Добавить скрипт{% endif %}
+            </h1>
+            <a href="{% if is_edit %}{% url 'advertising:external_script_detail' script.id %}{% else %}{% url 'advertising:external_scripts_list' %}{% endif %}" 
+               class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                ← Назад
+            </a>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Название -->
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Название *</label>
+                <input type="text" name="name" value="{{ script.name|default:'' }}" required
+                       class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                       placeholder="Например: ACINT Tracking">
+            </div>
+
+            <!-- Тип и Провайдер -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Тип скрипта *</label>
+                    <select name="script_type" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        {% for code, name in script_types %}
+                        <option value="{{ code }}" {% if script.script_type == code %}selected{% endif %} class="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Провайдер</label>
+                    <input type="text" name="provider" value="{{ script.provider|default:'' }}"
+                           class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           placeholder="ACINT, Google, Yandex...">
+                </div>
+            </div>
+
+            <!-- Позиция и Приоритет -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Позиция на странице *</label>
+                    <select name="position" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        {% for code, name in positions %}
+                        <option value="{{ code }}" {% if script.position == code %}selected{% endif %} class="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Приоритет</label>
+                    <input type="number" name="priority" value="{{ script.priority|default:10 }}"
+                           class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           placeholder="10">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Меньше = раньше загружается</p>
+                </div>
+            </div>
+
+            <!-- Описание -->
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Описание</label>
+                <textarea name="description" rows="2" 
+                          class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          placeholder="Для чего этот скрипт">{{ script.description|default:'' }}</textarea>
+            </div>
+
+            <!-- Код скрипта -->
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Код скрипта *</label>
+                <textarea name="code" rows="10" required
+                          class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 font-mono text-sm dark:text-white"
+                          placeholder="<script>...</script>">{{ script.code|default:'' }}</textarea>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Вставьте полный код (включая теги &lt;script&gt; если нужно)</p>
+            </div>
+
+            <!-- Активен -->
+            <div class="flex items-center">
+                <input type="checkbox" name="is_active" id="is_active" 
+                       {% if not is_edit or script.is_active %}checked{% endif %}
+                       class="w-4 h-4 text-cyan-600 rounded">
+                <label for="is_active" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Активировать скрипт на сайте</label>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="px-8 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-semibold">
+                    {% if is_edit %}💾 Сохранить изменения{% else %}➕ Добавить скрипт{% endif %}
+                </button>
+                <a href="{% if is_edit %}{% url 'advertising:external_script_detail' script.id %}{% else %}{% url 'advertising:external_scripts_list' %}{% endif %}" 
+                   class="px-8 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

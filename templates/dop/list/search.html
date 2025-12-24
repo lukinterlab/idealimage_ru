@@ -1,0 +1,33 @@
+{% load static %}  
+<!-- ПОИСК  Start -->
+<div class="col-12">
+	<div class="card w-100 sh-30 sh-md-25 mb-5">
+		<img src="{% static 'new/img/banner/cta-wide-3.jpg' %}"  class="card-img h-100" alt="card image" />
+		<div class="card-img-overlay d-flex flex-column justify-content-center bg-transparent">
+			<div class="row d-flex">
+				<div class="col-12 text-right">
+					
+					<div class="col-12 text-center">
+						<img src="{% static 'new/img/logo.png' %}"/>
+						
+					</div>
+					<div class="row g-2 justify-content-center">
+						<form class="d-flex" method="GET" action="{% url 'Home:search_page' %}">
+							<div class="col-12 col-sm-6">
+								<div class="d-flex flex-column justify-content-start">
+									<div class="text-muted mb-3 mb-sm-0">																																		
+										<input type="text" name="query" class="form-control me-2 mx-1" placeholder="Что ищем?" maxlength="100" required id="id_query">
+									</div>
+									<button class="btn btn-primary search-btn" type="submit">Поиск</button>
+								</div>
+							</div>
+						</form>
+					</div>
+					
+					<img src="{% static 'new/img/logo.png' %}"/>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- ПОИСК End -->

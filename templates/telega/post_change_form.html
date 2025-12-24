@@ -1,0 +1,22 @@
+{% extends 'admin/change_form.html' %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+
+    {% if not original.fixed %}
+    <div class="submit-row">
+        <input type="submit" value="Опубликовать на 🫣ПО СЕКРЕТУ🤫" name="publish-telegram-1">
+        <input type="submit" value="Опубликовать на 🔮LukInterLab🔮" name="publish-telegram-2">
+        <input type="submit" value="Опубликовать на 💃идеальный образ💃" name="publish-telegram-3">
+        <input type="submit" value="Опубликовать на 👩шикарная причёска👩" name="publish-telegram-4">
+        <input type="submit" value="Опубликовать на 🎀 девочки косички🎀" name="publish-telegram-5">
+        <input type="submit" value="Опубликовать на 👗👠fashion couture👠👗" name="publish-telegram-6">
+    </div>
+    {% else %}
+        <div class="submit-row">
+        Вы уже опубликовали сообщение об этом посте в телеграм. <br>
+        Если хотите отправить еще раз сообщение об этом блоге , то снимите галочку Отправлено в ТГ <br>
+        и сохраните этот пост. После этого будет доступна кнопка "Опубликовать на телеграм канале"
+        </div>
+    {% endif %}
+{% endblock %}

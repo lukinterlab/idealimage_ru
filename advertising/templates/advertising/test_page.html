@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест - Управление рекламой</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        h1 { color: #333; }
+        .btn { display: inline-block; padding: 10px 20px; background: #ff6b35; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+        .btn:hover { background: #e55a2b; }
+        .card { background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #ff6b35; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Управление рекламой - Тестовая страница</h1>
+        
+        <p><strong>Эта страница работает!</strong> Если вы видите этот текст, значит URL и view функционируют.</p>
+        
+        <h2>Кнопки управления:</h2>
+        <div>
+            <a href="{% url 'advertising:banners_manage' %}" class="btn">🎨 Баннеры</a>
+            <a href="{% url 'advertising:context_ads_manage' %}" class="btn">📝 Контекстная реклама</a>
+            <a href="{% url 'advertising:campaigns_list' %}" class="btn">📋 Кампании</a>
+            <a href="{% url 'advertising:advertisers_list' %}" class="btn">👥 Рекламодатели</a>
+            <a href="{% url 'advertising:analytics' %}" class="btn">📈 Аналитика</a>
+            <a href="{% url 'advertising:recommendations' %}" class="btn">🤖 Рекомендации AI</a>
+        </div>
+        
+        <h2>Статистика:</h2>
+        <div class="card">
+            <p><strong>Показов:</strong> {{ total_impressions|default:0 }}</p>
+            <p><strong>Кликов:</strong> {{ total_clicks|default:0 }}</p>
+            <p><strong>CTR:</strong> {{ avg_ctr|default:0 }}%</p>
+            <p><strong>Доход:</strong> {{ total_revenue|default:0 }}₽</p>
+            <p><strong>Активных кампаний:</strong> {{ active_campaigns|default:0 }}</p>
+        </div>
+        
+        <h2>Топ рекламные места:</h2>
+        {% for place in top_places %}
+        <div class="card">
+            <strong>{{ place.name }}</strong> - Кликов: {{ place.total_clicks }}, Показов: {{ place.total_impressions }}
+        </div>
+        {% empty %}
+        <p>Нет данных</p>
+        {% endfor %}
+        
+        <h2>Рекламодатели:</h2>
+        {% for adv in top_advertisers %}
+        <div class="card">
+            <strong>{{ adv.name }}</strong> - Потрачено: {{ adv.total_spent }}₽
+        </div>
+        {% empty %}
+        <p>Нет данных</p>
+        {% endfor %}
+        
+        <p style="margin-top: 30px;">
+            <a href="{% url 'Home:master_admin_dashboard' %}" class="btn">← Назад на главную панель</a>
+        </p>
+        
+        <hr style="margin: 30px 0;">
+        <p><em>Если эта страница отображается, но основная страница advertising/dashboard.html нет - проблема в CSS/JS или наследовании шаблона base_tailwind.html</em></p>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+

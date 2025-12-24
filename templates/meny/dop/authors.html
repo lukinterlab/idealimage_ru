@@ -1,0 +1,24 @@
+{% load static %}
+
+
+<div class="col-12 col-sm-6 col-xl-12">
+  <h2 class="small-title">CАМЫЕ ЧИТАЕМЫЕ АВТОРЫ</h2>
+  <div class="card border-quaternary mb-5">
+    <div class="card-body">
+        <ul class="list-inline" >
+          {% for author in authors %}
+            <a href='{% url "Visitor:profile_detail" author.slug %}' >
+              <h2>
+                <img src="{{ author.avatar.url }}" alt="user" class="img-fluid sw-10 sh-10 rounded-xl border border-2 border-foreground" />
+                {{ author }}
+              </h2>
+            </a> 
+            
+          {% endfor %}
+        </ul>
+    </div>
+  </div>
+</div>
+
+                
+

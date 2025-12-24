@@ -1,0 +1,58 @@
+{% comment %}
+Скрипт для определения ориентации видео и подгонки классов Tailwind.
+Подключается с защитой от повторной инициализации.
+{% endcomment %}
+<script>
+(function () {
+    if (window.__videoOrientationSetup) {
+        window.__videoOrientationSetup();
+        return;
+    }
+
+    function applyOrientation(video) {
+        if (!video) {
+            return;
+        }
+
+        var isPortrait = video.videoHeight > video.videoWidth;
+
+        if (isPortrait) {
+            video.classList.add('object-contain', 'w-auto', 'h-full', 'max-w-full');
+            video.classList.remove('object-cover', 'w-full');
+        } else {
+            video.classList.add('object-cover', 'w-full', 'h-full');
+            video.classList.remove('object-contain', 'w-auto', 'max-w-full');
+        }
+    }
+
+    window.__videoOrientationSetup = function () {
+        var videos = document.querySelectorAll('.js-video-orientation');
+
+        videos.forEach(function (video) {
+            if (video.dataset.orientationHandlerAttached === '1') {
+                if (video.readyState >= 1) {
+                    applyOrientation(video);
+                }
+                return;
+            }
+
+            video.dataset.orientationHandlerAttached = '1';
+
+            if (video.readyState >= 1) {
+                applyOrientation(video);
+            } else {
+                video.addEventListener('loadedmetadata', function handleLoadedMetadata() {
+                    applyOrientation(video);
+                }, { once: true });
+            }
+        });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', window.__videoOrientationSetup);
+    } else {
+        window.__videoOrientationSetup();
+    }
+})();
+</script>
+

@@ -1,0 +1,48 @@
+{% load static %}
+    <h2>abc/carusel/carus_3</h2>
+        <div class="glide" id="glideCenter">
+          <div class="glide__track" data-glide-el="track">
+            <div class="glide__slides">
+                {% for post in post_list reversed %}
+                <div class="glide__slide">
+                    <div class="col-12 col-sm-auto mb-5">
+                        <div class="card w-100 sw-sm-55 sh-30 2h-sm-45 hover-img-scale-up">
+                          <img src="{{ post.kartinka.url }}" class="card-img h-100 scale" alt="card image" />
+                          <div class="card-img-overlay d-flex flex-column justify-content-between">
+                            <div>
+                              <div class="cta-1 mb-5 text-white">
+                                {{ post.title }}
+                                <br />
+                                {{ post.title }}
+                                <br />
+                                {{ post.title }}
+                              </div>
+                            </div>
+                            <div>
+                              <a href="#" class="btn btn-icon btn-icon-start btn-primary mt-3 stretched-link">
+                                <i data-cs-icon="chevron-right"></i>
+                                <span>View</span>
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                                       
+                </div>
+                {% endfor %}
+            </div>
+          </div>
+          <div class="text-center">
+            <span class="glide__arrows slider-nav" data-glide-el="controls">
+              <button class="btn btn-icon btn-icon-only btn-outline-primary" data-glide-dir="<">
+                <i data-cs-icon="chevron-left"></i>
+              </button>
+            </span>
+            <span class="glide__bullets" data-glide-el="controls[nav]"></span>
+            <span class="glide__arrows slider-nav" data-glide-el="controls">
+              <button class="btn btn-icon btn-icon-only btn-outline-primary" data-glide-dir=">">
+                <i data-cs-icon="chevron-right"></i>
+              </button>
+            </span>
+          </div>
+        </div>

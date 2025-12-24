@@ -1,0 +1,25 @@
+{% load static %}
+{% load mptt_tags static %}
+{% block Categories %}
+<!-- Categories Start -->
+<div class="col-12 col-sm-6 col-xl-12">
+  <h2 class="small-title">КАТЕГОРИИ</h2>
+  <div class="card-body border-quaternary scroll-out">
+    
+        {% full_tree_for_model blog.Category as categories %}
+        {% for c in categories  %}
+        {% if c.posts.count != 0 %}
+        <div class="col-12 col-sm-6 col-xl-12">
+            <a href="{{ c.get_absolute_url }}" class="body-link d-block mb-2">
+            <h4>{{ c.title }}</h4>
+            </a>
+            <p>{{ c.posts.count }} статей </p>
+        </div>
+        {% endif %}
+        {% endfor %}
+      
+    
+  </div>
+</div>
+<!-- Categories End -->
+{% endblock Categories %}

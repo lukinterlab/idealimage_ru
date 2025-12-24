@@ -1,0 +1,14 @@
+{% if image_url %}
+<picture>
+    <source srcset="{{ srcset }}" sizes="{{ sizes }}" type="image/webp">
+    <img 
+        src="{{ image_url }}" 
+        {% if srcset %}srcset="{{ srcset }}" sizes="{{ sizes }}"{% endif %}
+        alt="{{ alt_text }}"
+        {% if class_name %}class="{{ class_name }}"{% endif %}
+        {% if lazy %}loading="lazy"{% else %}loading="eager"{% endif %}
+        decoding="async"
+    >
+</picture>
+{% endif %}
+

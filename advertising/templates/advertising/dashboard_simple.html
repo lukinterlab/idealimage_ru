@@ -1,0 +1,346 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Управление рекламой - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-white dark:bg-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- ЗАГОЛОВОК С ЯРКИМИ ЦВЕТАМИ -->
+        <div class="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-8 mb-8 shadow-2xl">
+            <h1 class="text-5xl font-black text-white mb-2">
+                📊 Управление рекламой
+            </h1>
+            <p class="text-xl text-white/90">Система мониторинга и управления рекламными кампаниями</p>
+        </div>
+        
+        <!-- КНОПКИ УПРАВЛЕНИЯ - ЯРКИЕ -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <a href="{% url 'advertising:banners_manage' %}" 
+               class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-6 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all text-center">
+                <div class="text-4xl mb-2">🎨</div>
+                <div class="text-lg">Баннеры</div>
+                <div class="text-sm opacity-80 mt-1">Управление баннерами</div>
+            </a>
+            
+            <a href="{% url 'advertising:context_ads_manage' %}" 
+               class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-6 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all text-center">
+                <div class="text-4xl mb-2">📝</div>
+                <div class="text-lg">Контекстная реклама</div>
+                <div class="text-sm opacity-80 mt-1">Управление вставками</div>
+            </a>
+            
+            <a href="{% url 'advertising:campaigns_list' %}" 
+               class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all text-center">
+                <div class="text-4xl mb-2">📋</div>
+                <div class="text-lg">Кампании</div>
+                <div class="text-sm opacity-80 mt-1">Рекламные кампании</div>
+            </a>
+            
+            <a href="{% url 'advertising:advertisers_list' %}" 
+               class="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all text-center">
+                <div class="text-4xl mb-2">👥</div>
+                <div class="text-lg">Рекламодатели</div>
+                <div class="text-sm opacity-80 mt-1">Клиенты</div>
+            </a>
+            
+            <a href="{% url 'advertising:external_scripts_list' %}" 
+               class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-6 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all text-center">
+                <div class="text-4xl mb-2">🔌</div>
+                <div class="text-lg">Внешние скрипты</div>
+                <div class="text-sm opacity-80 mt-1">Счетчики и коды</div>
+            </a>
+            
+            <a href="{% url 'advertising:ads_txt_manage' %}" 
+               class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-6 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all text-center">
+                <div class="text-4xl mb-2">📄</div>
+                <div class="text-lg">ads.txt</div>
+                <div class="text-sm opacity-80 mt-1">Файл для Ezoic</div>
+            </a>
+            
+            <a href="{% url 'advertising:action_log' %}" 
+               class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-6 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all text-center">
+                <div class="text-4xl mb-2">📋</div>
+                <div class="text-lg">Журнал действий</div>
+                <div class="text-sm opacity-80 mt-1">История изменений</div>
+            </a>
+        </div>
+        
+        <!-- БЫСТРЫЕ ДЕЙСТВИЯ -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border-2 border-orange-500 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">⚡ Быстрые действия</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="{% url 'advertising:banner_create' %}" 
+                   class="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-colors border border-orange-200 dark:border-orange-800">
+                    <span class="text-3xl">➕</span>
+                    <div>
+                        <div class="font-semibold text-gray-900 dark:text-white">Создать баннер</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Новый рекламный баннер</div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'advertising:context_ad_create' %}" 
+                   class="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors border border-purple-200 dark:border-purple-800">
+                    <span class="text-3xl">📝</span>
+                    <div>
+                        <div class="font-semibold text-gray-900 dark:text-white">Создать контекстную рекламу</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Новое объявление</div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'advertising:campaign_create' %}" 
+                   class="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-800">
+                    <span class="text-3xl">🚀</span>
+                    <div>
+                        <div class="font-semibold text-gray-900 dark:text-white">Создать кампанию</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Новая рекламная кампания</div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'advertising:external_script_create' %}" 
+                   class="flex items-center gap-3 p-4 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 rounded-lg transition-colors border border-cyan-200 dark:border-cyan-800">
+                    <span class="text-3xl">🔌</span>
+                    <div>
+                        <div class="font-semibold text-gray-900 dark:text-white">Добавить скрипт</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Счетчик или рекламный код</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- СТАТИСТИКА - ЯРКИЕ КАРТОЧКИ -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-6 text-white shadow-lg">
+                <div class="text-sm opacity-80 mb-2">Показов за период</div>
+                <div class="text-4xl font-bold mb-1">{{ total_impressions|default:0 }}</div>
+                <div class="text-sm opacity-70">Всего показов</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl p-6 text-white shadow-lg">
+                <div class="text-sm opacity-80 mb-2">Кликов</div>
+                <div class="text-4xl font-bold mb-1">{{ total_clicks|default:0 }}</div>
+                <div class="text-sm opacity-70">Переходов по рекламе</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-xl p-6 text-white shadow-lg">
+                <div class="text-sm opacity-80 mb-2">CTR</div>
+                <div class="text-4xl font-bold mb-1">{{ avg_ctr|default:0|floatformat:2 }}%</div>
+                <div class="text-sm opacity-70">Click-Through Rate</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
+                <div class="text-sm opacity-80 mb-2">Доход</div>
+                <div class="text-4xl font-bold mb-1">{{ total_revenue|default:0|floatformat:0 }}₽</div>
+                <div class="text-sm opacity-70">За {{ days }} дней</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-xl p-6 text-white shadow-lg">
+                <div class="text-sm opacity-80 mb-2">Внешние скрипты</div>
+                <div class="text-4xl font-bold mb-1">{{ active_external_scripts|default:0 }}/{{ total_external_scripts|default:0 }}</div>
+                <div class="text-sm opacity-70">Активно/Всего</div>
+            </div>
+        </div>
+        
+        <!-- СТАТУС ADS.TXT -->
+        {% if ads_txt_settings %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <span>📄</span> Статус ads.txt
+                </h3>
+                <a href="{% url 'advertising:ads_txt_manage' %}" 
+                   class="text-teal-600 hover:text-teal-700 dark:text-teal-400 font-semibold">
+                    Управление →
+                </a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Статус</div>
+                    <div class="text-lg font-bold">
+                        {% if ads_txt_status.is_active %}
+                            <span class="text-green-600 dark:text-green-400">✓ Активен</span>
+                        {% else %}
+                            <span class="text-red-600 dark:text-red-400">✗ Выключен</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Последнее обновление</div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-white">
+                        {% if ads_txt_status.last_update %}
+                            {{ ads_txt_status.last_update|date:"d.m.Y H:i" }}
+                        {% else %}
+                            <span class="text-gray-400">Никогда</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Требует обновления</div>
+                    <div class="text-lg font-bold">
+                        {% if ads_txt_status.needs_update %}
+                            <span class="text-orange-600 dark:text-orange-400">🔄 Да</span>
+                        {% else %}
+                            <span class="text-green-600 dark:text-green-400">✓ Нет</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% if ads_txt_status.has_error %}
+            <div class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <div class="text-sm text-red-800 dark:text-red-300">
+                    <strong>Ошибка:</strong> {{ ads_txt_settings.last_error|truncatewords:20 }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- ДВЕ КОЛОНКИ С ИНФОРМАЦИЕЙ -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            
+            <!-- Топ места -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span>🏆</span> Топ рекламные места
+                </h3>
+                {% if top_places %}
+                    <div class="space-y-3">
+                    {% for place in top_places %}
+                        <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <div>
+                                <div class="font-semibold text-gray-900 dark:text-white">{{ place.name }}</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ place.code }}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-green-600 dark:text-green-400 font-bold">{{ place.total_clicks }} кликов</div>
+                                <div class="text-sm text-gray-500">{{ place.total_impressions }} показов</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 dark:text-gray-400 text-center py-8">Пока нет данных</p>
+                {% endif %}
+            </div>
+            
+            <!-- Топ рекламодатели -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span>💰</span> Топ рекламодатели
+                </h3>
+                {% if top_advertisers %}
+                    <div class="space-y-3">
+                    {% for advertiser in top_advertisers %}
+                        <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <div>
+                                <div class="font-semibold text-gray-900 dark:text-white">{{ advertiser.name }}</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ advertiser.contact_email }}</div>
+                            </div>
+                            <div class="text-yellow-600 dark:text-yellow-400 font-bold">
+                                {{ advertiser.total_spent|floatformat:0 }}₽
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 dark:text-gray-400 text-center py-8">Пока нет данных</p>
+                {% endif %}
+            </div>
+            
+        </div>
+        
+        <!-- НЕДАВНИЕ КЛИКИ -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <span>🔥</span> Недавние клики
+            </h3>
+            {% if recent_clicks %}
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-gray-700 dark:text-gray-300">Тип</th>
+                                <th class="px-4 py-2 text-left text-gray-700 dark:text-gray-300">Название</th>
+                                <th class="px-4 py-2 text-left text-gray-700 dark:text-gray-300">Пользователь</th>
+                                <th class="px-4 py-2 text-left text-gray-700 dark:text-gray-300">Время</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            {% for click in recent_clicks %}
+                            <tr>
+                                <td class="px-4 py-2 text-gray-900 dark:text-white">
+                                    {% if click.ad_banner %}Баннер{% elif click.context_ad %}Контекст{% endif %}
+                                </td>
+                                <td class="px-4 py-2 text-gray-900 dark:text-white">
+                                    {% if click.ad_banner %}{{ click.ad_banner.name }}{% elif click.context_ad %}{{ click.context_ad.anchor_text }}{% endif %}
+                                </td>
+                                <td class="px-4 py-2 text-gray-600 dark:text-gray-400">
+                                    {% if click.user %}{{ click.user.username }}{% else %}Гость{% endif %}
+                                </td>
+                                <td class="px-4 py-2 text-gray-600 dark:text-gray-400">
+                                    {{ click.clicked_at|date:"d.m.Y H:i" }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-gray-500 dark:text-gray-400 text-center py-8">Кликов пока нет</p>
+            {% endif %}
+        </div>
+        
+        <!-- ДОПОЛНИТЕЛЬНЫЕ ССЫЛКИ -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <a href="{% url 'advertising:analytics' %}" 
+               class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg text-center">
+                📈 Детальная аналитика
+            </a>
+            
+            <a href="{% url 'advertising:recommendations' %}" 
+               class="bg-pink-600 hover:bg-pink-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg text-center">
+                🤖 Рекомендации AI
+            </a>
+            
+            <a href="/admin/advertising/" 
+               class="bg-gray-700 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-lg shadow-lg text-center">
+                ⚙️ Django Admin
+            </a>
+        </div>
+        
+        <!-- ИНСТРУКЦИИ -->
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600 rounded-xl p-6 mb-8">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span>💡</span> Быстрый старт
+            </h3>
+            <div class="space-y-2 text-gray-700 dark:text-gray-300">
+                <p><strong>1.</strong> Создайте баннер через кнопку "🎨 Баннеры" или в Django Admin</p>
+                <p><strong>2.</strong> Настройте кампанию и рекламодателя</p>
+                <p><strong>3.</strong> Добавьте контекстную рекламу для автоматической вставки в статьи</p>
+                <p><strong>4.</strong> Смотрите статистику в разделе "📈 Аналитика"</p>
+            </div>
+        </div>
+        
+        <!-- НАВИГАЦИЯ НАЗАД -->
+        <div class="text-center">
+            <a href="{% url 'Home:master_admin_dashboard' %}" 
+               class="inline-block bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg">
+                ← Назад на главную панель
+            </a>
+        </div>
+        
+        <!-- DEBUG INFO -->
+        <div class="mt-8 bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-xs text-gray-600 dark:text-gray-400">
+            <strong>Debug info:</strong>
+            <div>Показов: {{ total_impressions|default:0 }}</div>
+            <div>Кликов: {{ total_clicks|default:0 }}</div>
+            <div>Активных кампаний: {{ active_campaigns|default:0 }}</div>
+            <div>Период: {{ days }} дней</div>
+            <div>URL working: ✓</div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+

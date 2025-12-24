@@ -1,0 +1,1732 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}AI-Чат — IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-white">
+    <!-- Хлебные крошки -->
+    <div class="container mx-auto px-4 py-4">
+        <nav class="flex mb-4" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="{% url 'Visitor:superuser_dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                        </svg>
+                        Главная панель
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <a href="{% url 'asistent:admin_dashboard' %}" class="ml-1 text-sm font-medium text-gray-300 hover:text-white md:ml-2">AI-Ассистент</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">AI-Чат</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="container mx-auto px-4 pb-4">
+        <div class="flex gap-4" style="height: calc(100vh - 180px);">
+            
+            <!-- Левая панель: Список диалогов (сворачиваемая) -->
+            <div id="left-sidebar" class="bg-gray-800 rounded-xl flex flex-col transition-all duration-300" style="width: 300px;">
+                <!-- Заголовок с кнопкой скрытия -->
+                <div class="p-4 border-b border-gray-700 flex items-center justify-between flex-shrink-0">
+                    <h2 class="text-lg font-bold">💬 Диалоги</h2>
+                    <div class="flex gap-2">
+                        <button id="new-conversation-btn" class="p-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors" title="Новый диалог">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                        </button>
+                        <button id="toggle-left-sidebar" class="p-2 text-gray-400 hover:text-white transition-colors" title="Скрыть панель">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Список диалогов с прокруткой -->
+                <div id="conversations-list" class="flex-1 overflow-y-auto p-4 space-y-2">
+                    {% for conversation in conversations %}
+                    <div class="conversation-item group relative p-3 bg-gray-700 hover:bg-gray-600 rounded-lg cursor-pointer transition-colors {% if conversation.id == active_conversation.id %}bg-purple-600 hover:bg-purple-700{% endif %}" 
+                         data-conversation-id="{{ conversation.id }}">
+                        <div class="pr-8">
+                            <div class="font-semibold text-sm truncate">{{ conversation.title }}</div>
+                            <div class="text-xs text-gray-400 mt-1">{{ conversation.updated_at|date:"d.m.Y H:i" }}</div>
+                            <div class="text-xs text-gray-500">💬 {{ conversation.get_messages_count }}</div>
+                        </div>
+                        <!-- Кнопка удаления -->
+                        <button class="delete-conversation absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 bg-red-600 hover:bg-red-700 rounded transition-all" 
+                                data-conversation-id="{{ conversation.id }}"
+                                title="Удалить диалог">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    {% empty %}
+                    <div class="text-gray-500 text-center py-8 text-sm">
+                        Нет диалогов.<br>Создайте новый!
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Кнопка для показа скрытой левой панели -->
+            <button id="show-left-sidebar" class="hidden bg-gray-800 hover:bg-gray-700 rounded-xl p-2 transition-colors self-start sticky top-4" title="Показать диалоги">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </button>
+
+            <!-- Центральная панель: Окно чата (фиксированная высота) -->
+            <div class="flex-1 bg-gray-800 rounded-xl flex flex-col overflow-hidden">
+                <!-- Заголовок чата -->
+                <div class="p-4 border-b border-gray-700 flex items-center justify-between flex-shrink-0">
+                    <div>
+                        <h2 class="text-xl font-bold" id="chat-title">
+                            {{ active_conversation.title|default:"Выберите или создайте диалог" }}
+                        </h2>
+                        <div class="text-sm text-gray-400">AI-ассистент для управления сайтом</div>
+                    </div>
+                    {% if active_conversation %}
+                    <div class="flex gap-2">
+                        <button id="show-history-btn" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors flex items-center gap-2" title="История диалога">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="hidden md:inline">История</span>
+                        </button>
+                        <button id="rename-conversation-btn" class="p-2 text-gray-400 hover:text-white transition-colors" title="Переименовать">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Область сообщений (ФИКСИРОВАННАЯ ВЫСОТА с прокруткой) -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                    {% if active_conversation %}
+                        {% for message in chat_messages %}
+                        <div class="message-wrapper" data-message-id="{{ forloop.counter }}" data-message-full="{{ message.content|escape }}">
+                            <div class="message {% if message.role == 'admin' %}ml-auto{% endif %} max-w-[80%] {% if message.role == 'admin' %}text-right{% endif %}">
+                                <div class="inline-block p-3 rounded-lg {% if message.role == 'admin' %}bg-purple-600{% elif message.role == 'assistant' %}bg-gray-700{% else %}bg-gray-600{% endif %} relative group">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <div class="text-xs text-gray-300">
+                                            {% if message.role == 'admin' %}
+                                                👤 Вы
+                                            {% elif message.role == 'assistant' %}
+                                                🤖 AI-ассистент
+                                            {% else %}
+                                                ⚙️ Система
+                                            {% endif %}
+                                            • {{ message.timestamp|date:"H:i" }}
+                                        </div>
+                                        {% if message.content|length > 150 %}
+                                        <button class="ml-3 p-1 text-gray-300 hover:text-white transition-colors open-message-modal" 
+                                                data-message-id="{{ forloop.counter }}"
+                                                title="Открыть полностью">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                                            </svg>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Компактный текст (обрезанный) -->
+                                    <div class="message-content text-sm">
+                                        {% if message.content|length > 150 %}
+                                            <div class="message-preview">
+                                                {{ message.content|slice:":150" }}...
+                                                <button class="text-purple-300 hover:text-purple-100 underline text-xs ml-2 open-message-modal" 
+                                                        data-message-id="{{ forloop.counter }}">
+                                                    Показать полностью
+                                                </button>
+                                            </div>
+                                        {% else %}
+                                            <div class="whitespace-pre-wrap">{{ message.content }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if message.metadata.task_id %}
+                                    <div class="mt-2 pt-2 border-t border-gray-600 text-xs text-gray-300">
+                                        📋 Задача #{{ message.metadata.task_id }} создана
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Кнопка копирования (появляется при наведении) -->
+                                    <button class="absolute top-2 right-2 p-1 bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-message-btn" 
+                                            data-message-id="{{ forloop.counter }}"
+                                            title="Копировать">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-gray-500 py-8">
+                            Начните диалог с AI-ассистентом
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="flex items-center justify-center h-full text-gray-500">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4">💬</div>
+                            <div class="text-xl mb-2">Выберите диалог или создайте новый</div>
+                            <div class="text-sm">Нажмите "+" для создания нового диалога</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Поле ввода (фиксированное снизу) -->
+                {% if active_conversation %}
+                <div class="p-4 border-t border-gray-700 flex-shrink-0">
+                    <form id="chat-form" class="flex gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="conversation_id" value="{{ active_conversation.id }}">
+                        <input type="text" 
+                               id="message-input" 
+                               name="message"
+                               placeholder="Напишите команду или вопрос..."
+                               class="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                               autocomplete="off">
+                        <button type="submit" 
+                                class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors flex items-center gap-2">
+                            <span>Отправить</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                            </svg>
+                        </button>
+                    </form>
+                    
+                    <!-- Подсказки команд -->
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <button class="command-hint text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md text-gray-300 transition-colors">
+                            ✨ Генерируй статью
+                        </button>
+                        <button class="command-hint text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md text-gray-300 transition-colors">
+                            🎥 Спарси видео
+                        </button>
+                        <button class="command-hint text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md text-gray-300 transition-colors">
+                            💰 Распредели донаты
+                        </button>
+                        <button class="command-hint text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md text-gray-300 transition-colors">
+                            🎁 Рассчитай бонусы
+                        </button>
+                        <button class="command-hint text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md text-gray-300 transition-colors">
+                            📅 Создай расписание
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Кнопка для показа скрытой правой панели -->
+            <button id="show-right-sidebar" class="hidden bg-gray-800 hover:bg-gray-700 rounded-xl p-2 transition-colors self-start sticky top-4" title="Показать базу знаний">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+
+            <!-- Правая панель: База знаний (сворачиваемая) -->
+            <div id="right-sidebar" class="bg-gray-800 rounded-xl flex flex-col transition-all duration-300" style="width: 300px;">
+                <!-- Заголовок с кнопкой скрытия -->
+                <div class="p-4 border-b border-gray-700 flex items-center justify-between flex-shrink-0">
+                    <h2 class="text-lg font-bold">📚 База знаний</h2>
+                    <button id="toggle-right-sidebar" class="p-2 text-gray-400 hover:text-white transition-colors" title="Скрыть панель">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Содержимое с прокруткой -->
+                <div class="flex-1 overflow-y-auto p-4">
+                    <!-- Поиск -->
+                    <input type="text" 
+                           id="knowledge-search" 
+                           placeholder="Поиск..."
+                           class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 mb-4 text-sm">
+                    
+                    <!-- Категории -->
+                    <div class="space-y-2">
+                        {% for category, display in categories %}
+                        <div class="knowledge-category">
+                            <button class="w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center justify-between text-sm">
+                                <span>{{ display }}</span>
+                                <span class="text-xs text-gray-400" id="count-{{ category }}">0</span>
+                            </button>
+                            <div class="knowledge-items mt-1 ml-2 space-y-1 hidden">
+                                <!-- Заполняется через AJAX -->
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Кнопка добавления (фиксированная снизу) -->
+                <div class="p-4 border-t border-gray-700 flex-shrink-0">
+                    <button id="add-knowledge-btn" class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors text-sm">
+                        + Добавить знание
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для создания нового диалога -->
+<div id="new-conversation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold mb-4">📝 Новый диалог</h3>
+        <form id="new-conversation-form">
+            {% csrf_token %}
+            <input type="text" 
+                   name="title" 
+                   placeholder="Название диалога (например: Генерация статей)"
+                   class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 mb-4"
+                   required>
+            <div class="flex gap-2">
+                <input type="hidden" name="initial_message" value="Привет! Я готов помочь с управлением сайтом.">
+                <button type="submit" class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors">
+                    Создать
+                </button>
+                <button type="button" id="cancel-new-conversation" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+                    Отмена
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div id="delete-conversation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold mb-4 text-red-500">🗑️ Удаление диалога</h3>
+        <p class="text-gray-300 mb-6">Вы уверены, что хотите удалить этот диалог? Все сообщения будут удалены безвозвратно.</p>
+        <div class="flex gap-2">
+            <button id="confirm-delete-conversation" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors">
+                Удалить
+            </button>
+            <button id="cancel-delete-conversation" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+                Отмена
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно истории диалога -->
+<div id="history-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-800 rounded-xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+        <!-- Заголовок -->
+        <div class="p-4 border-b border-gray-700 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    <h3 class="text-xl font-bold">📜 История диалога</h3>
+                    <p class="text-sm text-gray-400" id="history-dialog-title">{{ active_conversation.title }}</p>
+                </div>
+            </div>
+            <button id="close-history-modal" class="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Содержимое с прокруткой -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div id="history-messages-list" class="space-y-4">
+                {% if active_conversation %}
+                    {% for message in chat_messages %}
+                    <div class="history-message-item p-4 rounded-lg {% if message.role == 'admin' %}bg-purple-900 bg-opacity-30{% elif message.role == 'assistant' %}bg-gray-700{% else %}bg-red-900 bg-opacity-30{% endif %}">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <div class="text-sm font-semibold">
+                                    {% if message.role == 'admin' %}
+                                        <span class="text-purple-400">👤 Администратор</span>
+                                    {% elif message.role == 'assistant' %}
+                                        <span class="text-blue-400">🤖 AI-ассистент</span>
+                                    {% else %}
+                                        <span class="text-red-400">⚙️ Система</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-xs text-gray-400">
+                                    {{ message.timestamp|date:"d.m.Y H:i:s" }}
+                                </div>
+                            </div>
+                            <button class="copy-history-message-btn p-1 text-gray-400 hover:text-white transition-colors" 
+                                    data-message-text="{{ message.content|escape }}"
+                                    title="Копировать">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="text-sm text-gray-200 whitespace-pre-wrap">{{ message.content }}</div>
+                        {% if message.metadata.task_id %}
+                        <div class="mt-2 pt-2 border-t border-gray-600 text-xs text-gray-400">
+                            📋 Задача #{{ message.metadata.task_id }} создана
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-gray-500 py-8">
+                        История пуста
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Нижняя панель с кнопками -->
+        <div class="p-4 border-t border-gray-700 flex items-center justify-between flex-shrink-0 gap-3">
+            <div class="text-sm text-gray-400">
+                Всего сообщений: <span id="history-total-count">{{ chat_messages|length }}</span>
+            </div>
+            <div class="flex gap-2">
+                <button id="export-history-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2" title="Экспорт истории">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Экспорт в .txt</span>
+                </button>
+                <button id="copy-all-history-btn" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors flex items-center gap-2" title="Копировать всю историю">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Копировать всё</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для просмотра полного сообщения -->
+<div id="message-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+        <!-- Заголовок -->
+        <div class="p-4 border-b border-gray-700 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <h3 class="text-xl font-bold">📄 Просмотр сообщения</h3>
+                <span id="modal-message-counter" class="text-sm text-gray-400"></span>
+            </div>
+            <button id="close-message-modal" class="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Содержимое с прокруткой -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div id="modal-message-content" class="prose prose-invert max-w-none">
+                <!-- Контент сообщения загружается сюда -->
+            </div>
+        </div>
+        
+        <!-- Нижняя панель с кнопками -->
+        <div class="p-4 border-t border-gray-700 flex items-center justify-between flex-shrink-0 gap-3">
+            <!-- Навигация -->
+            <div class="flex gap-2">
+                <button id="prev-message-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2" title="Предыдущее сообщение">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    <span class="hidden sm:inline">Предыдущее</span>
+                </button>
+                <button id="next-message-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2" title="Следующее сообщение">
+                    <span class="hidden sm:inline">Следующее</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Действия -->
+            <div class="flex gap-2">
+                <button id="copy-modal-message-btn" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors flex items-center gap-2" title="Копировать">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    <span class="hidden sm:inline">Копировать</span>
+                </button>
+                <button id="download-modal-message-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2" title="Скачать как текст">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span class="hidden sm:inline">Скачать</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно ПРОСМОТРА записи базы знаний -->
+<div id="view-knowledge-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-gray-800 rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold" id="view-knowledge-title">Просмотр записи</h2>
+            <button onclick="closeViewKnowledgeModal()" class="text-gray-400 hover:text-white text-2xl leading-none">✕</button>
+        </div>
+        
+        <div class="space-y-4">
+            <div class="flex items-center gap-4">
+                <div>
+                    <span class="text-sm text-gray-400">Категория:</span>
+                    <span id="view-knowledge-category" class="ml-2 font-semibold text-purple-400"></span>
+                </div>
+                <div>
+                    <span class="text-sm text-gray-400">Приоритет:</span>
+                    <span id="view-knowledge-priority" class="ml-2 font-bold text-yellow-400"></span>
+                </div>
+                <div>
+                    <span class="text-sm text-gray-400">Использований:</span>
+                    <span id="view-knowledge-usage" class="ml-2 text-green-400"></span>
+                </div>
+            </div>
+            
+            <div>
+                <span class="text-sm text-gray-400 block mb-2">Содержание:</span>
+                <div id="view-knowledge-content" class="p-4 bg-gray-700 rounded-lg whitespace-pre-wrap text-gray-200"></div>
+            </div>
+            
+            <div>
+                <span class="text-sm text-gray-400 block mb-2">Теги:</span>
+                <div id="view-knowledge-tags" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+        
+        <div class="mt-6 flex gap-3">
+            <button onclick="openEditKnowledgeModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
+                ✏️ Редактировать
+            </button>
+            <button onclick="deleteKnowledgeConfirm()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors">
+                🗑️ Удалить
+            </button>
+            <button onclick="closeViewKnowledgeModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors">
+                Закрыть
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно ДОБАВЛЕНИЯ записи -->
+<div id="add-knowledge-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-gray-800 rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">➕ Добавить запись в базу знаний</h2>
+            <button onclick="closeAddKnowledgeModal()" class="text-gray-400 hover:text-white text-2xl leading-none">✕</button>
+        </div>
+        
+        <form id="add-knowledge-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold mb-2">Категория</label>
+                <select id="add-category" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600" required>
+                    <option value="промпты" class="bg-gray-800 text-white">Промпты</option>
+                    <option value="правила" class="bg-gray-800 text-white">Правила</option>
+                    <option value="примеры" class="bg-gray-800 text-white">Примеры</option>
+                    <option value="команды" class="bg-gray-800 text-white">Команды</option>
+                    <option value="faq" class="bg-gray-800 text-white">Частые вопросы</option>
+                    <option value="инструкции" class="bg-gray-800 text-white">Инструкции</option>
+                    <option value="источники" class="bg-gray-800 text-white">Источники</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2">Заголовок</label>
+                <input type="text" id="add-title" 
+                       class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600" 
+                       placeholder="Краткий заголовок"
+                       required maxlength="300">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2">Содержание</label>
+                <textarea id="add-content" 
+                          class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600 h-32" 
+                          placeholder="Детальное описание, правило или пример"
+                          required></textarea>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2">Теги (через запятую)</label>
+                <input type="text" id="add-tags" 
+                       class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600" 
+                       placeholder="мода, красота, стиль">
+                <p class="text-xs text-gray-400 mt-1">Теги помогают AI находить релевантную информацию</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2">Приоритет (0-100)</label>
+                <input type="number" id="add-priority" 
+                       class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600" 
+                       min="0" max="100" value="50" required>
+                <p class="text-xs text-gray-400 mt-1">
+                    🔴 90-100: критически важное (используется всегда)<br>
+                    🟡 70-89: важное (используется часто)<br>
+                    🟢 0-69: обычное (используется при необходимости)
+                </p>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button type="submit" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-colors">
+                    ✅ Добавить
+                </button>
+                <button type="button" onclick="closeAddKnowledgeModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors">
+                    Отмена
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно РЕДАКТИРОВАНИЯ записи -->
+<div id="edit-knowledge-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-gray-800 rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">✏️ Редактировать запись</h2>
+            <button onclick="closeEditKnowledgeModal()" class="text-gray-400 hover:text-white text-2xl leading-none">✕</button>
+        </div>
+        
+        <form id="edit-knowledge-form" class="space-y-4">
+            <input type="hidden" id="edit-id">
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2">Категория</label>
+                <select id="edit-category" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600" required>
+                    <option value="промпты" class="bg-gray-800 text-white">Промпты</option>
+                    <option value="правила" class="bg-gray-800 text-white">Правила</option>
+                    <option value="примеры" class="bg-gray-800 text-white">Примеры</option>
+                    <option value="команды" class="bg-gray-800 text-white">Команды</option>
+                    <option value="faq" class="bg-gray-800 text-white">Частые вопросы</option>
+                    <option value="инструкции" class="bg-gray-800 text-white">Инструкции</option>
+                    <option value="источники" class="bg-gray-800 text-white">Источники</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2">Заголовок</label>
+                <input type="text" id="edit-title" 
+                       class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600" 
+                       required maxlength="300">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2">Содержание</label>
+                <textarea id="edit-content" 
+                          class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600 h-32" 
+                          required></textarea>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2">Теги (через запятую)</label>
+                <input type="text" id="edit-tags" 
+                       class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2">Приоритет (0-100)</label>
+                <input type="number" id="edit-priority" 
+                       class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-600" 
+                       min="0" max="100" required>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="edit-active" class="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-600">
+                <label for="edit-active" class="text-sm">Активна (используется AI-агентом)</label>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
+                    💾 Сохранить
+                </button>
+                <button type="button" onclick="closeEditKnowledgeModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors">
+                    Отмена
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// CSRF токен
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+// ============================================================================
+// УПРАВЛЕНИЕ БОКОВЫМИ ПАНЕЛЯМИ
+// ============================================================================
+
+// Скрытие/показ левой панели
+document.getElementById('toggle-left-sidebar').addEventListener('click', () => {
+    const sidebar = document.getElementById('left-sidebar');
+    const showBtn = document.getElementById('show-left-sidebar');
+    sidebar.classList.add('hidden');
+    showBtn.classList.remove('hidden');
+});
+
+document.getElementById('show-left-sidebar').addEventListener('click', () => {
+    const sidebar = document.getElementById('left-sidebar');
+    const showBtn = document.getElementById('show-left-sidebar');
+    sidebar.classList.remove('hidden');
+    showBtn.classList.add('hidden');
+});
+
+// Скрытие/показ правой панели
+document.getElementById('toggle-right-sidebar').addEventListener('click', () => {
+    const sidebar = document.getElementById('right-sidebar');
+    const showBtn = document.getElementById('show-right-sidebar');
+    sidebar.classList.add('hidden');
+    showBtn.classList.remove('hidden');
+});
+
+document.getElementById('show-right-sidebar').addEventListener('click', () => {
+    const sidebar = document.getElementById('right-sidebar');
+    const showBtn = document.getElementById('show-right-sidebar');
+    sidebar.classList.remove('hidden');
+    showBtn.classList.add('hidden');
+});
+
+// ============================================================================
+// СОЗДАНИЕ НОВОГО ДИАЛОГА
+// ============================================================================
+
+document.getElementById('new-conversation-btn').addEventListener('click', () => {
+    document.getElementById('new-conversation-modal').classList.remove('hidden');
+});
+
+document.getElementById('cancel-new-conversation').addEventListener('click', () => {
+    document.getElementById('new-conversation-modal').classList.add('hidden');
+});
+
+document.getElementById('new-conversation-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('{% url "asistent:api_create_conversation" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            window.location.href = `{% url "asistent:ai_chat" %}?conversation=${data.conversation_id}`;
+        } else {
+            alert('Ошибка при создании диалога');
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка при создании диалога');
+    }
+});
+
+// ============================================================================
+// УДАЛЕНИЕ ДИАЛОГА
+// ============================================================================
+
+let conversationToDelete = null;
+
+document.querySelectorAll('.delete-conversation').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Не переключаться на диалог при клике на удаление
+        conversationToDelete = btn.dataset.conversationId;
+        document.getElementById('delete-conversation-modal').classList.remove('hidden');
+    });
+});
+
+document.getElementById('cancel-delete-conversation').addEventListener('click', () => {
+    document.getElementById('delete-conversation-modal').classList.add('hidden');
+    conversationToDelete = null;
+});
+
+document.getElementById('confirm-delete-conversation').addEventListener('click', async () => {
+    if (!conversationToDelete) return;
+    
+    try {
+        const response = await fetch(`/asistent/api/conversation/${conversationToDelete}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        });
+        
+        if (response.ok) {
+            // Перезагружаем страницу
+            window.location.href = '{% url "asistent:ai_chat" %}';
+        } else {
+            alert('Ошибка при удалении диалога');
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка при удалении диалога');
+    }
+});
+
+// ============================================================================
+// ОТПРАВКА СООБЩЕНИЯ
+// ============================================================================
+
+{% if active_conversation %}
+document.getElementById('chat-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const messageInput = document.getElementById('message-input');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    // Добавляем сообщение пользователя в чат
+    addMessageToChat('admin', message);
+    messageInput.value = '';
+    
+    // Показываем индикатор печатания
+    const typingIndicator = addTypingIndicator();
+    
+    try {
+        const response = await fetch('{% url "asistent:api_chat_send" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        // Удаляем индикатор
+        typingIndicator.remove();
+        
+        if (data.success) {
+            // Добавляем ответ AI
+            if (data.response) {
+                addMessageToChat('assistant', data.response, data.metadata);
+            }
+        } else {
+            // Показываем ошибку
+            addMessageToChat('system', `Ошибка: ${data.error || 'Не удалось получить ответ'}`);
+        }
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        typingIndicator.remove();
+        addMessageToChat('system', 'Произошла ошибка при отправке сообщения. Проверьте подключение.');
+    }
+});
+
+function addMessageToChat(role, content, metadata = {}) {
+    const messagesContainer = document.getElementById('chat-messages');
+    const allMessages = getAllMessages();
+    const nextMessageId = allMessages.length + 1;
+    
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = 'message-wrapper';
+    messageWrapper.dataset.messageId = nextMessageId;
+    messageWrapper.dataset.messageFull = content;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role === 'admin' ? 'ml-auto text-right' : ''} max-w-[80%]`;
+    
+    const roleEmoji = role === 'admin' ? '👤 Вы' : (role === 'assistant' ? '🤖 AI-ассистент' : '⚙️ Система');
+    const bgClass = role === 'admin' ? 'bg-purple-600' : (role === 'assistant' ? 'bg-gray-700' : 'bg-red-600');
+    
+    const now = new Date();
+    const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    
+    // Определяем, нужно ли обрезать сообщение
+    const isLongMessage = content.length > 150;
+    const displayContent = isLongMessage 
+        ? `${content.slice(0, 150)}... <button class="text-purple-300 hover:text-purple-100 underline text-xs ml-2 open-message-modal" data-message-id="${nextMessageId}">Показать полностью</button>`
+        : content;
+    
+    messageDiv.innerHTML = `
+        <div class="inline-block p-3 rounded-lg ${bgClass} relative group">
+            <div class="flex items-center justify-between mb-1">
+                <div class="text-xs text-gray-300">${roleEmoji} • ${time}</div>
+                ${isLongMessage ? `
+                <button class="ml-3 p-1 text-gray-300 hover:text-white transition-colors open-message-modal" 
+                        data-message-id="${nextMessageId}"
+                        title="Открыть полностью">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                    </svg>
+                </button>
+                ` : ''}
+            </div>
+            <div class="message-content text-sm ${isLongMessage ? 'message-preview' : 'whitespace-pre-wrap'}">${displayContent}</div>
+            ${metadata.task_id ? `<div class="mt-2 pt-2 border-t border-gray-600 text-xs text-gray-300">📋 Задача #${metadata.task_id} создана</div>` : ''}
+            <button class="absolute top-2 right-2 p-1 bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-message-btn" 
+                    data-message-id="${nextMessageId}"
+                    title="Копировать">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    messageWrapper.appendChild(messageDiv);
+    messagesContainer.appendChild(messageWrapper);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function addTypingIndicator() {
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = 'message-wrapper';
+    messageWrapper.id = 'typing-indicator';
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message max-w-[80%]';
+    typingDiv.innerHTML = `
+        <div class="inline-block p-3 rounded-lg bg-gray-700">
+            <div class="text-xs text-gray-300 mb-1">🤖 AI-ассистент печатает...</div>
+            <div class="flex space-x-1">
+                <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+                <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            </div>
+        </div>
+    `;
+    
+    messageWrapper.appendChild(typingDiv);
+    messagesContainer.appendChild(messageWrapper);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    return messageWrapper;
+}
+
+// Автоскролл при загрузке
+window.addEventListener('load', () => {
+    const messagesContainer = document.getElementById('chat-messages');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+});
+{% endif %}
+
+// ============================================================================
+// ПОДСКАЗКИ КОМАНД
+// ============================================================================
+
+document.querySelectorAll('.command-hint').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const messageInput = document.getElementById('message-input');
+        if (messageInput) {
+            // Убираем эмодзи из текста кнопки
+            const text = btn.textContent.replace(/[^\w\sа-яА-Я]/g, '').trim();
+            messageInput.value = text + ' ';
+            messageInput.focus();
+        }
+    });
+});
+
+// ============================================================================
+// ПЕРЕКЛЮЧЕНИЕ ДИАЛОГОВ
+// ============================================================================
+
+document.querySelectorAll('.conversation-item').forEach(item => {
+    item.addEventListener('click', () => {
+        const conversationId = item.dataset.conversationId;
+        window.location.href = `{% url "asistent:ai_chat" %}?conversation=${conversationId}`;
+    });
+});
+
+// ============================================================================
+// МОДАЛЬНОЕ ОКНО ПРОСМОТРА СООБЩЕНИЙ
+// ============================================================================
+
+let currentMessageId = null;
+const messageModal = document.getElementById('message-modal');
+const modalContent = document.getElementById('modal-message-content');
+const modalCounter = document.getElementById('modal-message-counter');
+
+// Получить все сообщения
+function getAllMessages() {
+    return Array.from(document.querySelectorAll('.message-wrapper[data-message-id]'));
+}
+
+// Открыть модальное окно с сообщением
+function openMessageModal(messageId) {
+    const messages = getAllMessages();
+    const messageWrapper = messages.find(m => m.dataset.messageId == messageId);
+    
+    if (!messageWrapper) return;
+    
+    currentMessageId = messageId;
+    const fullText = messageWrapper.dataset.messageFull;
+    
+    // Устанавливаем контент (декодируем HTML entities)
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = fullText;
+    modalContent.textContent = tempDiv.textContent;
+    modalContent.style.whiteSpace = 'pre-wrap';
+    
+    // Обновляем счетчик
+    const currentIndex = messages.findIndex(m => m.dataset.messageId == messageId) + 1;
+    modalCounter.textContent = `${currentIndex} из ${messages.length}`;
+    
+    // Управляем кнопками навигации
+    document.getElementById('prev-message-btn').disabled = currentIndex === 1;
+    document.getElementById('next-message-btn').disabled = currentIndex === messages.length;
+    
+    // Показываем модальное окно
+    messageModal.classList.remove('hidden');
+}
+
+// Закрыть модальное окно
+function closeMessageModal() {
+    messageModal.classList.add('hidden');
+    currentMessageId = null;
+}
+
+// Навигация к предыдущему сообщению
+function showPrevMessage() {
+    const messages = getAllMessages();
+    const currentIndex = messages.findIndex(m => m.dataset.messageId == currentMessageId);
+    
+    if (currentIndex > 0) {
+        const prevMessage = messages[currentIndex - 1];
+        openMessageModal(prevMessage.dataset.messageId);
+    }
+}
+
+// Навигация к следующему сообщению
+function showNextMessage() {
+    const messages = getAllMessages();
+    const currentIndex = messages.findIndex(m => m.dataset.messageId == currentMessageId);
+    
+    if (currentIndex < messages.length - 1) {
+        const nextMessage = messages[currentIndex + 1];
+        openMessageModal(nextMessage.dataset.messageId);
+    }
+}
+
+// Копировать сообщение из модального окна
+function copyModalMessage() {
+    const text = modalContent.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-modal-message-btn');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="hidden sm:inline">Скопировано!</span>';
+        btn.classList.add('bg-green-600');
+        btn.classList.remove('bg-purple-600');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('bg-green-600');
+            btn.classList.add('bg-purple-600');
+        }, 2000);
+    }).catch(err => {
+        alert('Ошибка копирования: ' + err);
+    });
+}
+
+// Скачать сообщение как текстовый файл
+function downloadModalMessage() {
+    const text = modalContent.textContent;
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `message_${currentMessageId}_${new Date().getTime()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Копировать сообщение из чата (маленькая кнопка)
+function copyMessage(messageId) {
+    const messageWrapper = document.querySelector(`.message-wrapper[data-message-id="${messageId}"]`);
+    if (!messageWrapper) return;
+    
+    const text = messageWrapper.dataset.messageFull;
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = text;
+    
+    navigator.clipboard.writeText(tempDiv.textContent).then(() => {
+        const btn = document.querySelector(`.copy-message-btn[data-message-id="${messageId}"]`);
+        if (btn) {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            btn.classList.add('bg-green-600');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('bg-green-600');
+            }, 2000);
+        }
+    });
+}
+
+// Обработчики событий для модального окна
+document.getElementById('close-message-modal').addEventListener('click', closeMessageModal);
+document.getElementById('prev-message-btn').addEventListener('click', showPrevMessage);
+document.getElementById('next-message-btn').addEventListener('click', showNextMessage);
+document.getElementById('copy-modal-message-btn').addEventListener('click', copyModalMessage);
+document.getElementById('download-modal-message-btn').addEventListener('click', downloadModalMessage);
+
+// Закрытие по клику на фон
+messageModal.addEventListener('click', (e) => {
+    if (e.target === messageModal) {
+        closeMessageModal();
+    }
+});
+
+// Закрытие по Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !messageModal.classList.contains('hidden')) {
+        closeMessageModal();
+    }
+    // Навигация стрелками
+    if (!messageModal.classList.contains('hidden')) {
+        if (e.key === 'ArrowLeft') {
+            showPrevMessage();
+        } else if (e.key === 'ArrowRight') {
+            showNextMessage();
+        }
+    }
+});
+
+// Обработчики для кнопок открытия модального окна
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.open-message-modal')) {
+        const btn = e.target.closest('.open-message-modal');
+        const messageId = btn.dataset.messageId;
+        openMessageModal(messageId);
+    }
+    
+    // Обработчик для кнопок копирования
+    if (e.target.closest('.copy-message-btn')) {
+        const btn = e.target.closest('.copy-message-btn');
+        const messageId = btn.dataset.messageId;
+        copyMessage(messageId);
+    }
+});
+
+// ============================================================================
+// МОДАЛЬНОЕ ОКНО ИСТОРИИ ДИАЛОГА
+// ============================================================================
+
+const historyModal = document.getElementById('history-modal');
+
+// Открыть модальное окно истории
+function openHistoryModal() {
+    historyModal.classList.remove('hidden');
+}
+
+// Закрыть модальное окно истории
+function closeHistoryModal() {
+    historyModal.classList.add('hidden');
+}
+
+// Копировать одно сообщение из истории
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.copy-history-message-btn')) {
+        const btn = e.target.closest('.copy-history-message-btn');
+        const messageText = btn.dataset.messageText;
+        
+        // Декодируем HTML entities
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = messageText;
+        const text = tempDiv.textContent;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            btn.classList.add('text-green-500');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('text-green-500');
+            }, 2000);
+        });
+    }
+});
+
+// Копировать всю историю
+document.getElementById('copy-all-history-btn')?.addEventListener('click', () => {
+    const historyItems = document.querySelectorAll('.history-message-item');
+    let fullText = '';
+    
+    historyItems.forEach((item, index) => {
+        const role = item.querySelector('.text-sm.font-semibold span').textContent.trim();
+        const timestamp = item.querySelector('.text-xs.text-gray-400').textContent.trim();
+        const content = item.querySelector('.text-sm.text-gray-200').textContent.trim();
+        
+        fullText += `${role} • ${timestamp}\n${content}\n\n`;
+        fullText += '─'.repeat(80) + '\n\n';
+    });
+    
+    navigator.clipboard.writeText(fullText).then(() => {
+        const btn = document.getElementById('copy-all-history-btn');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Скопировано!</span>';
+        btn.classList.add('bg-green-600');
+        btn.classList.remove('bg-purple-600');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('bg-green-600');
+            btn.classList.add('bg-purple-600');
+        }, 2000);
+    });
+});
+
+// Экспорт истории в файл
+document.getElementById('export-history-btn')?.addEventListener('click', () => {
+    const historyItems = document.querySelectorAll('.history-message-item');
+    let fullText = '═══════════════════════════════════════════════════════════════\n';
+    fullText += '          ИСТОРИЯ ДИАЛОГА - IdealImage.ru AI-Ассистент\n';
+    fullText += '═══════════════════════════════════════════════════════════════\n\n';
+    
+    const dialogTitle = document.getElementById('history-dialog-title')?.textContent || 'Диалог';
+    fullText += `Диалог: ${dialogTitle}\n`;
+    fullText += `Экспортировано: ${new Date().toLocaleString('ru-RU')}\n`;
+    fullText += `Всего сообщений: ${historyItems.length}\n\n`;
+    fullText += '═══════════════════════════════════════════════════════════════\n\n';
+    
+    historyItems.forEach((item, index) => {
+        const role = item.querySelector('.text-sm.font-semibold span').textContent.trim();
+        const timestamp = item.querySelector('.text-xs.text-gray-400').textContent.trim();
+        const content = item.querySelector('.text-sm.text-gray-200').textContent.trim();
+        
+        fullText += `[${index + 1}] ${role}\n`;
+        fullText += `Время: ${timestamp}\n\n`;
+        fullText += `${content}\n\n`;
+        fullText += '─'.repeat(80) + '\n\n';
+    });
+    
+    const blob = new Blob([fullText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `history_${dialogTitle.replace(/[^a-zA-Zа-яА-Я0-9]/g, '_')}_${new Date().getTime()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+// Обработчики событий для модального окна истории
+document.getElementById('show-history-btn')?.addEventListener('click', openHistoryModal);
+document.getElementById('close-history-modal')?.addEventListener('click', closeHistoryModal);
+
+// Закрытие по клику на фон
+historyModal?.addEventListener('click', (e) => {
+    if (e.target === historyModal) {
+        closeHistoryModal();
+    }
+});
+
+// Закрытие по Escape (добавим к существующему обработчику)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (!historyModal.classList.contains('hidden')) {
+            closeHistoryModal();
+        }
+    }
+});
+
+// ============================================================================
+// БАЗА ЗНАНИЙ - Загрузка и отображение
+// ============================================================================
+
+// Загрузка счетчиков при открытии страницы
+function loadKnowledgeCounts() {
+    console.log('🔄 Загрузка счётчиков базы знаний...');
+    fetch('/asistent/api/knowledge/counts/')
+        .then(res => res.json())
+        .then(data => {
+            console.log('📊 Получены данные:', data);
+            if (data.success) {
+                let updated = 0;
+                for (const [category, count] of Object.entries(data.counts)) {
+                    const countEl = document.getElementById(`count-${category}`);
+                    console.log(`  Категория "${category}": ${count}, элемент найден: ${!!countEl}`);
+                    if (countEl) {
+                        countEl.textContent = count;
+                        updated++;
+                    } else {
+                        console.warn(`  ⚠️ Элемент #count-${category} не найден в DOM`);
+                    }
+                }
+                console.log(`✅ Обновлено счётчиков: ${updated}`);
+            } else {
+                console.error('❌ API вернул ошибку:', data.error);
+            }
+        })
+        .catch(err => {
+            console.error('❌ Ошибка загрузки счетчиков:', err);
+        });
+}
+
+// Настройка обработчиков для базы знаний
+function setupKnowledgeHandlers() {
+    // Клик на кнопку категории - раскрыть/свернуть записи
+    document.querySelectorAll('.knowledge-category > button').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const category = this.closest('.knowledge-category');
+            const itemsDiv = category.querySelector('.knowledge-items');
+            
+            // Извлекаем название категории ТОЛЬКО из первого span (без счётчика)
+            const categoryText = this.querySelector('span:first-child').textContent.trim();
+            const categoryName = getCategoryKey(categoryText);
+            
+            console.log(`🔘 Клик на категорию: "${categoryText}" → ключ: "${categoryName}"`);
+            
+            if (itemsDiv.classList.contains('hidden')) {
+                // Раскрываем - загружаем записи
+                loadCategoryItems(categoryName, itemsDiv);
+                itemsDiv.classList.remove('hidden');
+            } else {
+                // Сворачиваем
+                itemsDiv.classList.add('hidden');
+            }
+        });
+    });
+    
+    // Кнопка "Добавить знание"
+    const addBtn = document.getElementById('add-knowledge-btn');
+    if (addBtn) {
+        addBtn.addEventListener('click', openAddKnowledgeModal);
+    }
+}
+
+// Получить ключ категории по отображаемому тексту
+function getCategoryKey(displayText) {
+    const categoryMap = {
+        'Промпты': 'промпты',
+        'Правила': 'правила',
+        'Примеры': 'примеры',
+        'Команды': 'команды',
+        'Частые вопросы': 'faq',
+        'Инструкции': 'инструкции',
+        'Источники': 'источники'
+    };
+    
+    // Точное совпадение
+    if (categoryMap[displayText]) {
+        return categoryMap[displayText];
+    }
+    
+    // Поиск вхождения
+    for (const [display, key] of Object.entries(categoryMap)) {
+        if (displayText.includes(display)) {
+            console.log(`  🔑 Маппинг: "${displayText}" → "${key}"`);
+            return key;
+        }
+    }
+    
+    // Fallback
+    const fallback = displayText.toLowerCase();
+    console.warn(`  ⚠️ Категория не найдена в маппинге, используем: "${fallback}"`);
+    return fallback;
+}
+
+// Загрузить записи категории
+function loadCategoryItems(category, container) {
+    console.log(`📂 Загрузка записей для категории: "${category}"`);
+    container.innerHTML = '<div class="text-xs text-gray-400 p-2">Загрузка...</div>';
+    
+    const url = `/asistent/api/knowledge/list/${category}/`;
+    console.log(`  URL: ${url}`);
+    
+    fetch(url)
+        .then(res => {
+            console.log(`  HTTP Status: ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            console.log(`  Данные получены:`, data);
+            console.log(`  data.success: ${data.success}`);
+            console.log(`  data.items:`, data.items);
+            console.log(`  Тип data.items: ${typeof data.items}`);
+            console.log(`  Является массивом: ${Array.isArray(data.items)}`);
+            
+            if (data.items) {
+                console.log(`  Длина items: ${data.items.length}`);
+                if (data.items.length > 0) {
+                    console.log(`  Первая запись:`, data.items[0]);
+                }
+            }
+            
+            if (data.success && data.items && data.items.length > 0) {
+                console.log(`  ✅ Найдено записей: ${data.items.length}, отображаю...`);
+                container.innerHTML = data.items.map(item => `
+                    <div class="p-2 bg-gray-800 rounded hover:bg-gray-700 cursor-pointer text-xs transition-colors" 
+                         onclick="viewKnowledgeItem(${item.id})">
+                        <div class="font-semibold">${escapeHtml(item.title)}</div>
+                        <div class="text-gray-400 text-xs mt-1">
+                            Приоритет: ${item.priority} | Использований: ${item.usage_count}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                console.warn(`  ⚠️ Записей не найдено для категории "${category}"`);
+                console.log(`  ПРИЧИНА: success=${data.success}, items существует=${!!data.items}, length=${data.items ? data.items.length : 'N/A'}`);
+                container.innerHTML = '<div class="text-xs text-gray-400 p-2 italic">Записей нет</div>';
+            }
+        })
+        .catch(err => {
+            console.error(`❌ Ошибка загрузки записей для "${category}":`, err);
+            container.innerHTML = '<div class="text-xs text-red-400 p-2">Ошибка загрузки</div>';
+        });
+}
+
+// ============================================================================
+// МОДАЛЬНЫЕ ОКНА БАЗЫ ЗНАНИЙ
+// ============================================================================
+
+let currentKnowledgeId = null;
+
+// Просмотр записи
+function viewKnowledgeItem(id) {
+    fetch(`/asistent/api/knowledge/get/${id}/`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const item = data.item;
+                currentKnowledgeId = id;
+                
+                // Заполняем данные
+                document.getElementById('view-knowledge-title').textContent = item.title;
+                document.getElementById('view-knowledge-category').textContent = item.category_display;
+                document.getElementById('view-knowledge-priority').textContent = item.priority;
+                document.getElementById('view-knowledge-content').textContent = item.content;
+                document.getElementById('view-knowledge-usage').textContent = item.usage_count;
+                
+                // Теги
+                const tagsDiv = document.getElementById('view-knowledge-tags');
+                if (item.tags && item.tags.length > 0) {
+                    tagsDiv.innerHTML = item.tags.map(tag => 
+                        `<span class="px-3 py-1 bg-purple-600 rounded-full text-xs">${escapeHtml(tag)}</span>`
+                    ).join('');
+                } else {
+                    tagsDiv.innerHTML = '<span class="text-gray-500 text-xs italic">Нет тегов</span>';
+                }
+                
+                // Открываем модальное окно
+                document.getElementById('view-knowledge-modal').classList.remove('hidden');
+            } else {
+                alert('❌ Ошибка загрузки записи: ' + data.error);
+            }
+        })
+        .catch(err => {
+            console.error('Ошибка:', err);
+            alert('❌ Ошибка загрузки записи');
+        });
+}
+
+// Открыть модальное окно добавления
+function openAddKnowledgeModal() {
+    console.log('➕ Открытие модального окна добавления знания');
+    document.getElementById('add-knowledge-form').reset();
+    document.getElementById('add-knowledge-modal').classList.remove('hidden');
+}
+
+// Открыть модальное окно редактирования
+function openEditKnowledgeModal() {
+    if (!currentKnowledgeId) {
+        console.error('❌ currentKnowledgeId не установлен');
+        return;
+    }
+    
+    console.log(`✏️ Загрузка записи #${currentKnowledgeId} для редактирования`);
+    fetch(`/asistent/api/knowledge/get/${currentKnowledgeId}/`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const item = data.item;
+                console.log('✅ Запись загружена:', item.title);
+                
+                // Заполняем форму
+                document.getElementById('edit-id').value = item.id;
+                document.getElementById('edit-category').value = item.category;
+                document.getElementById('edit-title').value = item.title;
+                document.getElementById('edit-content').value = item.content;
+                document.getElementById('edit-tags').value = item.tags.join(', ');
+                document.getElementById('edit-priority').value = item.priority;
+                document.getElementById('edit-active').checked = item.is_active;
+                
+                // Закрываем окно просмотра и открываем редактирования
+                closeViewKnowledgeModal();
+                document.getElementById('edit-knowledge-modal').classList.remove('hidden');
+            } else {
+                console.error('❌ Ошибка:', data.error);
+                alert('❌ Ошибка загрузки записи для редактирования');
+            }
+        })
+        .catch(err => {
+            console.error('❌ Ошибка сети:', err);
+            alert('❌ Ошибка загрузки записи для редактирования');
+        });
+}
+
+// Закрыть модальные окна
+function closeViewKnowledgeModal() {
+    document.getElementById('view-knowledge-modal').classList.add('hidden');
+    currentKnowledgeId = null;
+}
+
+function closeAddKnowledgeModal() {
+    document.getElementById('add-knowledge-modal').classList.add('hidden');
+}
+
+function closeEditKnowledgeModal() {
+    document.getElementById('edit-knowledge-modal').classList.add('hidden');
+}
+
+// Подтверждение удаления
+function deleteKnowledgeConfirm() {
+    if (!currentKnowledgeId) return;
+    
+    const title = document.getElementById('view-knowledge-title').textContent;
+    if (!confirm(`Удалить запись "${title}" из базы знаний?\n\nЭто действие нельзя отменить.`)) {
+        return;
+    }
+    
+    deleteKnowledgeItem(currentKnowledgeId);
+}
+
+// Удаление записи
+function deleteKnowledgeItem(id) {
+    fetch(`/asistent/api/knowledge/${id}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Запись удалена!');
+            closeViewKnowledgeModal();
+            loadKnowledgeCounts(); // Обновить счетчики
+            
+            // Обновить открытую категорию если она была открыта
+            document.querySelectorAll('.knowledge-items').forEach(el => {
+                if (!el.classList.contains('hidden')) {
+                    const category = el.closest('.knowledge-category').querySelector('button').textContent.trim();
+                    const categoryKey = getCategoryKey(category);
+                    loadCategoryItems(categoryKey, el);
+                }
+            });
+        } else {
+            alert('❌ Ошибка удаления: ' + data.error);
+        }
+    })
+    .catch(err => {
+        console.error('Ошибка:', err);
+        alert('❌ Ошибка удаления записи');
+    });
+}
+
+// Получить CSRF токен
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Обработчик формы ДОБАВЛЕНИЯ
+document.getElementById('add-knowledge-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const tags = document.getElementById('add-tags').value
+        .split(',')
+        .map(t => t.trim())
+        .filter(t => t);
+    
+    const data = {
+        category: document.getElementById('add-category').value,
+        title: document.getElementById('add-title').value,
+        content: document.getElementById('add-content').value,
+        tags: tags,
+        priority: parseInt(document.getElementById('add-priority').value),
+        is_active: true
+    };
+    
+    fetch('/asistent/api/knowledge/create/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Запись добавлена в базу знаний!');
+            closeAddKnowledgeModal();
+            loadKnowledgeCounts(); // Обновить счетчики
+        } else {
+            alert('❌ Ошибка добавления: ' + data.error);
+        }
+    })
+    .catch(err => {
+        console.error('Ошибка:', err);
+        alert('❌ Ошибка добавления записи');
+    });
+});
+
+// Обработчик формы РЕДАКТИРОВАНИЯ
+document.getElementById('edit-knowledge-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('edit-id').value;
+    const tags = document.getElementById('edit-tags').value
+        .split(',')
+        .map(t => t.trim())
+        .filter(t => t);
+    
+    const data = {
+        category: document.getElementById('edit-category').value,
+        title: document.getElementById('edit-title').value,
+        content: document.getElementById('edit-content').value,
+        tags: tags,
+        priority: parseInt(document.getElementById('edit-priority').value),
+        is_active: document.getElementById('edit-active').checked
+    };
+    
+    fetch(`/asistent/api/knowledge/${id}/update/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Запись обновлена!');
+            closeEditKnowledgeModal();
+            loadKnowledgeCounts(); // Обновить счетчики
+        } else {
+            alert('❌ Ошибка обновления: ' + data.error);
+        }
+    })
+    .catch(err => {
+        console.error('Ошибка:', err);
+        alert('❌ Ошибка обновления записи');
+    });
+})
+
+// Экранирование HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    loadKnowledgeCounts();
+    setupKnowledgeHandlers();
+});
+
+</script>
+
+<style>
+/* Анимация появления сообщений */
+.message-wrapper {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Улучшенная прокрутка */
+#chat-messages::-webkit-scrollbar,
+#conversations-list::-webkit-scrollbar,
+#right-sidebar > div::-webkit-scrollbar,
+#modal-message-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#chat-messages::-webkit-scrollbar-track,
+#conversations-list::-webkit-scrollbar-track,
+#right-sidebar > div::-webkit-scrollbar-track,
+#modal-message-content::-webkit-scrollbar-track {
+    background: #1f2937;
+    border-radius: 4px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb,
+#conversations-list::-webkit-scrollbar-thumb,
+#right-sidebar > div::-webkit-scrollbar-thumb,
+#modal-message-content::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 4px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb:hover,
+#conversations-list::-webkit-scrollbar-thumb:hover,
+#right-sidebar > div::-webkit-scrollbar-thumb:hover,
+#modal-message-content::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+/* Неактивные кнопки навигации */
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    background-color: inherit !important;
+}
+
+/* Стиль для prose в модальном окне */
+#modal-message-content {
+    color: #e5e7eb;
+    line-height: 1.75;
+    font-size: 0.95rem;
+}
+</style>
+{% endblock %}

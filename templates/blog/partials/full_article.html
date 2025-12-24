@@ -1,0 +1,332 @@
+{% load static %}
+{% load ad_tags %}
+{% load video_tags %}
+
+<!-- Full Article Component -->
+<article class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-700 overflow-hidden mb-8 fade-in" 
+         data-article-id="{{ article.id }}" 
+         data-view-tracked="false">
+    <!-- Featured Image/Video -->
+    {% if article.video_url or article.kartinka %}
+    <div class="relative h-96 overflow-hidden group/media" id="media-container-{{ article.id }}">
+        {% if article.video_url|is_video %}
+            {# Приоритет: видео-ссылка #}
+            <iframe src="{{ article.video_url|video_embed }}" 
+                    class="w-full h-full"
+                    frameborder="0" 
+                    allow="autoplay; encrypted-media; picture-in-picture" 
+                    allowfullscreen
+                    loading="lazy"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            </iframe>
+            <div style="display:none;" class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-5xl">
+                <div class="text-center">
+                    <div class="text-6xl mb-2">⚠️</div>
+                    <div class="text-sm">Видео не загружается</div>
+                </div>
+            </div>
+        {% elif article.kartinka.name|slice:"-4:" == ".mp4" or article.kartinka.name|slice:"-5:" == ".webm" or article.kartinka.name|slice:"-4:" == ".mov" %}
+            <video id="video-{{ article.id }}" 
+                   src="{% if article.thumbnail %}{{ article.thumbnail.url }}{% else %}{{ article.kartinka.url }}{% endif %}" 
+                   class="w-full h-full object-cover"
+                   autoplay 
+                   loop 
+                   muted 
+                   playsinline
+                   controls
+                   onclick="handleVideoClick({{ article.id }})">
+            </video>
+            
+            <!-- Custom Volume Control -->
+            <div class="absolute bottom-6 right-6 z-20 flex items-center gap-3 bg-black/70 backdrop-blur-sm rounded-full px-4 py-3 transition-all duration-300 opacity-0 group-hover/media:opacity-100"
+                 id="volume-control-{{ article.id }}">
+                <button onclick="toggleMuteArticle({{ article.id }})"
+                        class="text-white hover:text-primary transition-colors focus:outline-none"
+                        title="Управление звуком">
+                    <svg id="volumeIconOn-{{ article.id }}" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.983 5.983 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.984 3.984 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"></path>
+                    </svg>
+                    <svg id="volumeIconOff-{{ article.id }}" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+                
+                <div class="flex items-center gap-2">
+                    <input type="range" 
+                           id="volumeSlider-{{ article.id }}" 
+                           min="0" 
+                           max="100" 
+                           value="100"
+                           onchange="changeVolumeArticle({{ article.id }}, this.value)"
+                           oninput="changeVolumeArticle({{ article.id }}, this.value)"
+                           class="w-24 h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer accent-primary">
+                    <span id="volumeValue-{{ article.id }}" class="text-white text-sm font-semibold min-w-[2.5rem] text-right">100%</span>
+                </div>
+            </div>
+        {% else %}
+            <img src="{% if article.thumbnail %}{{ article.thumbnail.url }}{% else %}{{ article.kartinka.url }}{% endif %}" 
+                 alt="{{ article.title }}" 
+                 class="w-full h-full object-cover">
+        {% endif %}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+        
+        <!-- Category and Tags Badges (auto-hide on video play) -->
+        <div id="media-badges-{{ article.id }}" class="absolute top-6 left-6 right-6 z-10 transition-opacity duration-300">
+            <!-- Category Badge (Red) -->
+            {% if article.category %}
+            <div class="mb-3">
+                <a href="{% url 'blog:post_list_by_category' article.category.slug %}" 
+                   class="inline-block px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded-full hover:bg-red-600 transition-all shadow-lg">
+                    {{ article.category.title }}
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Tags Badges (Blue) -->
+            {% if article.tags.all %}
+            <div class="flex flex-wrap gap-2">
+                {% for tag in article.tags.all %}
+                <a href="{% url 'blog:post_by_tags' tag.slug %}" 
+                   class="px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg border border-primary/40 bg-white/90 text-primary hover:bg-primary/10 hover:text-primary transition-all">
+                    {{ tag }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Post Meta -->
+    <div class="p-8">
+        <h2 class="text-3xl font-heading font-bold text-gray-900 dark:text-white mb-4">
+            <a href="{{ article.get_absolute_url }}" class="hover:text-primary transition-colors">
+                {{ article.title }}
+            </a>
+        </h2>
+        
+        <!-- Author & Date Info -->
+        <div class="flex items-center justify-between mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-4">
+                <!-- Author Avatar -->
+                <a href="{% url 'Visitor:profile_detail' slug=article.author.profile.slug %}" class="flex-shrink-0">
+                    <img src="{{ article.author.profile.get_avatar }}" 
+                         alt="{{ article.author.username }}" 
+                         class="w-12 h-12 rounded-full object-cover border-2 border-primary">
+                </a>
+                
+                <!-- Author Info -->
+                <div>
+                    <a href="{% url 'Visitor:profile_detail' slug=article.author.profile.slug %}" 
+                       class="font-semibold text-gray-900 dark:text-white hover:text-primary transition-colors">
+                        {{ article.author.username }}
+                    </a>
+                    <div class="flex items-center space-x-3 text-sm text-gray-500 dark:text-gray-400">
+                        <span>{{ article.created|date:"d F Y" }}</span>
+                        <span>•</span>
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            {{ article.views }} просмотров
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Post Content -->
+        <div class="max-w-5xl mx-auto">
+            <div class="prose prose-lg max-w-none text-gray-800 dark:text-gray-200 leading-relaxed dark:prose-invert">
+                {{ article.content|safe }}
+            </div>
+        </div>
+        
+        <!-- Реклама в середине статьи (чередуется) -->
+        <div class="my-8">
+            {% if article_index %}
+                {% if article_index == 1 or article_index == 3 %}
+                    {% show_ad "in_post_middle_1" %}
+                {% elif article_index == 2 %}
+                    {% show_ad "in_post_middle_2" %}
+                {% endif %}
+            {% else %}
+                {% show_ad "in_post_middle" %}
+            {% endif %}
+        </div>
+        
+        <!-- Tags Section -->
+        {% if article.tags.all %}
+        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Теги:</h3>
+            <div class="flex flex-wrap gap-2">
+                {% for tag in article.tags.all %}
+                <a href="{% url 'blog:post_by_tags' tag.slug %}" 
+                   class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-full hover:bg-primary hover:text-white transition-colors">
+                    #{{ tag }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Subscription CTA -->
+        {% if article.category.chat_url %}
+        <div class="mt-8 p-6 bg-gradient-to-r from-primary to-secondary rounded-xl text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-heading font-bold mb-2">Подпишитесь на наш Telegram</h3>
+                    <p class="text-white/90">Получайте свежие статьи первыми!</p>
+                </div>
+                <a href="{{ article.category.chat_url }}" 
+                   target="_blank"
+                   class="px-6 py-3 bg-white text-primary rounded-lg font-semibold hover:shadow-lg transition-all flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                    </svg>
+                    <span>Подписаться</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</article>
+
+<!-- Donation Widget -->
+<div class="mb-8 fade-in">
+    {% include "donations/donation_widget.html" with post=article %}
+</div>
+
+<!-- Likes Widget -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-700 p-8 mb-8">
+    {% include "blog/likes_widget_tailwind.html" with post=article %}
+</div>
+
+<!-- Comments Section -->
+{% if show_comments|default:True %}
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-700 p-8 mb-8">
+    {% include "blog/partials/collapsible_comments.html" with post=article comments=article.comments.all %}
+</div>
+{% endif %}
+
+<script>
+// Video controls for article {{ article.id }}
+function handleVideoClick(articleId) {
+    const video = document.getElementById('video-' + articleId);
+    const badges = document.getElementById('media-badges-' + articleId);
+    const volumeControl = document.getElementById('volume-control-' + articleId);
+    
+    if (video && badges) {
+        // Hide badges when video is playing
+        video.addEventListener('play', function() {
+            badges.style.opacity = '0';
+            badges.style.pointerEvents = 'none';
+        });
+        
+        video.addEventListener('pause', function() {
+            badges.style.opacity = '1';
+            badges.style.pointerEvents = 'auto';
+        });
+        
+        video.addEventListener('ended', function() {
+            badges.style.opacity = '1';
+            badges.style.pointerEvents = 'auto';
+        });
+    }
+}
+
+function toggleMuteArticle(articleId) {
+    const video = document.getElementById('video-' + articleId);
+    const volumeIconOn = document.getElementById('volumeIconOn-' + articleId);
+    const volumeIconOff = document.getElementById('volumeIconOff-' + articleId);
+    const volumeSlider = document.getElementById('volumeSlider-' + articleId);
+    const volumeValue = document.getElementById('volumeValue-' + articleId);
+    
+    if (video.muted) {
+        video.muted = false;
+        volumeIconOn.classList.remove('hidden');
+        volumeIconOff.classList.add('hidden');
+        const currentVolume = Math.round(video.volume * 100);
+        volumeSlider.value = currentVolume;
+        volumeValue.textContent = currentVolume + '%';
+    } else {
+        video.muted = true;
+        volumeIconOn.classList.add('hidden');
+        volumeIconOff.classList.remove('hidden');
+    }
+}
+
+function changeVolumeArticle(articleId, value) {
+    const video = document.getElementById('video-' + articleId);
+    const volumeIconOn = document.getElementById('volumeIconOn-' + articleId);
+    const volumeIconOff = document.getElementById('volumeIconOff-' + articleId);
+    const volumeValue = document.getElementById('volumeValue-' + articleId);
+    
+    const volumeLevel = value / 100;
+    video.volume = volumeLevel;
+    volumeValue.textContent = value + '%';
+    
+    if (volumeLevel > 0 && video.muted) {
+        video.muted = false;
+        volumeIconOn.classList.remove('hidden');
+        volumeIconOff.classList.add('hidden');
+    } else if (volumeLevel === 0) {
+        video.muted = true;
+        volumeIconOn.classList.add('hidden');
+        volumeIconOff.classList.remove('hidden');
+    }
+}
+
+// Initialize video for article {{ article.id }}
+document.addEventListener('DOMContentLoaded', function() {
+    const video = document.getElementById('video-{{ article.id }}');
+    if (video) {
+        video.volume = 1.0;
+        handleVideoClick({{ article.id }});
+    }
+});
+
+// Track article view when it becomes visible (Intersection Observer)
+(function() {
+    const articleElement = document.querySelector('[data-article-id="{{ article.id }}"]');
+    if (!articleElement) return;
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            // Если статья видна на 50% и просмотр еще не зафиксирован
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                if (articleElement.getAttribute('data-view-tracked') === 'false') {
+                    // Отмечаем что просмотр зафиксирован
+                    articleElement.setAttribute('data-view-tracked', 'true');
+                    
+                    // Отправляем AJAX запрос для увеличения счётчика
+                    fetch('/blog/api/post/{{ article.id }}/increment-views/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('View tracked for article {{ article.id }}: ' + data.views + ' views');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error tracking view for article {{ article.id }}:', error);
+                    });
+                    
+                    // Отключаем observer после первого срабатывания
+                    observer.unobserve(articleElement);
+                }
+            }
+        });
+    }, {
+        threshold: 0.5 // Срабатывает когда 50% статьи видно
+    });
+    
+    observer.observe(articleElement);
+})();
+</script>
+

@@ -1,0 +1,612 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Редактировать расписание{% else %}Создать расписание{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Админ навигация -->
+{% include 'partials/admin_navigation.html' %}
+
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 dark:from-gray-950 dark:via-purple-950 dark:to-gray-950 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white mb-2">
+                        🎯 {% if is_edit %}Редактировать расписание{% else %}Создать расписание AI{% endif %}
+                    </h1>
+                    <p class="text-xl text-gray-300 dark:text-gray-400">
+                        {% if is_edit %}{{ schedule.name }}{% else %}Полная автоматизация контента{% endif %}
+                    </p>
+                </div>
+                <a href="{% url 'asistent:ai_schedules' %}" 
+                   class="px-6 py-3 bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20 dark:border-white/10 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                    Назад
+                </a>
+            </div>
+        </div>
+        
+        <!-- Вкладки -->
+        <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 shadow-2xl overflow-hidden">
+            
+            <!-- Навигация по вкладкам -->
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-700 dark:from-purple-700 dark:to-indigo-800 px-6 py-4 overflow-x-auto">
+                <div class="flex gap-2 min-w-max">
+                    <button onclick="showTab('basic')" id="tab-basic" class="tab-btn active px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition font-semibold">
+                        📋 Основное
+                    </button>
+                    <button onclick="showTab('images')" id="tab-images" class="tab-btn px-4 py-2 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition font-semibold">
+                        🖼️ Изображения
+                    </button>
+                    <button onclick="showTab('schedule')" id="tab-schedule" class="tab-btn px-4 py-2 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition font-semibold">
+                        ⏰ Расписание
+                    </button>
+                    <button onclick="showTab('multi')" id="tab-multi" class="tab-btn px-4 py-2 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition font-semibold">
+                        🔮 Мульти-задачи
+                    </button>
+                    <button onclick="showTab('links')" id="tab-links" class="tab-btn px-4 py-2 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition font-semibold">
+                        🔗 Ссылки
+                    </button>
+                    <button onclick="showTab('actions')" id="tab-actions" class="tab-btn px-4 py-2 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition font-semibold">
+                        👍 Автодействия
+                    </button>
+                    <button onclick="showTab('seo')" id="tab-seo" class="tab-btn px-4 py-2 hover:bg-white/20 text-white/80 hover:text-white rounded-lg transition font-semibold">
+                        📈 SEO
+                    </button>
+                </div>
+            </div>
+            
+            <form method="post" class="p-8">
+                {% csrf_token %}
+                
+                <!-- ВКЛАДКА 1: Основное -->
+                <div id="content-basic" class="tab-content space-y-6">
+                    <h2 class="text-2xl font-bold text-white mb-6 pb-4 border-b border-white/20">📋 Основные параметры</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Название <span class="text-red-400">*</span>
+                            </label>
+                            {{ form.name }}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Категория <span class="text-red-400">*</span>
+                            </label>
+                            {{ form.category }}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Теги
+                            </label>
+                            {{ form.tags }}
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Источники URL (по одному на строке)
+                            </label>
+                            {{ form.source_urls }}
+                            <p class="mt-2 text-xs text-gray-400">Оставьте пустым для автономного режима (AI придумает темы сам)</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Шаблон промпта
+                            </label>
+                            {{ form.prompt_template }}
+                            <p class="mt-2 text-xs text-gray-400">
+                                <a href="{% url 'asistent:prompt_templates_list' %}" target="_blank" class="text-blue-400 hover:text-blue-300">Управление промптами →</a>
+                            </p>
+                        </div>
+                        
+                        <div class="flex items-end">
+                            <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors w-full">
+                                {{ form.is_active }}
+                                <span class="text-white font-semibold">Расписание активно</span>
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Минимум слов
+                            </label>
+                            {{ form.min_word_count }}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Максимум слов
+                            </label>
+                            {{ form.max_word_count }}
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Ключевые слова (по одному на строке)
+                            </label>
+                            {{ form.keywords }}
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Тон статьи
+                            </label>
+                            {{ form.tone }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ВКЛАДКА 2: Изображения -->
+                <div id="content-images" class="tab-content hidden space-y-6">
+                    <h2 class="text-2xl font-bold text-white mb-6 pb-4 border-b border-white/20">🖼️ Управление изображениями</h2>
+                    
+                    <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
+                        <p class="text-blue-300 text-sm">
+                            💡 <strong>Совет:</strong> Выберите источник изображений. Парсинг быстрее, генерация через GigaChat - уникальнее.
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Источник изображения
+                            </label>
+                            {{ form.image_source_type }}
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Промпт для генерации изображения
+                            </label>
+                            {{ form.image_generation_prompt }}
+                            <p class="mt-2 text-xs text-gray-400">
+                                Используется если выбрано "Генерировать через GigaChat". Опишите какое изображение нужно.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ВКЛАДКА 3: Расписание -->
+                <div id="content-schedule" class="tab-content hidden space-y-6">
+                    <h2 class="text-2xl font-bold text-white mb-6 pb-4 border-b border-white/20">⏰ Настройка расписания</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Тип расписания
+                            </label>
+                            {{ form.schedule_type }}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Частота (для типа "По частоте")
+                            </label>
+                            {{ form.posting_frequency }}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Статей за запуск
+                            </label>
+                            {{ form.articles_per_run }}
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Cron выражение (для типа "Cron")
+                            </label>
+                            {{ form.cron_expression }}
+                            <p class="mt-2 text-xs text-gray-400">
+                                Примеры: <code class="bg-black/30 px-2 py-1 rounded">0 9,18 * * *</code> (9:00 и 18:00), 
+                                <code class="bg-black/30 px-2 py-1 rounded">30 8 * * 4</code> (каждый четверг 8:30)
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Конкретные времена (для типа "Конкретные времена")
+                            </label>
+                            {{ form.specific_times }}
+                            <p class="mt-2 text-xs text-gray-400">JSON: ["09:00", "14:00", "19:00"]</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Дни недели
+                            </label>
+                            {{ form.days_of_week }}
+                            <p class="mt-2 text-xs text-gray-400">JSON: [1,2,3,4,5] пн-пт, пусто = все дни</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ВКЛАДКА 4: Мульти-задачи -->
+                <div id="content-multi" class="tab-content hidden space-y-6">
+                    <h2 class="text-2xl font-bold text-white mb-6 pb-4 border-b border-white/20">🔮 Мульти-задачи (Гороскопы)</h2>
+                    
+                    <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6">
+                        <p class="text-yellow-300 text-sm">
+                            💡 <strong>Гороскопы:</strong> Включите мульти-задачу, укажите 12 знаков зодиака, выберите промпт "Гороскоп ежедневный" - получите 12 статей за один запуск!
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                {{ form.is_multi_task }}
+                                <div>
+                                    <span class="text-white font-semibold">Мульти-задача (создать несколько статей)</span>
+                                    <p class="text-gray-400 text-xs mt-1">Например: 12 гороскопов для всех знаков зодиака</p>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Элементы мульти-задачи (JSON массив)
+                            </label>
+                            {{ form.multi_task_items }}
+                            <div class="mt-2 bg-black/30 rounded-lg p-3">
+                                <p class="text-xs text-gray-400 mb-2">Готовые шаблоны:</p>
+                                <button type="button" onclick="fillZodiacSigns()" class="text-xs text-blue-400 hover:text-blue-300 underline">
+                                    📋 Вставить 12 знаков зодиака
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Название переменной в промпте
+                            </label>
+                            {{ form.multi_task_variable_name }}
+                            <p class="mt-2 text-xs text-gray-400">
+                                Эта переменная будет подставляться в промпт. Например: {zodiac_sign} станет "Овен", "Телец" и т.д.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ВКЛАДКА 5: Ссылки -->
+                <div id="content-links" class="tab-content hidden space-y-6">
+                    <h2 class="text-2xl font-bold text-white mb-6 pb-4 border-b border-white/20">🔗 Реклама и перелиновка</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Рекламные блоки -->
+                        <div class="bg-white/5 rounded-xl p-6 border border-white/10">
+                            <h3 class="text-lg font-bold text-white mb-4">💰 Рекламные блоки</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                        {{ form.insert_ads }}
+                                        <span class="text-white font-semibold">Вставлять рекламные блоки в статью</span>
+                                    </label>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                                        Частота рекламы (слов)
+                                    </label>
+                                    {{ form.ad_frequency }}
+                                    <p class="mt-2 text-xs text-gray-400">Вставлять рекламу каждые N слов (рекомендуется 400-600)</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Реферальные ссылки -->
+                        <div class="bg-white/5 rounded-xl p-6 border border-white/10">
+                            <h3 class="text-lg font-bold text-white mb-4">🎁 Реферальные ссылки</h3>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                        {{ form.referral_links_enabled }}
+                                        <span class="text-white font-semibold">Вставлять партнёрские ссылки</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                                        Промпт для реферальных ссылок
+                                    </label>
+                                    {{ form.referral_prompt_template }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Внутренние ссылки -->
+                        <div class="bg-white/5 rounded-xl p-6 border border-white/10">
+                            <h3 class="text-lg font-bold text-white mb-4">🔗 Перелиновка (внутренние ссылки)</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                        {{ form.add_internal_links }}
+                                        <div>
+                                            <span class="text-white font-semibold">Добавлять ссылки на статьи сайта</span>
+                                            <p class="text-gray-400 text-xs mt-1">Автоматическая перелиновка для SEO</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                                        Количество ссылок
+                                    </label>
+                                    {{ form.internal_links_count }}
+                                    <p class="mt-2 text-xs text-gray-400">Рекомендуется 2-5 ссылок для SEO</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ВКЛАДКА 6: Автодействия -->
+                <div id="content-actions" class="tab-content hidden space-y-6">
+                    <h2 class="text-2xl font-bold text-white mb-6 pb-4 border-b border-white/20">👍 Автоматические действия</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Автолайкинг -->
+                        <div class="bg-white/5 rounded-xl p-6 border border-white/10">
+                            <h3 class="text-lg font-bold text-white mb-4">❤️ Автолайкинг</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                        {{ form.auto_like_enabled }}
+                                        <span class="text-white font-semibold">Автоматически ставить лайки</span>
+                                    </label>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                                        Количество лайков
+                                    </label>
+                                    {{ form.auto_like_count }}
+                                    <p class="mt-2 text-xs text-gray-400">От фейковых пользователей (рекомендуется 3-10)</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Автокомментирование -->
+                        <div class="bg-white/5 rounded-xl p-6 border border-white/10">
+                            <h3 class="text-lg font-bold text-white mb-4">💬 Автокомментирование</h3>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                        {{ form.auto_comment_enabled }}
+                                        <span class="text-white font-semibold">Автоматически добавлять комментарии</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                                        Количество комментариев
+                                    </label>
+                                    {{ form.auto_comment_count }}
+                                    <p class="mt-2 text-xs text-gray-400">От ботов (рекомендуется 1-3)</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                                        Промпт для комментариев
+                                    </label>
+                                    {{ form.comment_prompt_template }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ВКЛАДКА 7: SEO -->
+                <div id="content-seo" class="tab-content hidden space-y-6">
+                    <h2 class="text-2xl font-bold text-white mb-6 pb-4 border-b border-white/20">📈 SEO оптимизация</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                {{ form.auto_seo_optimize }}
+                                <div>
+                                    <span class="text-white font-semibold">Авто SEO-оптимизация</span>
+                                    <p class="text-gray-400 text-xs mt-1">Alt-теги для изображений, мета-описание, заголовки</p>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                {{ form.add_faq_blocks }}
+                                <div>
+                                    <span class="text-white font-semibold">Добавлять FAQ блоки</span>
+                                    <p class="text-gray-400 text-xs mt-1">Раздел "Частые вопросы" в каждой статье</p>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Промпт для FAQ
+                            </label>
+                            {{ form.faq_prompt_template }}
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                {{ form.expand_to_min_words }}
+                                <div>
+                                    <span class="text-white font-semibold">Расширять до минимума слов</span>
+                                    <p class="text-gray-400 text-xs mt-1">Если статья короче min_word_count - дополнить</p>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                {{ form.auto_moderate }}
+                                <div>
+                                    <span class="text-white font-semibold">Автомодерация перед публикацией</span>
+                                    <p class="text-gray-400 text-xs mt-1">Проверять статью AI модератором</p>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                {{ form.ai_correction_enabled }}
+                                <div>
+                                    <span class="text-white font-semibold">AI корректировка текста</span>
+                                    <p class="text-gray-400 text-xs mt-1">Разрешить AI исправлять ошибки</p>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                Критерии модерации
+                            </label>
+                            {{ form.moderation_criteria }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Кнопки сохранения (видны на всех вкладках) -->
+                <div class="flex gap-4 pt-8 border-t border-white/20 mt-8">
+                    <button type="submit" 
+                            class="flex-1 px-6 py-4 bg-{% if is_edit %}purple{% else %}green{% endif %}-600 hover:bg-{% if is_edit %}purple{% else %}green{% endif %}-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg text-lg">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        {% if is_edit %}Сохранить изменения{% else %}Создать расписание{% endif %}
+                    </button>
+                    <a href="{% url 'asistent:ai_schedules' %}" 
+                       class="flex-1 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-bold rounded-lg transition-colors border border-white/20 flex items-center justify-center gap-2 text-lg">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+// Система вкладок
+function showTab(tabName) {
+    // Скрываем все вкладки
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+    });
+    
+    // Убираем active у всех кнопок
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-white/20');
+        btn.classList.add('text-white/80');
+    });
+    
+    // Показываем нужную вкладку
+    document.getElementById('content-' + tabName).classList.remove('hidden');
+    
+    // Активируем кнопку
+    const activeBtn = document.getElementById('tab-' + tabName);
+    activeBtn.classList.add('active', 'bg-white/20');
+    activeBtn.classList.remove('text-white/80');
+}
+
+// Быстрая вставка знаков зодиака
+function fillZodiacSigns() {
+    const zodiacSigns = ["Овен", "Телец", "Близнецы", "Рак", "Лев", "Дева", "Весы", "Скорпион", "Стрелец", "Козерог", "Водолей", "Рыбы"];
+    const textarea = document.querySelector('textarea[name="multi_task_items"]');
+    if (textarea) {
+        textarea.value = JSON.stringify(zodiacSigns, null, 2);
+    }
+    const varInput = document.querySelector('input[name="multi_task_variable_name"]');
+    if (varInput && !varInput.value) {
+        varInput.value = 'zodiac_sign';
+    }
+}
+</script>
+
+<style>
+/* Стили для полей формы */
+input[type="text"],
+input[type="number"],
+input[type="checkbox"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.dark input[type="text"],
+.dark input[type="number"],
+.dark textarea,
+.dark select {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+input[type="checkbox"] {
+    width: auto;
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.font-mono {
+    font-family: 'Courier New', monospace;
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.tab-btn.active {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+</style>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

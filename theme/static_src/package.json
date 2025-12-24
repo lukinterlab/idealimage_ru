@@ -1,0 +1,24 @@
+{
+  "name": "theme",
+  "version": "1.0.0",
+  "description": "Tailwind CSS для IdealImage.ru",
+  "scripts": {
+    "start": "npm run dev",
+    "build": "npm run build:clean && npm run build:tailwind",
+    "build:clean": "rimraf ../static/css/dist",
+    "build:tailwind": "tailwindcss -i ./src/styles.css -o ../static/css/dist/styles.css --minify",
+    "dev": "tailwindcss -i ./src/styles.css -o ../static/css/dist/styles.css --watch"
+  },
+  "keywords": ["django", "tailwindcss"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "rimraf": "^5.0.5",
+    "tailwindcss": "^3.4.1"
+  }
+}

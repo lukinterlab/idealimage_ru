@@ -1,0 +1,55 @@
+{% load static %}
+
+<!-- Кнопки "Поделиться в социальных сетях" -->
+<div class="social-share-buttons flex gap-2 flex-wrap my-4">
+    <!-- Telegram -->
+    <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}{{ post.get_absolute_url }}&text={{ post.title }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 !text-white rounded-lg transition-colors"
+       title="Поделиться в Telegram">
+        <i class="fab fa-telegram mr-2 !text-white"></i>
+        <span class="!text-white">Telegram</span>
+    </a>
+    
+    <!-- VK -->
+    <a href="https://vk.com/share.php?url={{ request.build_absolute_uri }}{{ post.get_absolute_url }}&title={{ post.title }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-800 !text-white rounded-lg transition-colors"
+       title="Поделиться ВКонтакте">
+        <i class="fab fa-vk mr-2 !text-white"></i>
+        <span class="!text-white">VK</span>
+    </a>
+    
+    <!-- WhatsApp -->
+    <a href="https://wa.me/?text={{ post.title|urlencode }}%20{{ request.build_absolute_uri }}{{ post.get_absolute_url|urlencode }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 !text-white rounded-lg transition-colors"
+       title="Поделиться в WhatsApp">
+        <i class="fab fa-whatsapp mr-2 !text-white"></i>
+        <span class="!text-white">WhatsApp</span>
+    </a>
+    
+    <!-- Pinterest -->
+    <a href="https://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri }}{{ post.get_absolute_url }}&description={{ post.title }}&media={% if post.kartinka %}{{ request.build_absolute_uri }}{{ post.kartinka.url }}{% endif %}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 !text-white rounded-lg transition-colors"
+       title="Сохранить в Pinterest">
+        <i class="fab fa-pinterest mr-2 !text-white"></i>
+        <span class="!text-white">Pinterest</span>
+    </a>
+    
+    <!-- Odnoklassniki -->
+    <a href="https://connect.ok.ru/offer?url={{ request.build_absolute_uri }}{{ post.get_absolute_url }}&title={{ post.title }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="inline-flex items-center px-4 py-2 bg-orange-500 hover:bg-orange-600 !text-white rounded-lg transition-colors"
+       title="Поделиться в Одноклассниках">
+        <i class="fab fa-odnoklassniki mr-2 !text-white"></i>
+        <span class="!text-white">OK</span>
+    </a>
+</div>
+

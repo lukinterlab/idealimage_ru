@@ -1,0 +1,1126 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+{% load ad_tags %}
+{% load video_tags %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{{ structured_data|safe }}
+</script>
+{% if breadcrumb_structured_data %}
+<script type="application/ld+json">
+{{ breadcrumb_structured_data|safe }}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block page_header %}
+<!-- Breadcrumbs -->
+{% if breadcrumbs %}
+<nav class="mb-6" aria-label="Breadcrumb">
+    <ol class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+        {% for name, url in breadcrumbs %}
+            {% if not forloop.last %}
+                <li class="flex items-center">
+                    <a href="{{ url }}" class="hover:text-primary transition-colors">{{ name }}</a>
+                    <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </li>
+            {% else %}
+                <li class="text-gray-900 dark:text-white font-medium">{{ name }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .post-content a { color: #2563eb; text-decoration: underline; }
+  .dark .post-content a { color: #60a5fa; }
+</style>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2">
+        <!-- Post Header -->
+        <article class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-700 overflow-hidden mb-8 fade-in post-content">
+            <!-- Featured Image/Video -->
+            {% if post.video_url or post.kartinka %}
+            <div class="relative overflow-hidden group/media" data-video-wrapper>
+                {% with post.video_url|default:''|lower as video_url_lower %}
+                <div class="relative w-full aspect-video bg-black">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        {% if post.video_url|is_video %}
+                            {# Приоритет: видео-ссылка #}
+                            {% with embed_url=post.video_url|video_embed platform=post.video_url|video_platform %}
+                            <iframe src="{{ embed_url }}" 
+                                    class="{% if 'shorts' in video_url_lower or 'reel' in video_url_lower or 'stories' in video_url_lower %}h-full w-auto max-w-full{% else %}w-full h-full{% endif %}"
+                                    frameborder="0" 
+                                    allow="autoplay; encrypted-media; picture-in-picture" 
+                                    allowfullscreen
+                                    loading="lazy"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            </iframe>
+                            <div style="display:none;" class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-5xl">
+                                <div class="text-center">
+                                    <div class="text-6xl mb-2">⚠️</div>
+                                    <div class="text-sm">Видео не загружается</div>
+                                </div>
+                            </div>
+                            {% endwith %}
+                        {% elif post.kartinka.name|slice:"-4:" == ".mp4" or post.kartinka.name|slice:"-5:" == ".webm" or post.kartinka.name|slice:"-4:" == ".mov" %}
+                            {% load video_tags %}
+                            <video id="postVideo" 
+                                   class="js-video-orientation w-full h-full object-cover"
+                                   preload="metadata"
+                                   autoplay 
+                                   loop 
+                                   playsinline
+                                   controls
+                                   {% if post.video_poster %}poster="{{ post.video_poster.url }}"{% elif post.kartinka.name|video_poster %}poster="{{ post.kartinka.name|video_poster }}"{% endif %}
+                                   data-video-src="{{ post.kartinka.url }}"
+                                   data-lazy-load="true">
+                                <source src="{{ post.kartinka.url }}" type="video/{% if post.kartinka.name|slice:'-4:' == '.mp4' %}mp4{% elif post.kartinka.name|slice:'-5:' == '.webm' %}webm{% else %}quicktime{% endif %}">
+                                Ваш браузер не поддерживает воспроизведение видео.
+                            </video>
+                            
+                            <!-- Custom Volume Control + Fullscreen -->
+                            <div class="absolute bottom-6 right-6 z-20 flex items-center gap-3 bg-black/70 backdrop-blur-sm rounded-full px-4 py-3 transition-all duration-300 opacity-0 group-hover/media:opacity-100">
+                                <!-- Fullscreen Button -->
+                                <button id="fullscreenBtn" 
+                                        onclick="toggleFullscreen()"
+                                        class="text-white hover:text-primary transition-colors focus:outline-none"
+                                        title="Полноэкранный режим">
+                                    <svg id="fullscreenIconEnter" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                                    </svg>
+                                    <svg id="fullscreenIconExit" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Separator -->
+                                <div class="w-px h-6 bg-white/30"></div>
+                                
+                                <!-- Mute/Unmute Button -->
+                                <button id="volumeBtn" 
+                                        onclick="toggleMute()"
+                                        class="text-white hover:text-primary transition-colors focus:outline-none"
+                                        title="Управление звуком">
+                                    <svg id="volumeIconOn" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.983 5.983 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.984 3.984 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <svg id="volumeIconOff" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Volume Slider -->
+                                <div class="flex items-center gap-2">
+                                    <input type="range" 
+                                           id="volumeSlider" 
+                                           min="0" 
+                                           max="100" 
+                                           value="25"
+                                           onchange="changeVolume(this.value)"
+                                           oninput="changeVolume(this.value)"
+                                           class="w-24 h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer accent-primary">
+                                    <span id="volumeValue" class="text-white text-sm font-semibold min-w-[2.5rem] text-right">25%</span>
+                                </div>
+                            </div>
+                            
+                            <script>
+                    (function () {
+                        const video = document.getElementById('postVideo');
+                        const videoContainer = video ? video.closest('[data-video-wrapper]') : null;
+                        const volumeBtn = document.getElementById('volumeBtn');
+                        const volumeIconOn = document.getElementById('volumeIconOn');
+                        const volumeIconOff = document.getElementById('volumeIconOff');
+                        const volumeSlider = document.getElementById('volumeSlider');
+                        const volumeValue = document.getElementById('volumeValue');
+                        
+                        // Устанавливаем начальную громкость 25%
+                        video.volume = 0.25;
+                        if (volumeSlider) {
+                            volumeSlider.value = 25;
+                        }
+                        if (volumeValue) {
+                            volumeValue.textContent = '25%';
+                        }
+                        // Показываем иконку звука включенного
+                        if (volumeIconOn) {
+                            volumeIconOn.classList.remove('hidden');
+                        }
+                        if (volumeIconOff) {
+                            volumeIconOff.classList.add('hidden');
+                        }
+                        const mediaBadges = document.getElementById('media-badges-main');
+                        const fullscreenBtn = document.getElementById('fullscreenBtn');
+                        const fullscreenIconEnter = document.getElementById('fullscreenIconEnter');
+                        const fullscreenIconExit = document.getElementById('fullscreenIconExit');
+                        if (!video) {
+                            return;
+                        }
+                        function toggleMute() {
+                            if (video.muted) {
+                                video.muted = false;
+                                volumeIconOn.classList.remove('hidden');
+                                volumeIconOff.classList.add('hidden');
+                                const currentVolume = Math.round(video.volume * 100);
+                                volumeSlider.value = currentVolume;
+                                volumeValue.textContent = currentVolume + '%';
+                            } else {
+                                video.muted = true;
+                                volumeIconOn.classList.add('hidden');
+                                volumeIconOff.classList.remove('hidden');
+                            }
+                        }
+                        if (volumeBtn) {
+                            volumeBtn.addEventListener('click', toggleMute);
+                        }
+                        function changeVolume(value) {
+                            const volumeLevel = value / 100;
+                            video.volume = volumeLevel;
+                            volumeValue.textContent = value + '%';
+                            if (volumeLevel > 0 && video.muted) {
+                                video.muted = false;
+                                volumeIconOn.classList.remove('hidden');
+                                volumeIconOff.classList.add('hidden');
+                            } else if (volumeLevel === 0) {
+                                video.muted = true;
+                                volumeIconOn.classList.add('hidden');
+                                volumeIconOff.classList.remove('hidden');
+                            }
+                        }
+                        if (volumeSlider) {
+                            volumeSlider.addEventListener('change', function (event) {
+                                changeVolume(event.target.value);
+                            });
+                            volumeSlider.addEventListener('input', function (event) {
+                                changeVolume(event.target.value);
+                            });
+                        }
+                        function requestFullscreenWithFallback(element) {
+                            if (!element) {
+                                return false;
+                            }
+                            if (element.requestFullscreen) {
+                                element.requestFullscreen();
+                                return true;
+                            }
+                            if (element.webkitRequestFullscreen) {
+                                element.webkitRequestFullscreen();
+                                return true;
+                            }
+                            if (element.mozRequestFullScreen) {
+                                element.mozRequestFullScreen();
+                                return true;
+                            }
+                            if (element.msRequestFullscreen) {
+                                element.msRequestFullscreen();
+                                return true;
+                            }
+                            return false;
+                        }
+                        function exitFullscreenWithFallback() {
+                            if (document.exitFullscreen) {
+                                document.exitFullscreen();
+                                return true;
+                            }
+                            if (document.webkitExitFullscreen) {
+                                document.webkitExitFullscreen();
+                                return true;
+                            }
+                            if (document.mozCancelFullScreen) {
+                                document.mozCancelFullScreen();
+                                return true;
+                            }
+                            if (document.msExitFullscreen) {
+                                document.msExitFullscreen();
+                                return true;
+                            }
+                            return false;
+                        }
+                        function toggleNativeFullscreen() {
+                            if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+                                exitFullscreenWithFallback();
+                            } else {
+                                const elementToFullscreen = videoContainer || video;
+                                if (!requestFullscreenWithFallback(elementToFullscreen)) {
+                                    if (video.webkitEnterFullscreen) {
+                                        video.webkitEnterFullscreen();
+                                    } else if (video.webkitShowPlaybackTargetPicker) {
+                                        video.webkitShowPlaybackTargetPicker();
+                                    }
+                                }
+                            }
+                        }
+                        if (fullscreenBtn) {
+                            fullscreenBtn.addEventListener('click', function (event) {
+                                event.preventDefault();
+                                toggleNativeFullscreen();
+                            });
+                        }
+                        const fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
+                        fullscreenEvents.forEach(function (eventName) {
+                            document.addEventListener(eventName, updateFullscreenIcon);
+                        });
+                        function updateFullscreenIcon() {
+                            const isFullscreen = Boolean(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+                            if (fullscreenIconEnter) {
+                                fullscreenIconEnter.classList.toggle('hidden', isFullscreen);
+                            }
+                            if (fullscreenIconExit) {
+                                fullscreenIconExit.classList.toggle('hidden', !isFullscreen);
+                            }
+                        }
+                        function syncOrientationClassesDuringFullscreen() {
+                            window.__videoOrientationSetup && window.__videoOrientationSetup();
+                        }
+                        video.addEventListener('webkitbeginfullscreen', function () {
+                            syncOrientationClassesDuringFullscreen();
+                        });
+                        video.addEventListener('webkitendfullscreen', function () {
+                            syncOrientationClassesDuringFullscreen();
+                            updateFullscreenIcon();
+                        });
+                        fullscreenEvents.forEach(function (eventName) {
+                            document.addEventListener(eventName, syncOrientationClassesDuringFullscreen);
+                        });
+                        if (video && mediaBadges) {
+                            video.addEventListener('play', function () {
+                                mediaBadges.style.opacity = '0';
+                                mediaBadges.style.pointerEvents = 'none';
+                            });
+                            video.addEventListener('pause', function () {
+                                mediaBadges.style.opacity = '1';
+                                mediaBadges.style.pointerEvents = 'auto';
+                            });
+                            video.addEventListener('ended', function () {
+                                mediaBadges.style.opacity = '1';
+                                mediaBadges.style.pointerEvents = 'auto';
+                            });
+                            video.addEventListener('click', function () {
+                                if (!video.paused) {
+                                    mediaBadges.style.opacity = '0';
+                                    mediaBadges.style.pointerEvents = 'none';
+                                }
+                            });
+                        }
+                        // Устанавливаем громкость 25% при загрузке
+                        video.volume = 0.25;
+                        video.muted = false; // Включаем звук
+                        updateFullscreenIcon();
+                    })();
+                    </script>
+                        {% else %}
+                            <div class="relative group cursor-pointer h-full w-full" 
+                                 onclick="showImageLightbox('{{ post.kartinka.url }}', '{{ post.title|escapejs }}')"
+                                 data-full-image="{{ post.kartinka.url }}">
+                                <img src="{{ post.kartinka.url }}" 
+                                     alt="{{ post.title }}" 
+                                     loading="lazy"
+                                     decoding="async"
+                                     data-full-image="{{ post.kartinka.url }}"
+                                     class="w-full h-full object-cover transition-transform group-hover:scale-105">
+                                <!-- Подсказка при наведении -->
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center pointer-events-none">
+                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity text-white text-center">
+                                        <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                                        </svg>
+                                        <p class="font-semibold text-lg">Нажмите для увеличения</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                    
+                    <!-- Category and Tags Badges (auto-hide on video play) -->
+                    <div id="media-badges-main" class="transition-opacity duration-300">
+                        <!-- Category Badge (Red) -->
+                        {% if post.category %}
+                        <div class="absolute top-6 left-6 z-10">
+                            <a href="{% url 'blog:post_list_by_category' post.category.slug %}" 
+                               class="inline-block px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded-full hover:bg-red-600 transition-all shadow-lg">
+                                {{ post.category.title }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Tags Badges (Blue) - Bottom of image (выше плеера) -->
+                        {% if post.tags.all %}
+                        <div class="absolute bottom-24 left-6 z-10 flex flex-wrap gap-2">
+                            {% for tag in post.tags.all %}
+                            {% if tag.slug %}
+                            <a href="{% url 'blog:post_by_tags' tag.slug %}" 
+                               class="px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg border border-primary/40 bg-white/90 text-primary hover:bg-primary/10 hover:text-primary transition-all">
+                                {{ tag }}
+                            </a>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+            </div>
+            {% endif %}
+            
+            <!-- Post Meta -->
+            <div class="p-8">
+                <div class="flex items-start justify-between gap-4 mb-4">
+                    <h1 class="text-4xl font-heading font-bold text-gray-900 dark:text-white flex-1">
+                        {{ post.title }}
+                    </h1>
+                    
+                    <!-- Edit Button (только для суперюзера) -->
+                    {% if user.is_superuser %}
+                    <a href="{% url 'blog:post_update' post.slug %}" 
+                       class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold rounded-lg transition-all shadow-sm hover:shadow-md"
+                       title="Редактировать статью">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Редактировать
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Author & Date Info -->
+                <div class="flex items-center justify-between mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center space-x-4">
+                        <!-- Author Avatar -->
+                        <a href="{% url 'Visitor:profile_detail' slug=post.author.profile.slug %}" class="flex-shrink-0">
+                            <img src="{{ post.author.profile.get_avatar }}" 
+                                 alt="{{ post.author.username }}" 
+                                 loading="lazy"
+                                 decoding="async"
+                                 class="w-12 h-12 rounded-full object-cover border-2 border-primary">
+                        </a>
+                        
+                        <!-- Author Info -->
+                        <div>
+                            <a href="{% url 'Visitor:profile_detail' slug=post.author.profile.slug %}" 
+                               class="font-semibold text-gray-900 dark:text-white hover:text-primary transition-colors">
+                                {{ post.author.username }}
+                            </a>
+                            <div class="flex items-center space-x-3 text-sm text-gray-500 dark:text-gray-400">
+                                <span>{{ post.created|date:"d F Y" }}</span>
+                                <span>•</span>
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                    {{ post.views }} просмотров
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Share Buttons -->
+                    <div class="flex items-center space-x-2">
+                        <!-- Telegram -->
+                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ post.title|urlencode }}" 
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           title="Поделиться в Telegram"
+                           class="p-2 text-gray-600 dark:text-gray-400 hover:text-[#0088cc] hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                            </svg>
+                        </a>
+                        
+                        <!-- VK -->
+                        <a href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ post.title|urlencode }}" 
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           title="Поделиться ВКонтакте"
+                           class="p-2 text-gray-600 dark:text-gray-400 hover:text-[#0077FF] hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.391 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.118-5.335-3.202C4.624 10.857 4.03 8.57 4.03 8.096c0-.254.102-.491.593-.491h1.744c.441 0 .61.203.78.678.863 2.49 2.303 4.675 2.896 4.675.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.254-1.406 2.151-3.574 2.151-3.574.119-.254.322-.491.763-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.17.491-.085.744-.576.744z"/>
+                            </svg>
+                        </a>
+                        
+                        <!-- Одноклассники -->
+                        <a href="https://connect.ok.ru/offer?url={{ request.build_absolute_uri }}&title={{ post.title|urlencode }}" 
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           title="Поделиться в Одноклассниках"
+                           class="p-2 text-gray-600 dark:text-gray-400 hover:text-[#EE8208] hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 3.5c2.347 0 4.25 1.903 4.25 4.25S14.347 12 12 12s-4.25-1.903-4.25-4.25S9.653 3.5 12 3.5zm5.562 12.97c-.494.494-1.93 1.031-3.812 1.406l1.47 1.47c.586.585.586 1.536 0 2.121-.293.293-.677.439-1.061.439s-.768-.146-1.061-.439L12 20.378l-1.098 1.089c-.586.586-1.536.586-2.122 0s-.586-1.536 0-2.121l1.47-1.47c-1.882-.375-3.318-.912-3.812-1.406-.658-.658-.658-1.724 0-2.382s1.724-.658 2.382 0c.913.913 3.257.913 4.18.913.923 0 3.267 0 4.18-.913.658-.658 1.724-.658 2.382 0s.658 1.724 0 2.382z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Post Description
+                {% if post.description %}
+                <div class="prose prose-lg max-w-none mb-6">
+                    <p class="text-xl text-gray-700 dark:text-gray-300 font-medium leading-relaxed">
+                        {{ post.description }}
+                    </p>
+                </div>
+                {% endif %} -->
+                
+                <!-- Реклама перед контентом -->
+                <div class="mb-8">
+                    {% show_ad "before_article_content" %}
+                </div>
+                
+                <!-- Post Content -->
+                <div class="max-w-none sm:max-w-5xl sm:mx-auto -mx-4">
+                    <div class="prose prose-lg max-w-none text-gray-800 dark:text-gray-200 leading-relaxed dark:prose-invert px-2 sm:px-0">
+                        {% load seo_tags %}
+                        {{ post.content|lazy_load_images|safe }}
+                    </div>
+                </div>
+                
+                <!-- Реклама в середине статьи -->
+                <div class="my-8">
+                    {% show_ad "in_post_middle" %}
+                </div>
+                
+                <!-- Автоматические внутренние ссылки -->
+                {% if internal_links_html %}
+                <div class="mt-8">
+                    {{ internal_links_html|safe }}
+                </div>
+                {% endif %}
+                
+                <!-- Tags -->
+                {% if post.tags.all %}
+                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Теги:</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for tag in post.tags.all %}
+                        {% if tag.slug %}
+                        <a href="{% url 'blog:post_by_tags' tag.slug %}" 
+                           class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-full hover:bg-primary hover:text-white transition-colors">
+                            #{{ tag }} <span class="ml-1 text-xs opacity-75">({{ tag.posts.count }})</span>
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Social Share Buttons -->
+                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Поделиться:</h3>
+                    {% load social_tags %}
+                    {% social_share_buttons post %}
+                </div>
+                
+                <!-- Subscription CTA -->
+                {% if post.category.chat_url %}
+                <div class="mt-8 p-6 bg-gradient-to-r from-primary to-secondary rounded-xl text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-heading font-bold mb-2">Подпишитесь на наш Telegram</h3>
+                            <p class="text-white/90">Получайте свежие статьи первыми!</p>
+                        </div>
+                        <a href="{{ post.category.chat_url }}" 
+                           target="_blank"
+                           class="px-6 py-3 bg-white text-primary rounded-lg font-semibold hover:shadow-lg transition-all flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                            </svg>
+                            <span>Подписаться</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </article>
+        
+        <!-- Donation Widget -->
+        <div class="mb-8 fade-in">
+            {% include "donations/donation_widget.html" %}
+        </div>
+        
+        <!-- Likes Widget -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-700 p-8 mb-8">
+            {% include "blog/likes_widget_tailwind.html" %}
+        </div>
+        
+        <!-- Comments Section (Collapsible) -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-700 p-8 mb-8">
+            {% include "blog/partials/collapsible_comments.html" %}
+        </div>
+        
+        <!-- Реклама после комментариев -->
+        <div class="mb-8">
+            {% show_ad "after_comments" %}
+        </div>
+        
+        <!-- Статьи с минимальными просмотрами из той же категории -->
+        {% if low_view_posts %}
+        <div class="mt-12">
+            <h2 class="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                <svg class="w-8 h-8 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                Откройте для себя ещё из категории "{{ post.category.title }}"
+            </h2>
+            
+            {% for article in low_view_posts %}
+                {% include "blog/partials/full_article.html" with article=article article_index=forloop.counter show_comments=True %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sidebar -->
+    <aside class="lg:col-span-1">
+        <div class="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar pr-2">
+            
+            <!-- Реклама в сайдбаре -->
+            <div class="mb-6">
+                {% show_ad "sidebar_top" %}
+            </div>
+            
+            <!-- Author Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-700 p-6">
+                <h3 class="text-lg font-heading font-bold mb-4 text-gray-900 dark:text-white">Об авторе</h3>
+                <div class="text-center">
+                    <a href="{% url 'Visitor:profile_detail' slug=post.author.profile.slug %}">
+                        <img src="{{ post.author.profile.get_avatar }}" 
+                             alt="{{ post.author.username }}" 
+                             loading="lazy"
+                             decoding="async"
+                             class="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-primary">
+                    </a>
+                    <a href="{% url 'Visitor:profile_detail' slug=post.author.profile.slug %}" 
+                       class="text-xl font-semibold text-gray-900 dark:text-white hover:text-primary transition-colors">
+                        {{ post.author.username }}
+                    </a>
+                    {% if post.author.profile.bio %}
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">{{ post.author.profile.bio|truncatechars:100 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Реклама после блока автора -->
+            <div class="mb-6">
+                {% show_ad "sidebar_after_author" %}
+            </div>
+            
+            <!-- Popular Posts -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-700 p-6">
+                <h3 class="text-lg font-heading font-bold mb-4 text-gray-900 dark:text-white">Популярные статьи</h3>
+                {% if popular_posts %}
+                <div class="space-y-4">
+                    {% for popular_post in popular_posts %}
+                    <article class="group">
+                        <a href="{{ popular_post.get_absolute_url }}" class="flex gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-lg transition-all">
+                            <!-- Thumbnail -->
+                            {% if popular_post.kartinka %}
+                            <div class="flex-shrink-0">
+                                {% if popular_post.kartinka.name|slice:"-4:" == ".mp4" or popular_post.kartinka.name|slice:"-5:" == ".webm" or popular_post.kartinka.name|slice:"-4:" == ".mov" %}
+                                    {# Для видео используем video_poster или placeholder #}
+                                    {% if popular_post.video_poster %}
+                                        <img src="{{ popular_post.video_poster.url }}" 
+                                             alt="{{ popular_post.title }}" 
+                                             loading="lazy"
+                                             decoding="async"
+                                             class="w-20 h-20 object-cover rounded-lg">
+                                    {% else %}
+                                        {# Placeholder для видео без poster #}
+                                        <div class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M8 5v14l11-7z"/>
+                                            </svg>
+                                        </div>
+                                    {% endif %}
+                                {% elif popular_post.video_url %}
+                                    {# Для внешнего видео используем placeholder #}
+                                    <div class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </div>
+                                {% else %}
+                                    {# Для изображений используем thumbnail или kartinka #}
+                                    <img src="{% if popular_post.thumbnail %}{{ popular_post.thumbnail.url }}{% else %}{{ popular_post.kartinka.url }}{% endif %}" 
+                                         alt="{{ popular_post.title }}" 
+                                         loading="lazy"
+                                         decoding="async"
+                                         class="w-20 h-20 object-cover rounded-lg">
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Content -->
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2 mb-1">
+                                    {{ popular_post.title }}
+                                </h4>
+                                
+                                <!-- Meta -->
+                                <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                                    <!-- Author with avatar -->
+                                    <div class="flex items-center gap-1">
+                                        <img src="{{ popular_post.author.profile.get_avatar }}" 
+                                             alt="{{ popular_post.author.username }}" 
+                                             loading="lazy"
+                                             decoding="async"
+                                             class="w-4 h-4 rounded-full object-cover">
+                                        <span class="truncate">{{ popular_post.author.username }}</span>
+                                    </div>
+                                    
+                                    <!-- Views -->
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        {{ popular_post.views }}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">Нет популярных статей</p>
+                {% endif %}
+            </div>
+            
+            <!-- Реклама после популярных статей -->
+            <div class="mt-6">
+                {% show_ad "sidebar_after_popular" %}
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<!-- Стили для lightbox изображений -->
+<style>
+    .prose img {
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 0.5rem;
+    }
+    
+    .prose img:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Lightbox стили */
+    .image-lightbox {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.95);
+        animation: fadeIn 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .image-lightbox-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .image-lightbox-content img {
+        max-width: none;
+        max-height: none;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        cursor: grab;
+        transition: transform 0.1s ease-out;
+        user-select: none;
+    }
+    
+    .image-lightbox-content img:active {
+        cursor: grabbing;
+    }
+    
+    .image-lightbox-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 10000;
+    }
+    
+    .image-lightbox-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .image-lightbox-btn:hover {
+        background: white;
+        transform: scale(1.1);
+    }
+    
+    .image-lightbox-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .image-lightbox-close {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 28px;
+        line-height: 1;
+        cursor: pointer;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .image-lightbox-close:hover {
+        background: white;
+        transform: scale(1.1);
+    }
+    
+    .image-lightbox-zoom-info {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        z-index: 10000;
+        pointer-events: none;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+    
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+</style>
+<script>
+// Функция для показа изображения в lightbox с зумом и навигацией
+function showImageLightbox(imageSrc, imageAlt) {
+    // Убеждаемся, что используем полное изображение, а не thumbnail
+    // Если imageSrc содержит thumbnail, заменяем на kartinka
+    if (imageSrc && imageSrc.includes('thumbnail')) {
+        // Заменяем thumbnail на kartinka в URL
+        imageSrc = imageSrc.replace('/thumbnails/', '/images/').replace('thumbnail_', '');
+    }
+    
+    // Создаем overlay
+    const lightbox = document.createElement('div');
+    lightbox.className = 'image-lightbox';
+    
+    let scale = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let startTranslateX = 0;
+    let startTranslateY = 0;
+    
+    lightbox.innerHTML = `
+        <div class="image-lightbox-content">
+            <img src="${imageSrc}" alt="${imageAlt || 'Изображение'}" id="lightbox-image" />
+            <div class="image-lightbox-controls">
+                <button class="image-lightbox-btn" id="zoom-in-btn" aria-label="Увеличить" title="Увеличить (+ или колесо мыши вверх)">+</button>
+                <button class="image-lightbox-btn" id="zoom-out-btn" aria-label="Уменьшить" title="Уменьшить (- или колесо мыши вниз)">−</button>
+                <button class="image-lightbox-btn" id="zoom-reset-btn" aria-label="Сбросить" title="Сбросить зум (0)">⌂</button>
+                <button class="image-lightbox-close" aria-label="Закрыть" title="Закрыть (Esc)">&times;</button>
+            </div>
+            <div class="image-lightbox-zoom-info" id="zoom-info">100%</div>
+        </div>
+    `;
+    
+    document.body.appendChild(lightbox);
+    document.body.style.overflow = 'hidden';
+    
+    const img = lightbox.querySelector('#lightbox-image');
+    const zoomInBtn = lightbox.querySelector('#zoom-in-btn');
+    const zoomOutBtn = lightbox.querySelector('#zoom-out-btn');
+    const zoomResetBtn = lightbox.querySelector('#zoom-reset-btn');
+    const closeBtn = lightbox.querySelector('.image-lightbox-close');
+    const zoomInfo = lightbox.querySelector('#zoom-info');
+    
+    // Функция обновления трансформации
+    function updateTransform() {
+        img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        zoomInfo.textContent = Math.round(scale * 100) + '%';
+    }
+    
+    // Функция зума
+    function zoom(delta, centerX = window.innerWidth / 2, centerY = window.innerHeight / 2) {
+        const oldScale = scale;
+        scale += delta;
+        scale = Math.max(0.5, Math.min(scale, 5)); // Ограничение от 50% до 500%
+        
+        if (scale !== oldScale) {
+            // Корректируем позицию при зуме, чтобы центр зума оставался на месте
+            const rect = img.getBoundingClientRect();
+            const imgCenterX = rect.left + rect.width / 2;
+            const imgCenterY = rect.top + rect.height / 2;
+            
+            translateX += (centerX - imgCenterX) * (scale - oldScale) / oldScale;
+            translateY += (centerY - imgCenterY) * (scale - oldScale) / oldScale;
+            
+            updateTransform();
+        }
+    }
+    
+    // Функция сброса зума
+    function resetZoom() {
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        updateTransform();
+    }
+    
+    // Обработчики кнопок
+    zoomInBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        zoom(0.25);
+    });
+    
+    zoomOutBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        zoom(-0.25);
+    });
+    
+    zoomResetBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resetZoom();
+    });
+    
+    // Зум колесом мыши
+    lightbox.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        zoom(delta, e.clientX, e.clientY);
+    }, { passive: false });
+    
+    // Перетаскивание изображения
+    img.addEventListener('mousedown', (e) => {
+        if (scale > 1) {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startTranslateX = translateX;
+            startTranslateY = translateY;
+            e.preventDefault();
+        }
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            translateX = startTranslateX + (e.clientX - startX);
+            translateY = startTranslateY + (e.clientY - startY);
+            updateTransform();
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+    
+    // Закрытие по клику на overlay (но не на изображение или кнопки)
+    lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox || e.target.classList.contains('image-lightbox-close')) {
+            closeLightbox();
+        }
+    });
+    
+    // Закрытие по Escape
+    function handleEscape(e) {
+        if (e.key === 'Escape') {
+            closeLightbox();
+            document.removeEventListener('keydown', handleEscape);
+        } else if (e.key === '+' || e.key === '=') {
+            zoom(0.25);
+        } else if (e.key === '-' || e.key === '_') {
+            zoom(-0.25);
+        } else if (e.key === '0') {
+            resetZoom();
+        }
+    }
+    document.addEventListener('keydown', handleEscape);
+    
+    function closeLightbox() {
+        lightbox.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            lightbox.remove();
+            document.body.style.overflow = '';
+        }, 300);
+    }
+    
+    // Инициализация
+    updateTransform();
+}
+
+// Обработчик для изображений в тексте статьи (.prose img)
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчик для изображений в тексте статьи
+    const proseImages = document.querySelectorAll('.prose img');
+    proseImages.forEach(img => {
+        img.addEventListener('click', function(e) {
+            // Используем data-full-image если есть, иначе src
+            let imageSrc = this.getAttribute('data-full-image') || this.src;
+            // Если это thumbnail, пытаемся найти полное изображение
+            if (imageSrc.includes('thumbnail')) {
+                // Заменяем thumbnail на kartinka в URL
+                imageSrc = imageSrc.replace('/thumbnails/', '/images/').replace('thumbnail_', '');
+            }
+            showImageLightbox(imageSrc, this.alt);
+        });
+    });
+});
+</script>
+{% include 'partials/video_orientation_script.html' %}
+
+<!-- Оптимизация загрузки видео -->
+<script>
+(function() {
+    // Lazy loading для видео с Intersection Observer
+    const videoElement = document.getElementById('postVideo');
+    if (!videoElement) return;
+    
+    const videoSrc = videoElement.getAttribute('data-video-src');
+    const shouldLazyLoad = videoElement.getAttribute('data-lazy-load') === 'true';
+    
+    if (!shouldLazyLoad || !videoSrc) {
+        // Если lazy loading не нужен - загружаем сразу
+        return;
+    }
+    
+    // Intersection Observer для lazy loading
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Видео видно на экране - загружаем
+                const video = entry.target;
+                
+                // Устанавливаем src только когда видео видно
+                if (!video.src || video.src !== videoSrc) {
+                    video.src = videoSrc;
+                    
+                    // Загружаем metadata для быстрого отображения
+                    video.load();
+                }
+                
+                // Отключаем observer после загрузки
+                observer.unobserve(video);
+            }
+        });
+    }, {
+        rootMargin: '100px' // Начинаем загрузку за 100px до появления на экране
+    });
+    
+    observer.observe(videoElement);
+    
+    // Оптимизация: предзагрузка metadata при загрузке страницы
+    // (не блокирует основной поток)
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+            if (videoElement && !videoElement.src) {
+                // Загружаем только metadata в свободное время
+                const tempVideo = document.createElement('video');
+                tempVideo.preload = 'metadata';
+                tempVideo.src = videoSrc;
+                tempVideo.load();
+            }
+        });
+    }
+    
+    // Оптимизация воспроизведения: буферизация
+    videoElement.addEventListener('canplay', function() {
+        // Когда видео готово к воспроизведению - буферизуем больше
+        if (this.readyState >= 3) {
+            try {
+                this.buffered;
+            } catch(e) {
+                // Игнорируем ошибки
+            }
+        }
+    });
+    
+    // Обработка ошибок загрузки
+    videoElement.addEventListener('error', function(e) {
+        console.warn('Ошибка загрузки видео:', e);
+        // Показываем fallback
+        const fallback = this.nextElementSibling;
+        if (fallback && fallback.style) {
+            this.style.display = 'none';
+            fallback.style.display = 'flex';
+        }
+    });
+    
+    // Оптимизация: предзагрузка следующего сегмента при воспроизведении
+    videoElement.addEventListener('progress', function() {
+        // Когда загружено достаточно - можно предзагрузить больше
+        if (this.buffered.length > 0) {
+            const bufferedEnd = this.buffered.end(this.buffered.length - 1);
+            const currentTime = this.currentTime;
+            
+            // Если загружено меньше 30 секунд вперед - продолжаем буферизацию
+            if (bufferedEnd - currentTime < 30 && currentTime > 0) {
+                // Браузер сам продолжит загрузку
+            }
+        }
+    });
+    
+})();
+</script>
+{% endblock %}

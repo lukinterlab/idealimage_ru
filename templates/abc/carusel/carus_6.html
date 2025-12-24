@@ -1,0 +1,37 @@
+{% load static %}
+<!-- Auto Play Start -->
+<section class="scroll-section" id="autoPlay">
+    <div class="row gx-1">
+      <div class="col-12 col-xl-12 p-0 mb-5">
+        <div class="glide" id="glideAuto">
+          <div class="glide__track" data-glide-el="track">
+            <div class="glide__slides">
+
+              {% for post in post_list reversed %}
+                <div class="glide__slide">
+                    <div class="card mb-5 sh-25">
+                      <a href="{{ post.category.get_absolute_url }}" class="btn btn-icon btn-icon-start btn-primary mt-3 stretched-link">
+                        <i data-cs-icon="chevron-right"></i>
+                        <span>{{ post.category }}</span>
+                        <!-- p class="h4 text-center mb-0 d-flex text-primary">{{ post.category }}</p -->
+                      </a>
+                        <div class="card-body text-center align-items-center d-flex flex-column justify-content-between">
+                            
+                            <div class="d-flex sw-30 sh-15 bg-gradient-primary mb-3 align-items-center justify-content-center rounded-x1">
+                              <a href="{{ post.get_absolute_url }}">
+                                <img src="{{ post.kartinka.url }}" class="card-img sw-30 sh-15 h-100 scale" alt="card image" />
+                              </a>
+                            </div>
+                            <p class="card-text mb-0 d-flex">{{ post.title }}</p>
+                        </div>
+                    </div>
+                </div>
+              {% endfor %}
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+<!-- Auto Play End -->

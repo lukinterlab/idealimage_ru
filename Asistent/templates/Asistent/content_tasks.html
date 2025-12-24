@@ -1,0 +1,96 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
+                <div>
+                    <h1 class="text-4xl font-black text-white mb-2">{{ title }}</h1>
+                    <p class="text-xl text-gray-300">{{ description }}</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'asistent:create_task' %}" 
+                       class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-lg">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Создать задание
+                    </a>
+                    <a href="{% url 'Home:master_admin_dashboard' %}" 
+                       class="px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Статистика по авторам (только для completed) -->
+        {% if author_stats %}
+        <div class="mb-8 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <h3 class="text-xl font-bold text-white mb-4">📊 Статистика по авторам</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% for author in author_stats|slice:":6" %}
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-purple-500/30 rounded-full flex items-center justify-center">
+                            <span class="text-xl font-bold text-white">{{ author.author__username|first|upper }}</span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-semibold text-white">{{ author.author__username }}</p>
+                            <p class="text-sm text-gray-400">Выполнено: <span class="text-green-300 font-bold">{{ author.completed_count }}</span></p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Карточки заданий -->
+        {% if tasks or assignments %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% if tasks %}
+                {% for task in tasks %}
+                {% include 'Asistent/partials/content_task_card.html' with task=task %}
+                {% endfor %}
+            {% endif %}
+            
+            {% if assignments %}
+                {% for assignment in assignments %}
+                {% include 'Asistent/partials/content_task_assignment_card.html' with assignment=assignment %}
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        {% else %}
+        <!-- Пустое состояние -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-12 text-center shadow-2xl">
+            <svg class="w-24 h-24 mx-auto text-white/30 mb-6" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+            </svg>
+            <h3 class="text-2xl font-bold text-white mb-2">Заданий нет</h3>
+            <p class="text-gray-400 mb-6">{{ description }}</p>
+            <a href="{% url 'asistent:create_task' %}" 
+               class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                </svg>
+                Создать задание
+            </a>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+{% endblock %}
+

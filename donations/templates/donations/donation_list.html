@@ -1,0 +1,123 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}Список донатов{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    
+    <!-- Заголовок -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-trophy text-yellow-500"></i> Наши спонсоры
+        </h1>
+        <p class="text-lg text-gray-600">
+            Спасибо всем, кто поддерживает наш проект!
+        </p>
+    </div>
+
+    <!-- Статистика -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-xl p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm opacity-80">Всего собрано</p>
+                    <p class="text-4xl font-bold">{{ total_amount|floatformat:0 }} ₽</p>
+                </div>
+                <div class="text-5xl opacity-80">
+                    <i class="fas fa-wallet"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl shadow-xl p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm opacity-80">Количество донатов</p>
+                    <p class="text-4xl font-bold">{{ total_count }}</p>
+                </div>
+                <div class="text-5xl opacity-80">
+                    <i class="fas fa-heart"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список донатов -->
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-star text-yellow-500"></i> Последние донаты
+        </h2>
+        
+        {% if donations %}
+        <div class="space-y-4">
+            {% for donation in donations %}
+            <div class="border-b border-gray-200 pb-4 last:border-b-0">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start space-x-4">
+                        <!-- Аватар -->
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                {{ donation.get_donor_name|first|upper }}
+                            </div>
+                        </div>
+                        
+                        <!-- Информация -->
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <p class="font-bold text-gray-900">
+                                    {{ donation.get_donor_name }}
+                                </p>
+                                {% if donation.amount >= 5000 %}
+                                    <span class="text-yellow-500" title="Топ донатер">
+                                        <i class="fas fa-crown"></i>
+                                    </span>
+                                {% elif donation.amount >= 1000 %}
+                                    <span class="text-purple-500" title="Щедрый донатер">
+                                        <i class="fas fa-gem"></i>
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if donation.message %}
+                            <p class="text-gray-600 text-sm italic mb-2">
+                                "{{ donation.message }}"
+                            </p>
+                            {% endif %}
+                            
+                            <p class="text-xs text-gray-500">
+                                <i class="fas fa-clock mr-1"></i>
+                                {{ donation.completed_at|date:"d.m.Y в H:i" }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Сумма -->
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-purple-600">
+                            {{ donation.amount|floatformat:0 }} ₽
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-inbox text-5xl mb-4"></i>
+            <p class="text-lg">Пока нет донатов</p>
+            <p class="text-sm">Будьте первым, кто поддержит проект!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Призыв к действию -->
+    <div class="mt-8 text-center">
+        <a href="{% url 'donations:donation_page' %}" 
+           class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-8 rounded-lg hover:from-purple-700 hover:to-pink-700 transition duration-200 transform hover:scale-105 shadow-lg">
+            <i class="fas fa-heart mr-2"></i>
+            Поддержать проект
+        </a>
+    </div>
+</div>
+{% endblock %}

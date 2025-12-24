@@ -1,0 +1,178 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Редактирование{% else %}Создание{% endif %} системной задачи{% endblock %}
+
+{% block content %}
+<!-- Админ навигация -->
+{% include 'partials/admin_navigation.html' %}
+
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white dark:text-white mb-2">
+                        <svg class="w-10 h-10 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                        </svg>
+                        {% if is_edit %}Редактирование системной задачи{% else %}Создание системной задачи{% endif %}
+                    </h1>
+                    <p class="text-xl text-gray-300 dark:text-gray-300">Django-Q Schedule</p>
+                </div>
+                <a href="{% url 'asistent:ai_schedules' %}?tab=system" 
+                   class="px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white dark:text-white font-semibold rounded-lg transition-colors border border-white/20 dark:border-white/20 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                    Назад
+                </a>
+            </div>
+        </div>
+        
+        <!-- Форма -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 p-8 shadow-2xl">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Название -->
+                <div>
+                    <label class="block text-white dark:text-white font-semibold mb-2">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Функция -->
+                <div>
+                    <label class="block text-white dark:text-white font-semibold mb-2">{{ form.func.label }}</label>
+                    {{ form.func }}
+                    <p class="text-gray-400 dark:text-gray-400 text-sm mt-1">{{ form.func.help_text }}</p>
+                    {% if form.func.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ form.func.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Тип расписания -->
+                <div>
+                    <label class="block text-white dark:text-white font-semibold mb-2">{{ form.schedule_type.label }}</label>
+                    {{ form.schedule_type }}
+                    {% if form.schedule_type.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ form.schedule_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Интервал (минуты) - показывать только для типа Интервал -->
+                <div id="minutes_field">
+                    <label class="block text-white dark:text-white font-semibold mb-2">{{ form.minutes.label }}</label>
+                    {{ form.minutes }}
+                    <p class="text-gray-400 dark:text-gray-400 text-sm mt-1">{{ form.minutes.help_text }}</p>
+                    {% if form.minutes.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ form.minutes.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Cron выражение - показывать только для типа Cron -->
+                <div id="cron_field">
+                    <label class="block text-white dark:text-white font-semibold mb-2">{{ form.cron.label }}</label>
+                    {{ form.cron }}
+                    <p class="text-gray-400 dark:text-gray-400 text-sm mt-1">{{ form.cron.help_text }}</p>
+                    {% if form.cron.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ form.cron.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Аргументы -->
+                <div>
+                    <label class="block text-white dark:text-white font-semibold mb-2">{{ form.args.label }}</label>
+                    {{ form.args }}
+                    <p class="text-gray-400 dark:text-gray-400 text-sm mt-1">{{ form.args.help_text }}</p>
+                    {% if form.args.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ form.args.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Именованные аргументы (JSON) -->
+                <div>
+                    <label class="block text-white dark:text-white font-semibold mb-2">{{ form.kwargs.label }}</label>
+                    {{ form.kwargs }}
+                    <p class="text-gray-400 dark:text-gray-400 text-sm mt-1">{{ form.kwargs.help_text }}</p>
+                    {% if form.kwargs.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ form.kwargs.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Количество повторений -->
+                <div>
+                    <label class="block text-white dark:text-white font-semibold mb-2">{{ form.repeats.label }}</label>
+                    {{ form.repeats }}
+                    <p class="text-gray-400 dark:text-gray-400 text-sm mt-1">{{ form.repeats.help_text }}</p>
+                    {% if form.repeats.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ form.repeats.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Следующий запуск -->
+                <div>
+                    <label class="block text-white dark:text-white font-semibold mb-2">{{ form.next_run.label }}</label>
+                    {{ form.next_run }}
+                    <p class="text-gray-400 dark:text-gray-400 text-sm mt-1">{{ form.next_run.help_text }}</p>
+                    {% if form.next_run.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ form.next_run.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Кнопки -->
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" 
+                            class="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white dark:text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        {% if is_edit %}Сохранить изменения{% else %}Создать задачу{% endif %}
+                    </button>
+                    <a href="{% url 'asistent:ai_schedules' %}?tab=system" 
+                       class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white dark:text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+// Показываем/скрываем поля в зависимости от типа расписания
+document.addEventListener('DOMContentLoaded', function() {
+    const scheduleTypeSelect = document.getElementById('id_schedule_type');
+    const minutesField = document.getElementById('minutes_field');
+    const cronField = document.getElementById('cron_field');
+    
+    function toggleFields() {
+        const scheduleType = scheduleTypeSelect.value;
+        
+        if (scheduleType === 'I') {
+            minutesField.style.display = 'block';
+            cronField.style.display = 'none';
+        } else if (scheduleType === 'C') {
+            minutesField.style.display = 'none';
+            cronField.style.display = 'block';
+        } else {
+            minutesField.style.display = 'none';
+            cronField.style.display = 'none';
+        }
+    }
+    
+    scheduleTypeSelect.addEventListener('change', toggleFields);
+    toggleFields(); // Вызываем при загрузке
+});
+</script>
+{% endblock %}
+

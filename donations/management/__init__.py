@@ -1,0 +1,2 @@
+# Management commands для donations
+

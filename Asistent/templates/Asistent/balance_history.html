@@ -1,0 +1,87 @@
+{% extends 'Asistent/base.html' %}
+
+{% block title %}История баланса{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2><i class="fas fa-wallet"></i> История баланса</h2>
+    </div>
+    
+    <!-- Текущий баланс -->
+    <div class="col-md-12 mb-4">
+        <div class="card bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-center">
+                <h3 class="mb-2">Текущий баланс</h3>
+                <h1 class="display-4">{{ balance }} ₽</h1>
+            </div>
+        </div>
+    </div>
+    
+    <!-- История транзакций -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-history"></i> История транзакций
+            </div>
+            <div class="card-body">
+                {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Тип</th>
+                                <th>Описание</th>
+                                <th>Сумма</th>
+                                <th>Задание</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.created_at|date:"d.m.Y H:i" }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if transaction.transaction_type == 'task_completed' %}bg-success
+                                        {% elif transaction.transaction_type == 'donation' %}bg-info
+                                        {% elif transaction.transaction_type == 'bonus' %}bg-primary
+                                        {% elif transaction.transaction_type == 'penalty' %}bg-danger
+                                        {% elif transaction.transaction_type == 'withdrawal' %}bg-warning
+                                        {% endif %}">
+                                        {{ transaction.get_transaction_type_display }}
+                                    </span>
+                                </td>
+                                <td>{{ transaction.description|truncatewords:20 }}</td>
+                                <td>
+                                    <strong class="{% if transaction.amount > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if transaction.amount > 0 %}+{% endif %}{{ transaction.amount }} ₽
+                                    </strong>
+                                </td>
+                                <td>
+                                    {% if transaction.task %}
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                        {{ transaction.task.title|truncatewords:5 }}
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-coins fa-4x text-muted mb-3"></i>
+                    <p class="text-muted">Транзакций пока нет</p>
+                    <p class="text-muted">Выполните первое задание, чтобы начать зарабатывать!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

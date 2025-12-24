@@ -1,0 +1,79 @@
+<!-- Навигационная панель для админских дашбордов -->
+<nav class="bg-gray-800 border-b border-gray-700 mb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <!-- Логотип и название -->
+            <div class="flex items-center">
+                <a href="{% url 'Home:master_admin_dashboard' %}" class="flex items-center">
+                    <span class="text-2xl mr-3">⚡</span>
+                    <span class="text-white font-bold text-lg">Панель администратора</span>
+                </a>
+            </div>
+            
+            <!-- Навигационные ссылки -->
+            <div class="hidden md:block">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'Home:master_admin_dashboard' %}" 
+                       class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors {% if request.path == '/dashboard/' %}bg-gray-900 text-white{% endif %}">
+                        🏠 Главная
+                    </a>
+                    
+                    <a href="/asistent/admin-panel/" 
+                       class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors {% if '/asistent/' in request.path %}bg-gray-900 text-white{% endif %}">
+                        🤖 AI и задания
+                    </a>
+                    
+                    <a href="{% url 'donations:admin_bonuses_dashboard' %}" 
+                       class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors {% if '/donations/' in request.path %}bg-gray-900 text-white{% endif %}">
+                        💰 Бонусы
+                    </a>
+                    
+                    <a href="/admin/" 
+                       class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        ⚙️ Django Admin
+                    </a>
+                    
+                    <div class="border-l border-gray-700 h-6 mx-2"></div>
+                    
+                    <a href="/" 
+                       class="text-gray-400 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        🌐 На сайт
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Пользователь -->
+            <div class="flex items-center">
+                <span class="text-gray-300 text-sm mr-4">{{ request.user.get_full_name|default:request.user.username }}</span>
+                <a href="{% url 'Visitor:user-logout' %}" class="text-gray-400 hover:text-white" title="Выйти">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Мобильное меню (опционально) -->
+    <div class="md:hidden" id="mobile-menu">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="{% url 'Home:master_admin_dashboard' %}" 
+               class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+                🏠 Главная
+            </a>
+            <a href="/asistent/admin-panel/" 
+               class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+                🤖 AI и задания
+            </a>
+            <a href="{% url 'donations:admin_bonuses_dashboard' %}" 
+               class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+                💰 Бонусы
+            </a>
+            <a href="/admin/" 
+               class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+                ⚙️ Django Admin
+            </a>
+        </div>
+    </div>
+</nav>
+

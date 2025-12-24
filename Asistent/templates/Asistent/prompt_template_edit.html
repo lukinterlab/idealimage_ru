@@ -1,0 +1,435 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 dark:from-gray-950 dark:via-purple-950 dark:to-gray-950 py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white dark:text-white mb-2">
+                        {% if is_create %}Создание промпта{% else %}Редактирование промпта{% endif %}
+                    </h1>
+                    {% if not is_create %}
+                    <p class="text-xl text-gray-300 dark:text-gray-400">{{ template.name }}</p>
+                    {% endif %}
+                </div>
+                <div class="flex gap-3">
+                    {% if not is_create %}
+                    <a href="{% url 'asistent:prompt_template_test' template.id %}" 
+                       class="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        Тест
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'asistent:prompt_templates_list' %}" 
+                       class="px-6 py-3 bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20 dark:border-white/10 flex items-center gap-2">
+                        Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Форма -->
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Секция 1: Основная информация -->
+            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-6">
+                <h2 class="text-2xl font-bold text-white dark:text-white mb-6">Основная информация</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.category.label }}</label>
+                        {{ form.category }}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.name.label }}</label>
+                        {{ form.name }}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.description.label }}</label>
+                        {{ form.description }}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.blog_category.label }}</label>
+                        {{ form.blog_category }}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.blog_category.help_text }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.default_author.label }}</label>
+                        {{ form.default_author }}
+                        {% if form.default_author.help_text %}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.default_author.help_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Секция 2: Промпт -->
+            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-6">
+                <h2 class="text-2xl font-bold text-white dark:text-white mb-6">Промпт</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.template.label }}</label>
+                        {{ form.template }}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.template.help_text }}</p>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-white dark:text-white font-semibold">{{ form.variables.label }}</label>
+                            <button type="button" onclick="addVariableManually()" 
+                                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition-colors">
+                                + Добавить вручную
+                            </button>
+                        </div>
+                        
+                        <!-- Визуальный блок с найденными переменными -->
+                        <div class="p-4 bg-white/5 dark:bg-white/5 rounded-lg border border-white/10 dark:border-white/10 mb-3">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-gray-300 dark:text-gray-400">Найдено переменных:</span>
+                                <span id="variables-count" class="px-2 py-1 bg-green-600 text-white text-xs font-bold rounded">0</span>
+                            </div>
+                            
+                            <div id="variables-visual-container" class="flex flex-wrap gap-2 mb-3">
+                                <!-- Здесь будут визуальные блоки переменных -->
+                            </div>
+                            
+                            <p class="text-xs text-gray-400 dark:text-gray-500">
+                                💡 Переменные автоматически находятся в тексте промпта (в фигурных скобках {переменная})
+                            </p>
+                        </div>
+                        
+                        <!-- Скрытое поле для Django (JSON формат) -->
+                        <textarea name="variables" id="id_variables" style="display:none;">{{ form.variables.value|default:'[]' }}</textarea>
+                        
+                        <div id="manual-variables-container" class="space-y-2 mt-3">
+                            <!-- Ручные переменные (если добавили вручную) -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Секция 3: Заголовок и теги -->
+            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-6">
+                <h2 class="text-2xl font-bold text-white dark:text-white mb-6">Заголовок и теги</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.title_criteria.label }}</label>
+                        {{ form.title_criteria }}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.title_criteria.help_text }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.tags_criteria.label }}</label>
+                        {{ form.tags_criteria }}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.tags_criteria.help_text }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Секция 4: Изображение -->
+            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-6">
+                <h2 class="text-2xl font-bold text-white dark:text-white mb-6">Изображение</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.image_source_type.label }}</label>
+                        {{ form.image_source_type }}
+                    </div>
+                    
+                    <div id="upload_field" style="display:none;">
+                        <label class="block text-white dark:text-white mb-2">{{ form.uploaded_media.label }}</label>
+                        {{ form.uploaded_media }}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.uploaded_media.help_text }}</p>
+                    </div>
+                    
+                    <div id="search_field" style="display:none;">
+                        <label class="block text-white dark:text-white mb-2">{{ form.image_search_criteria.label }}</label>
+                        {{ form.image_search_criteria }}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.image_search_criteria.help_text }}</p>
+                    </div>
+                    
+                    <div id="generate_field" style="display:none;">
+                        <label class="block text-white dark:text-white mb-2">{{ form.image_generation_criteria.label }}</label>
+                        {{ form.image_generation_criteria }}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.image_generation_criteria.help_text }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="flex items-center gap-2 text-white dark:text-white">
+                            {{ form.auto_process_image }}
+                            <span>{{ form.auto_process_image.label }}</span>
+                        </label>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1 ml-6">{{ form.auto_process_image.help_text }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Секция 5: Контент -->
+            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-6">
+                <h2 class="text-2xl font-bold text-white dark:text-white mb-6">Контент</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.content_source_type.label }}</label>
+                        {{ form.content_source_type }}
+                    </div>
+                    
+                    <div id="content_urls_field" style="display:none;">
+                        <label class="block text-white dark:text-white mb-2">{{ form.content_source_urls.label }}</label>
+                        {{ form.content_source_urls }}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.content_source_urls.help_text }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="flex items-center gap-2 text-white dark:text-white">
+                            {{ form.parse_first_paragraph }}
+                            <span>{{ form.parse_first_paragraph.label }}</span>
+                        </label>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1 ml-6">{{ form.parse_first_paragraph.help_text }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Секция 6: Настройки -->
+            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-6">
+                <h2 class="text-2xl font-bold text-white dark:text-white mb-6">Настройки</h2>
+                
+                <div>
+                    <label class="flex items-center gap-2 text-white dark:text-white">
+                        {{ form.is_active }}
+                        <span>{{ form.is_active.label }}</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Секция 7: История изменений -->
+            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-6">
+                <h2 class="text-2xl font-bold text-white dark:text-white mb-6">История изменений</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-white dark:text-white mb-2">{{ form.change_summary.label }}</label>
+                        {{ form.change_summary }}
+                        {% if form.change_summary.help_text %}
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ form.change_summary.help_text }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if versions %}
+                    <div>
+                        <h3 class="text-lg font-semibold text-white dark:text-white mb-3">Последние версии</h3>
+                        <ul class="space-y-2">
+                            {% for version in versions %}
+                            <li class="px-4 py-3 rounded-lg border border-white/10 dark:border-white/10 bg-white/5 dark:bg-white/5">
+                                <div class="flex items-center justify-between flex-wrap gap-2">
+                                    <div class="text-sm text-gray-200 dark:text-gray-300">
+                                        <span class="font-semibold text-white">v{{ version.version }}</span>
+                                        — {{ version.created_at|date:"d.m.Y H:i" }}
+                                        {% if version.created_by %}
+                                            · {{ version.created_by.get_full_name|default:version.created_by.username }}
+                                        {% endif %}
+                                    </div>
+                                    {% if version.change_summary %}
+                                    <div class="text-xs text-gray-400 dark:text-gray-500 max-w-xl">
+                                        {{ version.change_summary }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% elif not is_create %}
+                    <p class="text-sm text-gray-400 dark:text-gray-500">История версий появится после сохранения изменений.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Кнопки -->
+            <div class="flex gap-4">
+                <button type="submit" 
+                        class="flex-1 px-8 py-4 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white font-bold rounded-lg transition-colors">
+                    Сохранить
+                </button>
+                <a href="{% url 'asistent:prompt_templates_list' %}" 
+                   class="flex-1 px-8 py-4 bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10 backdrop-blur-md text-white font-bold rounded-lg transition-colors border border-white/20 dark:border-white/10 text-center">
+                    Отмена
+                </a>
+            </div>
+            
+        </form>
+        
+    </div>
+</div>
+
+<script>
+// ============ АВТОПАРСИНГ ПЕРЕМЕННЫХ ИЗ ПРОМПТА ============
+
+let detectedVariables = [];
+let manualVariables = [];
+
+// Популярные переменные с подсказками
+const variableHints = {
+    'zodiac_sign': 'Знак зодиака (Овен, Телец...)',
+    'date': 'Дата (05.11.2025)',
+    'weekday': 'День недели (понедельник, вторник...)',
+    'season': 'Сезон года (зима, весна, лето, осень)',
+    'weather': 'Погода',
+    'mood': 'Настроение',
+    'year': 'Год',
+    'month': 'Месяц',
+    'category': 'Категория',
+    'title': 'Заголовок',
+    'name': 'Имя'
+};
+
+function parseVariablesFromPrompt(text) {
+    // Находим все {переменные} в тексте
+    const matches = text.match(/\{(\w+)\}/g);
+    if (!matches) return [];
+    
+    // Убираем дубликаты и {} скобки
+    const variables = [...new Set(matches.map(v => v.slice(1, -1)))];
+    return variables;
+}
+
+function updateVariablesDisplay() {
+    const container = document.getElementById('variables-visual-container');
+    const countBadge = document.getElementById('variables-count');
+    
+    // Объединяем обнаруженные и ручные переменные
+    const allVariables = [...new Set([...detectedVariables, ...manualVariables])];
+    
+    countBadge.textContent = allVariables.length;
+    countBadge.className = allVariables.length > 0 
+        ? 'px-2 py-1 bg-green-600 text-white text-xs font-bold rounded'
+        : 'px-2 py-1 bg-gray-600 text-white text-xs font-bold rounded';
+    
+    container.innerHTML = '';
+    
+    if (allVariables.length === 0) {
+        container.innerHTML = '<p class="text-sm text-gray-400 dark:text-gray-500">Переменные не найдены. Используйте {имя_переменной} в промпте или добавьте вручную.</p>';
+        return;
+    }
+    
+    allVariables.forEach(varName => {
+        const isAuto = detectedVariables.includes(varName);
+        const isManual = manualVariables.includes(varName);
+        const hint = variableHints[varName] || 'Пользовательская переменная';
+        
+        const badge = document.createElement('div');
+        badge.className = `flex items-center gap-2 px-3 py-2 rounded-lg border ${
+            isAuto ? 'bg-green-600/20 border-green-500/50' : 'bg-blue-600/20 border-blue-500/50'
+        }`;
+        
+        badge.innerHTML = `
+            <span class="text-white font-mono text-sm">{${varName}}</span>
+            <span class="text-xs text-gray-300 dark:text-gray-400">${hint}</span>
+            ${isManual ? `<button type="button" onclick="removeManualVariable('${varName}')" 
+                          class="ml-2 text-red-400 hover:text-red-300 text-xs font-bold">✕</button>` : ''}
+        `;
+        
+        container.appendChild(badge);
+    });
+    
+    // Обновляем скрытое поле для Django
+    document.getElementById('id_variables').value = JSON.stringify(allVariables);
+}
+
+function addVariableManually() {
+    const varName = prompt('Введите название переменной (только латиница и цифры):');
+    if (!varName) return;
+    
+    // Валидация
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
+        alert('Название должно начинаться с буквы или _, содержать только латиницу, цифры и _');
+        return;
+    }
+    
+    // Проверка дубликатов
+    if (detectedVariables.includes(varName) || manualVariables.includes(varName)) {
+        alert('Эта переменная уже существует');
+        return;
+    }
+    
+    manualVariables.push(varName);
+    updateVariablesDisplay();
+}
+
+function removeManualVariable(varName) {
+    manualVariables = manualVariables.filter(v => v !== varName);
+    updateVariablesDisplay();
+}
+
+// Обработчик изменения текста промпта
+document.addEventListener('DOMContentLoaded', function() {
+    const templateField = document.getElementById('id_template');
+    const imageSourceType = document.getElementById('id_image_source_type');
+    const contentSourceType = document.getElementById('id_content_source_type');
+    
+    if (templateField) {
+        // Автопарсинг при вводе
+        templateField.addEventListener('input', function() {
+            detectedVariables = parseVariablesFromPrompt(this.value);
+            updateVariablesDisplay();
+        });
+        
+        // Загружаем существующие переменные при загрузке страницы
+        try {
+            const existingVars = JSON.parse(document.getElementById('id_variables').value || '[]');
+            const currentPromptVars = parseVariablesFromPrompt(templateField.value);
+            
+            // Разделяем на авто и ручные
+            detectedVariables = currentPromptVars;
+            manualVariables = existingVars.filter(v => !currentPromptVars.includes(v));
+            
+            updateVariablesDisplay();
+        } catch (e) {
+            console.error('Ошибка загрузки переменных:', e);
+        }
+    }
+    
+    // Старая функциональность
+    function toggleImageFields() {
+        const value = imageSourceType.value;
+        document.getElementById('upload_field').style.display = (value === 'upload') ? 'block' : 'none';
+        document.getElementById('search_field').style.display = (value === 'search_db' || value === 'parse_web') ? 'block' : 'none';
+        document.getElementById('generate_field').style.display = (value === 'generate_custom') ? 'block' : 'none';
+    }
+    
+    function toggleContentFields() {
+        const value = contentSourceType.value;
+        document.getElementById('content_urls_field').style.display = (value === 'parse') ? 'block' : 'none';
+    }
+    
+    if (imageSourceType) {
+        imageSourceType.addEventListener('change', toggleImageFields);
+        toggleImageFields();
+    }
+    
+    if (contentSourceType) {
+        const hybridOption = contentSourceType.querySelector('option[value="hybrid"]');
+        if (hybridOption) {
+            hybridOption.remove();
+        }
+        if (contentSourceType.value === 'hybrid') {
+            contentSourceType.value = 'generate';
+        }
+        contentSourceType.addEventListener('change', toggleContentFields);
+        toggleContentFields();
+    }
+});
+</script>
+{% endblock %}

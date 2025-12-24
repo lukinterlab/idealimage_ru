@@ -1,0 +1,190 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-white dark:bg-gray-900 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    {% if context_ad %}✏️ Редактирование контекстной рекламы{% else %}➕ Создание контекстной рекламы{% endif %}
+                </h1>
+                <a href="{% url 'advertising:context_ads_manage' %}" 
+                   class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg">
+                    ← Назад
+                </a>
+            </div>
+            
+            {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400{% else %}bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400{% endif %} p-4 rounded">
+                    <p class="{% if message.tags == 'error' %}text-red-700 dark:text-red-300{% else %}text-green-700 dark:text-green-300{% endif %}">
+                        {{ message }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Основная информация -->
+                <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg p-4 mb-6">
+                    <h3 class="text-lg font-bold text-white">Основная информация</h3>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Кампания *
+                    </label>
+                    {{ form.campaign }}
+                    {% if form.campaign.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.campaign.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Ключевая фраза *
+                        </label>
+                        {{ form.keyword_phrase }}
+                        {% if form.keyword_phrase.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.keyword_phrase.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Фраза для поиска в тексте статей
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Текст ссылки *
+                        </label>
+                        {{ form.anchor_text }}
+                        {% if form.anchor_text.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.anchor_text.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Текст который будет отображаться как ссылка
+                        </p>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Целевой URL *
+                    </label>
+                    {{ form.target_url }}
+                    {% if form.target_url.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.target_url.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        URL куда перейдет пользователь при клике
+                    </p>
+                </div>
+                
+                <!-- Настройки вставки -->
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-4 mb-6">
+                    <h3 class="text-lg font-bold text-white">Настройки вставки</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Тип вставки *
+                        </label>
+                        {{ form.insertion_type }}
+                        {% if form.insertion_type.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.insertion_type.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Постоянная или временная
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Дата истечения
+                        </label>
+                        {{ form.expire_date }}
+                        {% if form.expire_date.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.expire_date.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Для временных вставок
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Стоимость за клик (₽)
+                        </label>
+                        {{ form.cost_per_click }}
+                        {% if form.cost_per_click.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.cost_per_click.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Приоритет (1-10)
+                        </label>
+                        {{ form.priority }}
+                        {% if form.priority.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.priority.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Макс. вставок в статье
+                        </label>
+                        {{ form.max_insertions_per_article }}
+                        {% if form.max_insertions_per_article.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.max_insertions_per_article.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <label class="flex items-center cursor-pointer">
+                        {{ form.is_active }}
+                        <span class="ml-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Активно
+                        </span>
+                    </label>
+                </div>
+                
+                <!-- Кнопки -->
+                <div class="flex gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <button type="submit" 
+                            class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all">
+                        {% if context_ad %}💾 Сохранить изменения{% else %}➕ Создать объявление{% endif %}
+                    </button>
+                    <a href="{% url 'advertising:context_ads_manage' %}" 
+                       class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all">
+                        Отмена
+                    </a>
+                    {% if context_ad %}
+                    <a href="/admin/advertising/contextad/{{ context_ad.id }}/change/" 
+                       class="ml-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all">
+                        Открыть в Django Admin
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+            
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+

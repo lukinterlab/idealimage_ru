@@ -1,0 +1,23 @@
+{% load static %}
+<section class="scroll-section" id="stacked">
+    <h2 class="small-title">ПОПУЛЯРНЫЕ СТАТЬИ из категории:{{ title_kart }} </h2>
+    <div class="card mb-5">
+      <div class="card-body">
+        <div>
+          {% for post in posts %}
+              <div class="sw-15 sh-15 mb-1 d-inline-block ms-n4">
+                <a href="{{ post.get_absolute_url }}">
+                    <img src="{{ post.kartinka.url }}" class="img-fluid sw-15 sh-15 rounded-xl border border-2 border-foreground" alt="thumb" />
+                </a>
+              </div>
+          {% endfor %}
+          <div class="sw-15 sh-15 d-inline-block mb-1 ms-n4">
+            <div class="w-100 h-100 bg-separator-light d-inline-block rounded-xl border border-2 border-foreground align-middle d-inline-flex justify-content-center align-items-center" >
+              <div class="fw-bold text-primary">{{ posts.count }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+<!-- КРУЖКИ -->

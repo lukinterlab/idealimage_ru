@@ -1,0 +1,113 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Дашборд рекламы - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 text-gray-900 dark:text-gray-100">
+    <!-- Хлебные крошки -->
+    <div class="mb-4 text-sm text-gray-600 dark:text-gray-300">
+        <a href="/dashboard/" class="text-blue-600 dark:text-blue-400 hover:underline">Главный дашборд</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <a href="{% url 'sozseti:dashboard' %}" class="text-blue-600 dark:text-blue-400 hover:underline">Соцсети</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <span class="text-gray-600 dark:text-gray-300">Реклама</span>
+    </div>
+    
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Дашборд рекламы</h1>
+        <div class="flex gap-3">
+            <a href="{% url 'sozseti:dashboard' %}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg">
+                <i class="fas fa-arrow-left mr-2"></i>Назад к Соцсетям
+            </a>
+            <a href="/admin/Sozseti/adcampaign/add/" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
+                <i class="fas fa-plus mr-2"></i>Новая кампания
+            </a>
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <p class="text-gray-500 dark:text-gray-300 text-sm">Всего кампаний</p>
+            <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ stats.total_campaigns }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <p class="text-gray-500 dark:text-gray-300 text-sm">Активных</p>
+            <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ stats.active_campaigns }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <p class="text-gray-500 dark:text-gray-300 text-sm">Бюджет (руб.)</p>
+            <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ stats.total_budget|floatformat:0 }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <p class="text-gray-500 dark:text-gray-300 text-sm">Потрачено (руб.)</p>
+            <p class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ stats.total_spent|floatformat:0 }}</p>
+        </div>
+    </div>
+    
+    <!-- Кампании по платформам -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Кампании по платформам</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for platform, data in campaigns_by_platform.items %}
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ platform }}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Кампаний: {{ data.count }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Бюджет: {{ data.budget|floatformat:0 }} руб.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Потрачено: {{ data.spent|floatformat:0 }} руб.</p>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 dark:text-gray-400">Нет кампаний</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Топ кампании -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Последние кампании</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left py-2 text-gray-700 dark:text-gray-200">Название</th>
+                        <th class="text-left py-2 text-gray-700 dark:text-gray-200">Статус</th>
+                        <th class="text-right py-2 text-gray-700 dark:text-gray-200">Бюджет</th>
+                        <th class="text-right py-2 text-gray-700 dark:text-gray-200">Потрачено</th>
+                        <th class="text-right py-2 text-gray-700 dark:text-gray-200">ROI</th>
+                        <th class="text-center py-2 text-gray-700 dark:text-gray-200">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campaign in top_campaigns %}
+                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/70">
+                        <td class="py-2">{{ campaign.name }}</td>
+                        <td class="py-2">
+                            <span class="px-2 py-1 text-xs rounded
+                                {% if campaign.status == 'active' %}bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-200
+                                {% elif campaign.status == 'draft' %}bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-200
+                                {% else %}bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-200{% endif %}">
+                                {{ campaign.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="py-2 text-right">{{ campaign.budget|floatformat:0 }}</td>
+                        <td class="py-2 text-right">{{ campaign.spent|floatformat:0 }}</td>
+                        <td class="py-2 text-right font-medium text-green-600 dark:text-green-400">{{ campaign.get_roi }}%</td>
+                        <td class="py-2 text-center">
+                            <a href="/admin/Sozseti/adcampaign/{{ campaign.id }}/change/" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                Редактировать
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-4 text-center text-gray-500 dark:text-gray-400">Нет кампаний</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

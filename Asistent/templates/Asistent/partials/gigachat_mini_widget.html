@@ -1,0 +1,83 @@
+<!-- GigaChat Mini Widget - Компактный мониторинг баланса -->
+<div id="gigachat-mini-widget" class="fixed bottom-4 right-4 z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 min-w-[240px]">
+        <!-- Заголовок (кликабельный) -->
+        <a href="{% url 'asistent:admin_dashboard' %}" class="flex items-center justify-between mb-2 hover:opacity-80 transition-opacity">
+            <h4 class="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <span class="text-lg">🤖</span>
+                GigaChat
+            </h4>
+            <span class="text-xs text-gray-500">📊</span>
+        </a>
+        
+        <!-- Мини индикаторы -->
+        <div class="space-y-2">
+            {% if gigachat_mini_stats %}
+                {% for model in gigachat_mini_stats.models %}
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-600 dark:text-gray-400">{{ model.name_short }}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="{% if model.status == 'good' %}text-green-500{% elif model.status == 'warning' %}text-yellow-500{% else %}text-red-500{% endif %} font-medium">
+                            {{ model.percent }}%
+                        </span>
+                        <span>{{ model.status_icon }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Стоимость сегодня -->
+                {% if gigachat_mini_stats.cost_today %}
+                <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">Сегодня:</span>
+                    <span class="text-purple-600 dark:text-purple-400 font-medium">{{ gigachat_mini_stats.cost_today }} ₽</span>
+                </div>
+                {% endif %}
+            {% else %}
+                <!-- Заглушка при загрузке -->
+                <div class="text-center text-xs text-gray-500">Загрузка...</div>
+            {% endif %}
+        </div>
+        
+        <!-- Ссылка на Dashboard -->
+        <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <a href="{% url 'asistent:admin_dashboard' %}" 
+               class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center justify-center gap-1">
+                Открыть панель управления →
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-refresh скрипт -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обновление каждые 5 минут
+    const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 минут
+    
+    function refreshWidget() {
+        // Перезагружаем только виджет через AJAX
+        fetch(window.location.href, {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Извлекаем обновленный виджет из ответа
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newWidget = doc.querySelector('#gigachat-mini-widget');
+            
+            if (newWidget) {
+                const currentWidget = document.querySelector('#gigachat-mini-widget');
+                if (currentWidget) {
+                    currentWidget.innerHTML = newWidget.innerHTML;
+                }
+            }
+        })
+        .catch(error => console.error('Ошибка обновления виджета:', error));
+    }
+    
+    // Запускаем периодическое обновление
+    setInterval(refreshWidget, REFRESH_INTERVAL);
+});
+</script>
+

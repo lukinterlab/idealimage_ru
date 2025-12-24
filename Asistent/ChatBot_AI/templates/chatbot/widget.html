@@ -1,0 +1,671 @@
+<!-- Виджет чат-бота для пользователей -->
+{% load static %}
+<div id="chatbotWidget" class="chatbot-widget">
+    <!-- Кнопка открытия чата -->
+    <button id="chatbotToggle" class="chatbot-toggle" aria-label="Открыть чат">
+        <img src="{% static 'new/img/logo/11.jpg' %}" alt="IdealImage.ru" class="chatbot-icon chatbot-logo">
+        <span class="chatbot-badge" id="chatbotBadge" style="display: none;">1</span>
+    </button>
+    
+    <!-- Окно чата -->
+    <div id="chatbotWindow" class="chatbot-window" style="display: none;">
+        <!-- Заголовок -->
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <div class="chatbot-avatar">
+                    <img src="{% static 'new/img/logo/11.jpg' %}" alt="IdealImage.ru" class="chatbot-avatar-logo">
+                </div>
+                <div>
+                    <h3 class="chatbot-title">AI консультант IdealImage</h3>
+                    <p class="chatbot-status">
+                        <span class="chatbot-status-dot"></span>
+                        Онлайн
+                    </p>
+                </div>
+            </div>
+            <button id="chatbotClose" class="chatbot-close-btn" aria-label="Закрыть чат">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <!-- История сообщений -->
+        <div id="chatbotMessages" class="chatbot-messages">
+            <!-- Приветственное сообщение -->
+            <div class="chatbot-message chatbot-message-bot">
+                <div class="chatbot-message-avatar">🤖</div>
+                <div class="chatbot-message-content">
+                    <div class="chatbot-message-text" id="welcomeMessage">
+                        Здравствуйте! 👋 Я помощник IdealImage.ru. Чем могу помочь?
+                    </div>
+                    <div class="chatbot-message-time" id="welcomeTime"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Индикатор печати -->
+        <div id="chatbotTyping" class="chatbot-typing" style="display: none;">
+            <div class="chatbot-typing-dot"></div>
+            <div class="chatbot-typing-dot"></div>
+            <div class="chatbot-typing-dot"></div>
+        </div>
+        
+        <!-- Быстрые кнопки -->
+        <div class="chatbot-quick-buttons">
+            <button class="chatbot-quick-btn" id="quickBtnContact" title="Связаться с нами">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Контакты</span>
+            </button>
+            
+            <button class="chatbot-quick-btn" onclick="window.open('https://idealimage.ru/advertise/', '_blank')" title="Реклама на сайте">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+                <span>Реклама</span>
+            </button>
+            
+            <button class="chatbot-quick-btn" onclick="window.open('https://idealimage.ru/help/', '_blank')" title="Инструкция для авторов">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>Авторам</span>
+            </button>
+            
+            <button class="chatbot-quick-btn" onclick="window.open('https://idealimage.ru/donations/', '_blank')" title="Поддержать проект">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Оплата</span>
+            </button>
+        </div>
+        
+        <!-- Форма отправки -->
+        <div class="chatbot-input-container">
+            <textarea 
+                id="chatbotInput" 
+                class="chatbot-input" 
+                placeholder="Напишите ваш вопрос..." 
+                rows="1"
+                maxlength="1000"></textarea>
+            <button id="chatbotSend" class="chatbot-send-btn" aria-label="Отправить сообщение">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Кнопка "Связаться с админом" -->
+        <div id="contactAdminBtn" class="chatbot-contact-admin" style="display: none;">
+            <button id="showContactForm" class="chatbot-contact-btn">
+                ✉️ Связаться с администратором
+            </button>
+        </div>
+        
+        <!-- Форма обращения к админу -->
+        <div id="contactAdminForm" class="chatbot-contact-form" style="display: none;">
+            <div class="chatbot-contact-header">
+                <h4>Связаться с администратором</h4>
+                <button id="closeContactForm" class="chatbot-form-close">&times;</button>
+            </div>
+            <div class="chatbot-contact-body">
+                <input type="text" id="contactName" placeholder="Ваше имя *" required>
+                <input type="email" id="contactEmail" placeholder="Ваш email *" required>
+                <textarea id="contactMessage" placeholder="Ваше сообщение *" rows="4" maxlength="2000" required></textarea>
+                <button id="sendContactForm" class="chatbot-submit-btn">Отправить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Контейнер виджета */
+    .chatbot-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    
+    /* Кнопка открытия */
+    .chatbot-toggle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .chatbot-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    
+    .chatbot-icon {
+        width: 32px;
+        height: 32px;
+        color: white;
+    }
+    
+    .chatbot-logo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    
+    .chatbot-avatar-logo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    
+    .chatbot-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #ef4444;
+        color: white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    /* Окно чата */
+    .chatbot-window {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 380px;
+        height: 550px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Заголовок */
+    .chatbot-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .chatbot-header-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .chatbot-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .chatbot-avatar svg {
+        width: 24px;
+        height: 24px;
+        color: white;
+    }
+    
+    .chatbot-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .chatbot-status {
+        margin: 0;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        opacity: 0.9;
+    }
+    
+    .chatbot-status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .chatbot-close-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    
+    .chatbot-close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .chatbot-close-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    /* Сообщения */
+    .chatbot-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        background: #f9fafb;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .chatbot-message {
+        display: flex;
+        gap: 8px;
+        max-width: 85%;
+    }
+    
+    .chatbot-message-bot {
+        align-self: flex-start;
+    }
+    
+    .chatbot-message-user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+    
+    .chatbot-message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    
+    .chatbot-message-user .chatbot-message-avatar {
+        background: #e5e7eb;
+    }
+    
+    .chatbot-message-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .chatbot-message-text {
+        background: white;
+        padding: 10px 14px;
+        border-radius: 12px;
+        line-height: 1.5;
+        font-size: 14px;
+        color: #1f2937;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .chatbot-message-user .chatbot-message-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .chatbot-message-text a {
+        color: #3b82f6;
+        text-decoration: underline;
+    }
+    
+    .chatbot-message-user .chatbot-message-text a {
+        color: white;
+        font-weight: 600;
+    }
+    
+    .chatbot-message-time {
+        font-size: 11px;
+        color: #9ca3af;
+        padding: 0 4px;
+    }
+    
+    /* Индикатор печати */
+    .chatbot-typing {
+        display: flex;
+        gap: 4px;
+        padding: 12px;
+        margin: 0 16px;
+        background: white;
+        border-radius: 12px;
+        width: fit-content;
+    }
+    
+    .chatbot-typing-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #9ca3af;
+        animation: typing 1.4s infinite;
+    }
+    
+    .chatbot-typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .chatbot-typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-10px); }
+    }
+    
+    /* Поле ввода */
+    .chatbot-input-container {
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .chatbot-input {
+        flex: 1;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 14px;
+        resize: none;
+        max-height: 100px;
+        font-family: inherit;
+    }
+    
+    .chatbot-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .chatbot-send-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+    
+    .chatbot-send-btn:hover {
+        transform: scale(1.05);
+    }
+    
+    .chatbot-send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .chatbot-send-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    /* Кнопка связи с админом */
+    .chatbot-contact-admin {
+        padding: 12px;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .chatbot-contact-btn {
+        width: 100%;
+        padding: 10px;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        color: #4b5563;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .chatbot-contact-btn:hover {
+        background: #e5e7eb;
+        border-color: #d1d5db;
+    }
+    
+    /* Форма обращения */
+    .chatbot-contact-form {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: white;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chatbot-contact-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .chatbot-contact-header h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .chatbot-form-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    
+    .chatbot-form-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .chatbot-contact-body {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+    }
+    
+    .chatbot-contact-body input,
+    .chatbot-contact-body textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+    }
+    
+    .chatbot-contact-body input:focus,
+    .chatbot-contact-body textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .chatbot-submit-btn {
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .chatbot-submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Мобильная версия */
+    @media (max-width: 480px) {
+        .chatbot-window {
+            width: calc(100vw - 40px);
+            height: calc(100vh - 120px);
+            bottom: 70px;
+        }
+    }
+    
+    /* Скроллбар */
+    .chatbot-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .chatbot-messages::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .chatbot-messages::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+    }
+    
+    .chatbot-messages::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+    
+    /* Быстрые кнопки */
+    .chatbot-quick-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding: 12px;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .chatbot-quick-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 12px 8px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 11px;
+        color: #4b5563;
+        font-weight: 500;
+    }
+    
+    .chatbot-quick-btn svg {
+        width: 20px;
+        height: 20px;
+        color: #667eea;
+        stroke-width: 2;
+    }
+    
+    .chatbot-quick-btn:hover {
+        background: #f3f4f6;
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    }
+    
+    .chatbot-quick-btn:active {
+        transform: translateY(0);
+    }
+    
+    .chatbot-quick-btn span {
+        white-space: nowrap;
+    }
+    
+    /* Мобильная версия кнопок */
+    @media (max-width: 480px) {
+        .chatbot-quick-buttons {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+        
+        .chatbot-quick-btn {
+            padding: 10px 6px;
+            font-size: 10px;
+        }
+        
+        .chatbot-quick-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+    }
+</style>
+

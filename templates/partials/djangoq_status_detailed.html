@@ -1,0 +1,257 @@
+<!-- Детальный виджет статуса Django-Q с автоперезапуском -->
+<div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8" id="djangoq-widget">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 {% if djangoq_status.is_running %}bg-green-500/30{% else %}bg-red-500/30{% endif %} rounded-xl flex items-center justify-center">
+                <svg class="w-8 h-8 {% if djangoq_status.is_running %}text-green-300{% else %}text-red-300{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold text-white">Django-Q Cluster</h3>
+                <p class="text-white/70 text-sm" id="status-message">{{ djangoq_status.status_message }}</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="px-4 py-2 {% if djangoq_status.is_running %}bg-green-500/20{% else %}bg-red-500/20{% endif %} rounded-lg">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 {% if djangoq_status.is_running %}bg-green-400{% else %}bg-red-400{% endif %} rounded-full animate-pulse" id="status-indicator"></div>
+                    <span class="text-white font-semibold" id="status-text">
+                        {% if djangoq_status.is_running %}Работает{% else %}Остановлен{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% if not djangoq_status.is_running %}
+            <button onclick="startDjangoQ()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2" id="start-btn">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+                </svg>
+                Запустить
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <a href="{% url 'asistent:djangoq_tasks_active' %}" class="block bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-white/70 text-sm mb-1">Выполняется</p>
+                    <p class="text-3xl font-bold text-blue-300" id="active-count">{{ djangoq_status.active_tasks }}</p>
+                </div>
+                <svg class="w-10 h-10 text-blue-300/30" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </a>
+        
+        <a href="{% url 'asistent:djangoq_tasks_queued' %}" class="block bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-white/70 text-sm mb-1">В очереди</p>
+                    <p class="text-3xl font-bold text-yellow-300" id="queued-count">{{ djangoq_status.queued_tasks }}</p>
+                </div>
+                <svg class="w-10 h-10 text-yellow-300/30" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </a>
+        
+        <a href="{% url 'asistent:djangoq_tasks_recent' %}" class="block bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-white/70 text-sm mb-1">За последний час</p>
+                    <p class="text-3xl font-bold text-green-300" id="recent-count">{{ djangoq_status.recent_tasks }}</p>
+                </div>
+                <svg class="w-10 h-10 text-green-300/30" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </a>
+        
+        <a href="{% url 'asistent:djangoq_tasks_all' %}" class="block bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-white/70 text-sm mb-1">Все задачи</p>
+                    {% if djangoq_status.last_task %}
+                    <p class="text-sm font-semibold text-white truncate" id="last-task-info">{{ djangoq_status.last_task.stopped|timesince }} назад</p>
+                    {% else %}
+                    <p class="text-sm font-semibold text-white/50" id="last-task-info">Нет данных</p>
+                    {% endif %}
+                </div>
+                <svg class="w-10 h-10 text-purple-300/30" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Дополнительная информация -->
+    <div class="flex items-center justify-between text-sm text-white/70">
+        <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+            </svg>
+            <span id="auto-check-status">Автопроверка каждые 60 сек</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="/admin/django_q/" class="hover:text-white transition-colors flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+                </svg>
+                Мониторинг
+            </a>
+            <button onclick="refreshStatus()" class="hover:text-white transition-colors flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path>
+                </svg>
+                Обновить
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Функция для получения CSRF токена
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Функция запуска Django-Q
+async function startDjangoQ() {
+    const btn = document.getElementById('start-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path></svg> Запуск...';
+    }
+    
+    try {
+        const response = await fetch('/asistent/api/start-djangoq/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Показываем уведомление
+            showNotification('✅ ' + data.message, 'success');
+            // Обновляем статус через 3 секунды
+            setTimeout(() => refreshStatus(), 3000);
+        } else {
+            showNotification('❌ Ошибка: ' + data.error, 'error');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg> Запустить';
+            }
+        }
+    } catch (error) {
+        showNotification('❌ Ошибка сети: ' + error, 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg> Запустить';
+        }
+    }
+}
+
+// Функция обновления UI виджета
+function updateDjangoQWidget(data) {
+    // Обновляем индикатор статуса
+    const indicator = document.getElementById('status-indicator');
+    const statusText = document.getElementById('status-text');
+    const statusMessage = document.getElementById('status-message');
+    
+    if (indicator && statusText) {
+        if (data.is_running) {
+            indicator.className = 'w-3 h-3 bg-green-400 rounded-full animate-pulse';
+            statusText.textContent = 'Работает';
+        } else {
+            indicator.className = 'w-3 h-3 bg-red-400 rounded-full animate-pulse';
+            statusText.textContent = 'Остановлен';
+        }
+    }
+    
+    if (statusMessage) {
+        statusMessage.textContent = data.status_message || 'Нет данных';
+    }
+    
+    // Обновляем счетчики
+    const activeCount = document.getElementById('active-count');
+    const queuedCount = document.getElementById('queued-count');
+    const recentCount = document.getElementById('recent-count');
+    
+    if (activeCount) activeCount.textContent = data.active_tasks || 0;
+    if (queuedCount) queuedCount.textContent = data.queued_tasks || 0;
+    if (recentCount) recentCount.textContent = data.recent_tasks || 0;
+    
+    // Показываем/скрываем кнопку запуска
+    const startBtn = document.getElementById('start-btn');
+    if (!data.is_running && !startBtn) {
+        // Нужно обновить всю страницу для отображения кнопки
+        location.reload();
+    } else if (data.is_running && startBtn) {
+        // Скрываем кнопку
+        startBtn.remove();
+    }
+}
+
+// Функция обновления статуса
+async function refreshStatus() {
+    try {
+        const response = await fetch('/asistent/api/djangoq-status/');
+        const data = await response.json();
+        updateDjangoQWidget(data);
+    } catch (error) {
+        console.error('Ошибка обновления статуса Django-Q:', error);
+    }
+}
+
+// Автопроверка каждые 60 секунд
+let autoCheckInterval = setInterval(async function() {
+    try {
+        const response = await fetch('/asistent/api/djangoq-status/');
+        const data = await response.json();
+        
+        // Если не работает и есть задачи в очереди - автозапуск
+        if (!data.is_running && data.queued_tasks > 0) {
+            console.log('Django-Q остановлен, но есть задачи в очереди. Автоматический запуск...');
+            await startDjangoQ();
+        }
+        
+        // Обновляем UI
+        updateDjangoQWidget(data);
+    } catch (error) {
+        console.error('Ошибка автопроверки Django-Q:', error);
+    }
+}, 60000); // 60 секунд
+
+// Функция для показа уведомлений
+function showNotification(message, type) {
+    // Простое alert, можно заменить на более красивое уведомление
+    alert(message);
+}
+
+// Очистка при выходе со страницы
+window.addEventListener('beforeunload', function() {
+    if (autoCheckInterval) {
+        clearInterval(autoCheckInterval);
+    }
+});
+</script>
+

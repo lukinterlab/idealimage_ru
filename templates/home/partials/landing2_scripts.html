@@ -1,0 +1,462 @@
+<script>
+// ================================================
+// JavaScript функционал для лендинга №2
+// Слайдеры, формы, анимации
+// ================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация всех компонентов
+    initMobileMenu();
+    initServiceSlider();
+    initPortfolioSlider();
+    initTeamSlider();
+    initTestimonialsSlider();
+    initBookingForms();
+    initScrollAnimations();
+    initSmoothScroll();
+});
+
+// ==================== Mobile Menu ====================
+function initMobileMenu() {
+    const toggle = document.querySelector('.mobile-menu-toggle');
+    const menu = document.querySelector('.nav-menu');
+    
+    if (toggle && menu) {
+        toggle.addEventListener('click', function() {
+            menu.classList.toggle('active');
+            this.textContent = menu.classList.contains('active') ? '✕' : '☰';
+        });
+        
+        // Закрытие меню при клике на ссылку
+        menu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.remove('active');
+                toggle.textContent = '☰';
+            });
+        });
+    }
+}
+
+// ==================== Service Slider ====================
+function initServiceSlider() {
+    const track = document.querySelector('.services-track');
+    const cards = document.querySelectorAll('.service-card');
+    const prevBtn = document.querySelector('.services-prev');
+    const nextBtn = document.querySelector('.services-next');
+    
+    if (!track || !cards.length) return;
+    
+    let currentIndex = 0;
+    const totalCards = cards.length;
+    const cardsPerView = window.innerWidth > 1024 ? 3 : window.innerWidth > 768 ? 2 : 1;
+    const maxIndex = Math.max(0, totalCards - cardsPerView);
+    
+    function updateSlider() {
+        const cardWidth = cards[0].offsetWidth + 20; // включая margin
+        track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+        
+        // Обновление точек
+        updateDots('services');
+    }
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            currentIndex = Math.max(0, currentIndex - 1);
+            updateSlider();
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            currentIndex = Math.min(maxIndex, currentIndex + 1);
+            updateSlider();
+        });
+    }
+    
+    // Auto slide
+    let autoSlide = setInterval(() => {
+        currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
+        updateSlider();
+    }, 5000);
+    
+    // Остановка при наведении
+    track.addEventListener('mouseenter', () => clearInterval(autoSlide));
+    track.addEventListener('mouseleave', () => {
+        autoSlide = setInterval(() => {
+            currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
+            updateSlider();
+        }, 5000);
+    });
+}
+
+// ==================== Portfolio Slider ====================
+function initPortfolioSlider() {
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+    
+    portfolioItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const imageSrc = this.querySelector('.portfolio-image').src;
+            showLightbox(imageSrc);
+        });
+    });
+}
+
+function showLightbox(imageSrc) {
+    const lightbox = document.createElement('div');
+    lightbox.className = 'lightbox';
+    lightbox.innerHTML = `
+        <div class="lightbox-overlay"></div>
+        <div class="lightbox-content">
+            <img src="${imageSrc}" alt="Portfolio">
+            <button class="lightbox-close">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(lightbox);
+    
+    // Стили лайтбокса
+    const style = document.createElement('style');
+    style.textContent = `
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .lightbox-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+        }
+        .lightbox-content {
+            position: relative;
+            z-index: 10;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Закрытие
+    lightbox.querySelector('.lightbox-close').addEventListener('click', () => {
+        lightbox.remove();
+    });
+    lightbox.querySelector('.lightbox-overlay').addEventListener('click', () => {
+        lightbox.remove();
+    });
+}
+
+// ==================== Team Slider ====================
+function initTeamSlider() {
+    const track = document.querySelector('.team-track');
+    const cards = document.querySelectorAll('.team-card');
+    
+    if (!track || !cards.length) return;
+    
+    let currentIndex = 0;
+    const totalCards = cards.length;
+    
+    // Создаем кнопки управления
+    const controls = document.createElement('div');
+    controls.className = 'slider-controls';
+    controls.innerHTML = `
+        <button class="slider-btn team-prev">←</button>
+        <button class="slider-btn team-next">→</button>
+    `;
+    track.parentElement.appendChild(controls);
+    
+    function updateSlider() {
+        const cardWidth = cards[0].offsetWidth + 40;
+        track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+    }
+    
+    document.querySelector('.team-prev').addEventListener('click', () => {
+        currentIndex = Math.max(0, currentIndex - 1);
+        updateSlider();
+    });
+    
+    document.querySelector('.team-next').addEventListener('click', () => {
+        currentIndex = Math.min(totalCards - 1, currentIndex + 1);
+        updateSlider();
+    });
+}
+
+// ==================== Testimonials Slider ====================
+function initTestimonialsSlider() {
+    const cards = document.querySelectorAll('.testimonial-card');
+    
+    if (!cards.length) return;
+    
+    let currentIndex = 0;
+    
+    // Скрываем все кроме первого
+    cards.forEach((card, index) => {
+        if (index !== 0) card.style.display = 'none';
+    });
+    
+    // Создаем точки
+    const dotsContainer = document.createElement('div');
+    dotsContainer.className = 'slider-dots testimonials-dots';
+    cards[0].parentElement.appendChild(dotsContainer);
+    
+    cards.forEach((_, index) => {
+        const dot = document.createElement('span');
+        dot.className = `slider-dot ${index === 0 ? 'active' : ''}`;
+        dot.addEventListener('click', () => {
+            showTestimonial(index);
+        });
+        dotsContainer.appendChild(dot);
+    });
+    
+    function showTestimonial(index) {
+        cards.forEach((card, i) => {
+            card.style.display = i === index ? 'block' : 'none';
+        });
+        
+        document.querySelectorAll('.testimonials-dots .slider-dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+        
+        currentIndex = index;
+    }
+    
+    // Auto slide
+    setInterval(() => {
+        currentIndex = (currentIndex + 1) % cards.length;
+        showTestimonial(currentIndex);
+    }, 7000);
+}
+
+// ==================== Booking Forms ====================
+function initBookingForms() {
+    const forms = document.querySelectorAll('.booking-form, .call-master-form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('.btn-submit');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Отправка...';
+            submitBtn.disabled = true;
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/api/booking/submit/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                if (response.ok) {
+                    showNotification('Спасибо! Ваша заявка принята. Мы свяжемся с вами в ближайшее время.', 'success');
+                    this.reset();
+                } else {
+                    throw new Error('Ошибка отправки');
+                }
+            } catch (error) {
+                showNotification('Произошла ошибка. Пожалуйста, позвоните нам напрямую.', 'error');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    });
+    
+    // Валидация телефона
+    const phoneInputs = document.querySelectorAll('input[type="tel"]');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            
+            let formatted = '+7';
+            if (value.length > 1) {
+                formatted += ' (' + value.slice(1, 4);
+            }
+            if (value.length > 4) {
+                formatted += ') ' + value.slice(4, 7);
+            }
+            if (value.length > 7) {
+                formatted += '-' + value.slice(7, 9);
+            }
+            if (value.length > 9) {
+                formatted += '-' + value.slice(9, 11);
+            }
+            
+            e.target.value = formatted;
+        });
+    });
+}
+
+// ==================== Scroll Animations ====================
+function initScrollAnimations() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    const animatedElements = document.querySelectorAll(
+        '.service-card, .team-card, .portfolio-item, .stat-card, .feature-item'
+    );
+    
+    animatedElements.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+}
+
+// ==================== Smooth Scroll ====================
+function initSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href === '#') return;
+            
+            e.preventDefault();
+            const target = document.querySelector(href);
+            
+            if (target) {
+                const headerOffset = 80;
+                const elementPosition = target.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+}
+
+// ==================== Utility Functions ====================
+function updateDots(sliderName) {
+    const dots = document.querySelectorAll(`.${sliderName}-dots .slider-dot`);
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    const style = document.createElement('style');
+    style.textContent = `
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 20px 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+        .notification-success {
+            border-left: 4px solid #00b894;
+        }
+        .notification-error {
+            border-left: 4px solid #d63031;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    
+    if (!document.querySelector('#notification-styles')) {
+        style.id = 'notification-styles';
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+// ==================== Header Scroll Effect ====================
+let lastScroll = 0;
+window.addEventListener('scroll', () => {
+    const header = document.querySelector('.landing2-header');
+    const currentScroll = window.pageYOffset;
+    
+    if (currentScroll > lastScroll && currentScroll > 100) {
+        header.style.transform = 'translateY(-100%)';
+    } else {
+        header.style.transform = 'translateY(0)';
+    }
+    
+    lastScroll = currentScroll;
+});
+</script>
+

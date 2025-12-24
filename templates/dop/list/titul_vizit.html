@@ -1,0 +1,43 @@
+{% load static %}
+
+<!-- ТИТУЛ и кнопка КОНТАКТ   Start -->
+<div class="page-title-container">
+    <div class="row">
+      <!-- TТитул -->
+      <div class="col-12 col-md-7">
+        <h1 class="mb-0 pb-0 display-4" id="title">{{ profile }}</h1>
+      </div>
+      <!--Титул-->
+      <!-- ВЕРХНИЕ КНОПКИ КОНТАКТ Start -->
+      <div class="col-12 col-md-5 d-flex align-items-start justify-content-end">
+        <!-- кнопка КОНТАКТ Start -->
+        <button type="button" class="btn btn-outline-primary btn-icon btn-icon-start w-100 w-md-auto">
+          <i data-cs-icon="email"></i>
+          <a  href='{% url "Visitor:feedback" %}'><span>Контакты</span></a>
+        </button>
+        <!-- кнопка КОНТАКТ           -->
+        <!-- РАскрывающееся меню Start -->
+        <div class="ms-1">
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-icon btn-icon-only"
+            data-bs-offset="0,3"
+            data-bs-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+            data-submenu
+          ><a  href='{% url "Visitor:feedback" %}'>
+            <i data-cs-icon="more-horizontal"></i></a>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end">
+            <button class="dropdown-item" type="button">Подписаться</button>
+            <button class="dropdown-item" type="button">Отписаться</button>
+            <button class="dropdown-item" type="button">Отчёт</button>
+          </div>
+        </div>
+        <!-- РАскрывающееся меню End -->
+      </div>
+      <!-- ВЕРХНИЕ КНОПКИ КОНТАКТ End -->
+    </div>
+</div>
+<!-- ТИТУЛ и кнопка КОНТАКТ Title  End -->

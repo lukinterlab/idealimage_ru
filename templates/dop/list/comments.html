@@ -1,0 +1,53 @@
+{% load static %}
+
+<div class="card mb-5">
+	{% with comments.count as total_comments %}
+	<h2> Комментариев {{ total_comments }}</h2>
+	{% endwith %}
+
+	
+		{% for comment in comments %}
+		<div class="d-flex align-items-center border-bottom border-separator-light pb-3 mt-3">
+			<div class="row g-0 w-100">
+				<div class="col-auto">
+					<div class="sw-5 me-3">
+						 {% if post.kartinka %}
+							<img src="{{ post.kartinka.url }}" class="sw-5 sh-5 responsive rounded-md img-fluid" />
+						{% endif %}
+					</div>
+				</div>
+				<div class="col pe-3">
+					<p class="reply">{{ forloop.counter }}</p><h4>{{ comment.content|linebreaks }}</h4>
+					<div class="text-muted text-small mb-2">{{ comment.created }}</div>
+					<div class="text-medium text-alternate lh-1-25">{{ comment.author_comment }}</div>
+				</div>
+				<div class="col-auto justify-self-end">
+					<div>
+						<span class="text-muted">{{ post.comments.count }}</span>
+						<button class="btn btn-icon btn-icon-only btn-foreground hover-outline mb-1" type="button">
+							<i data-cs-icon="heart"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% empty %}
+		{% endfor %}
+		{% if new_comment %}
+			<h2>Ваш комментарий добавлен .</h2>
+		{% else %}
+		</div>
+
+	
+			<form action="." method="post" class="p-5 bg-light">
+				<div class="form-group">
+					{{ comment_form.as_p }}
+					{% csrf_token %}
+				</div>
+				<div class="input-group mt-5">
+					<input type="submit" value="Отправить комментарий" class="btn btn-outline-warning mt-3">
+			</form>
+	
+		{% endif %}
+</div>
+<!-- Comments End -->

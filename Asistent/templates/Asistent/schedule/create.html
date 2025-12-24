@@ -1,0 +1,1074 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{% if schedule %}Редактировать расписание{% else %}Создать расписание{% endif %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-black text-white mb-2">
+                {% if schedule %}✏️ Редактировать расписание{% else %}➕ Создать расписание{% endif %}
+            </h1>
+            <p class="text-gray-300">
+                {% if schedule %}Изменение параметров "{{ schedule.name }}"{% else %}Настройте автоматическую генерацию контента{% endif %}
+            </p>
+        </div>
+
+        <!-- Форма -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Основные параметры -->
+                <div class="space-y-4">
+                    <h2 class="text-xl font-bold text-white mb-4">📋 Основные параметры</h2>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.name.label }}</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.strategy_type.label }}</label>
+                            {{ form.strategy_type }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.prompt_template.label }}</label>
+                            {{ form.prompt_template }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.category.label }}</label>
+                        {{ form.category }}
+                    </div>
+                </div>
+
+                <!-- Payload Template - улучшенные поля -->
+                <div class="space-y-4 border-t border-white/20 pt-6">
+                    <h2 class="text-xl font-bold text-white mb-4">⚙️ Параметры генерации</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.target_date_offset.label }}</label>
+                            {{ form.target_date_offset }}
+                            <p class="mt-1 text-xs text-gray-400">{{ form.target_date_offset.help_text }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.publish_mode.label }}</label>
+                            {{ form.publish_mode }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.base_tags.label }}</label>
+                        {{ form.base_tags }}
+                        <p class="mt-1 text-xs text-gray-400">{{ form.base_tags.help_text }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.title_template.label }}</label>
+                        {{ form.title_template }}
+                        <p class="mt-1 text-xs text-gray-400">{{ form.title_template.help_text }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.description_template.label }}</label>
+                        {{ form.description_template }}
+                    </div>
+                    
+                    <!-- СТАТИЧЕСКИЕ ПАРАМЕТРЫ (простой ввод) -->
+                    <div class="p-4 bg-white/5 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-sm font-semibold text-white/90">
+                                Статические параметры (постоянные значения)
+                            </label>
+                            <button type="button" onclick="addStaticParam()" 
+                                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition-colors">
+                                + Добавить параметр
+                            </button>
+                        </div>
+                        
+                        <div id="static-params-container" class="space-y-2">
+                            <!-- Здесь будут поля параметров -->
+                        </div>
+                        
+                        <!-- Скрытое поле для Django -->
+                        <textarea name="static_params" id="static_params_hidden" style="display:none;">{{ form.static_params.value|default:'{}' }}</textarea>
+                    </div>
+                    
+                    <!-- ДИНАМИЧЕСКИЕ ПАРАМЕТРЫ (конструктор) -->
+                    <div class="p-4 bg-white/5 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-sm font-semibold text-white/90">
+                                Динамические параметры (автоматически изменяются)
+                            </label>
+                            <button type="button" onclick="addDynamicParam()" 
+                                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded transition-colors">
+                                + Добавить параметр
+                            </button>
+                        </div>
+                        
+                        <div id="dynamic-params-container" class="space-y-3">
+                            <!-- Здесь будут блоки параметров -->
+                        </div>
+                        
+                        <!-- Скрытое поле для Django -->
+                        <textarea name="dynamic_params" id="dynamic_params_hidden" style="display:none;">{{ form.dynamic_params.value|default:'{}' }}</textarea>
+                    </div>
+                    
+                    <!-- PAYLOAD ДЛЯ ПАЙПЛАЙНА -->
+                    <div class="p-4 bg-white/5 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90">
+                                    Payload для пайплайна
+                                </label>
+                                <p class="text-xs text-gray-400">Ключ-значение, которое попадёт в Payload шага запуска</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="addPayloadParam()" 
+                                        class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition-colors">
+                                    + Параметр
+                                </button>
+                                <button type="button" onclick="togglePayloadRaw()" 
+                                        class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded transition-colors border border-white/20">
+                                    JSON вручную
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="payload-builder" class="space-y-2">
+                            <div id="payload-params-container" class="space-y-2"></div>
+                            <p class="text-xs text-gray-500">Типы значений: строка, число, булево или сложный JSON-объект.</p>
+                        </div>
+                        
+                        <div id="payload-raw-wrapper" class="mt-3 hidden">
+                            <label class="block text-xs font-semibold text-white/70 mb-2">JSON payload</label>
+                            {{ form.payload_template }}
+                            <p class="text-xs text-gray-500 mt-2">Можно вставить готовый JSON вручную. Переключение обратно попытается разобрать содержимое.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Максимум запусков -->
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">
+                            {{ form.max_runs.label }}
+                        </label>
+                        {{ form.max_runs }}
+                        <p class="mt-2 text-xs text-gray-400">Для тренингов "21 день" = 21. Пусто = бесконечно</p>
+                        {% if form.max_runs.errors %}
+                        <p class="mt-2 text-sm text-red-400">{{ form.max_runs.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Параметры генерации гороскопов -->
+                {% if form.generation_delay or form.retry_count or form.retry_delay %}
+                <div class="space-y-4 border-t border-white/20 pt-6">
+                    <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
+                        </svg>
+                        Параметры генерации гороскопов
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Задержка между генерациями -->
+                        {% if form.generation_delay %}
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                {{ form.generation_delay.label }}
+                            </label>
+                            {{ form.generation_delay }}
+                            {% if form.generation_delay.help_text %}
+                            <p class="mt-1 text-xs text-gray-400">{{ form.generation_delay.help_text }}</p>
+                            {% endif %}
+                            {% if form.generation_delay.errors %}
+                            <p class="mt-2 text-sm text-red-400">{{ form.generation_delay.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Количество повторных попыток -->
+                        {% if form.retry_count %}
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                {{ form.retry_count.label }}
+                            </label>
+                            {{ form.retry_count }}
+                            {% if form.retry_count.help_text %}
+                            <p class="mt-1 text-xs text-gray-400">{{ form.retry_count.help_text }}</p>
+                            {% endif %}
+                            {% if form.retry_count.errors %}
+                            <p class="mt-2 text-sm text-red-400">{{ form.retry_count.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Задержка перед повтором -->
+                        {% if form.retry_delay %}
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                {{ form.retry_delay.label }}
+                            </label>
+                            {{ form.retry_delay }}
+                            {% if form.retry_delay.help_text %}
+                            <p class="mt-1 text-xs text-gray-400">{{ form.retry_delay.help_text }}</p>
+                            {% endif %}
+                            {% if form.retry_delay.errors %}
+                            <p class="mt-2 text-sm text-red-400">{{ form.retry_delay.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Партнёрские ссылки -->
+                <div class="space-y-4 border-t border-white/20 pt-6">
+                    <h2 class="text-xl font-bold text-white mb-4">🔗 Партнёрские ссылки</h2>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.partner_url.label }}</label>
+                        {{ form.partner_url }}
+                        <p class="mt-1 text-xs text-gray-400">{{ form.partner_url.help_text }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.partner_link_text.label }}</label>
+                        {{ form.partner_link_text }}
+                        <p class="mt-1 text-xs text-gray-400">{{ form.partner_link_text.help_text }}</p>
+                    </div>
+                </div>
+
+                <!-- Расписание -->
+                <div class="space-y-4 border-t border-white/20 pt-6">
+                    <h2 class="text-xl font-bold text-white mb-4">⏰ Расписание</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.schedule_kind.label }}</label>
+                            {{ form.schedule_kind }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.scheduled_time.label }}</label>
+                            {{ form.scheduled_time }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.cron_expression.label }}</label>
+                        {{ form.cron_expression }}
+                        <p class="mt-1 text-xs text-gray-400">Пример: 0 10 * * * (каждый день в 10:00)</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.interval_minutes.label }}</label>
+                            {{ form.interval_minutes }}
+                            <p class="mt-1 text-xs text-gray-400">Для типа "Интервал"</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.weekday.label }}</label>
+                            {{ form.weekday }}
+                            <p class="mt-1 text-xs text-gray-400">Для еженедельного запуска</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.posting_frequency.label }}</label>
+                            {{ form.posting_frequency }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-white/90 mb-2">{{ form.articles_per_run.label }}</label>
+                            {{ form.articles_per_run }}
+                        </div>
+                    </div>
+                    
+                    <!-- Предпросмотр расписания -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="p-3 bg-white/5 rounded-lg border border-white/10">
+                            <p class="text-sm text-gray-300">
+                                Описание:
+                                <span id="schedule-preview-text" class="text-white font-semibold">—</span>
+                            </p>
+                        </div>
+                        <div class="p-3 bg-white/5 rounded-lg border border-white/10">
+                            <p class="text-sm text-gray-300">Следующий запуск:</p>
+                            <p id="next-run-preview" class="text-white font-semibold mt-1">—</p>
+                            <p id="next-run-error" class="text-xs text-rose-400 mt-1 hidden"></p>
+                            <p id="load-warning" data-limit="{{ schedule_load_limit }}" class="text-xs text-amber-300 mt-1 hidden"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Пресеты расписаний -->
+                {% if schedule_presets %}
+                <div class="space-y-4 border-t border-white/20 pt-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Быстрый старт</h3>
+                            <p class="text-sm text-gray-400">Готовые сценарии: нажмите — и все поля заполнятся автоматически</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {% for preset in schedule_presets %}
+                        <div class="p-4 bg-gradient-to-br from-slate-800/70 to-slate-900/70 border border-white/10 rounded-xl flex flex-col justify-between">
+                            <div>
+                                <p class="text-white font-semibold">{{ preset.title }}</p>
+                                <p class="text-xs text-gray-400 mt-1">{{ preset.description }}</p>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    Режим:
+                                    <span class="text-white/80 uppercase">{{ preset.schedule_kind }}</span>
+                                    {% if preset.schedule_kind == 'interval' and preset.interval_minutes %}
+                                        · каждые {{ preset.interval_minutes }} мин
+                                    {% elif preset.schedule_kind == 'cron' and preset.cron_expression %}
+                                        · cron {{ preset.cron_expression }}
+                                    {% elif preset.scheduled_time %}
+                                        · {{ preset.scheduled_time }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <button type="button"
+                                    onclick="applyGlobalPreset('{{ preset.id }}')"
+                                    class="mt-4 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition">
+                                Заполнить
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Статус -->
+                <div class="border-t border-white/20 pt-6">
+                    <label class="flex items-center gap-2">
+                        {{ form.is_active }}
+                        <span class="text-sm font-semibold text-white/90">{{ form.is_active.label }}</span>
+                    </label>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="flex gap-4 pt-6 border-t border-white/20">
+                    <button type="submit" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors">
+                        💾 Сохранить
+                    </button>
+                    <a href="{% url 'schedule:schedule_list' %}" 
+                       class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors">
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<style>
+/* Стили для полей формы Django */
+input[type="text"],
+input[type="number"],
+input[type="checkbox"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+select option {
+    background-color: #1f2937;
+    color: #ffffff;
+    padding: 0.5rem;
+}
+
+select option:checked {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.param-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.375rem;
+}
+
+.param-row input,
+.param-row select {
+    flex: 1;
+    min-width: 0;
+}
+
+.param-row button {
+    flex-shrink: 0;
+}
+</style>
+
+<script id="schedule-presets-data" type="application/json">
+    {{ schedule_presets_json|default:'[]'|safe }}
+</script>
+<script>
+function escapeHtml(value = '') {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// ========== СТАТИЧЕСКИЕ ПАРАМЕТРЫ ==========
+function addStaticParam(key = '', value = '') {
+    const container = document.getElementById('static-params-container');
+    if (!container) return;
+    const id = Date.now();
+    
+    const html = `
+        <div class="param-row" id="static-${id}">
+            <input type="text" placeholder="Название параметра (например: topic)" 
+                   class="param-key" value="${escapeHtml(key)}" 
+                   style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            <input type="text" placeholder="Значение (например: гороскоп)" 
+                   class="param-value" value="${escapeHtml(value)}"
+                   style="flex: 2; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            <button type="button" onclick="removeParam('static-${id}')" 
+                    style="padding: 0.5rem 0.75rem; background: #dc2626; color: white; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600;">
+                Удалить
+            </button>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', html);
+}
+
+// ========== ДИНАМИЧЕСКИЕ ПАРАМЕТРЫ ==========
+let dynamicParamCounter = 0;
+
+function addDynamicParam(key = '', type = 'cycle_list', config = {}) {
+    const container = document.getElementById('dynamic-params-container');
+    if (!container) return;
+    const id = Date.now() + dynamicParamCounter++;
+    
+    const html = `
+        <div class="p-3 bg-white/5 rounded-lg border border-white/10" id="dynamic-${id}">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-2">
+                <input type="text" placeholder="Название переменной" 
+                       class="dynamic-key" value="${escapeHtml(key)}"
+                       style="padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                
+                <select class="dynamic-type" onchange="updateDynamicFields('dynamic-${id}')"
+                        style="padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                    <option value="cycle_list" ${type === 'cycle_list' ? 'selected' : ''}>Циклический список</option>
+                    <option value="current_date" ${type === 'current_date' ? 'selected' : ''}>Текущая дата</option>
+                    <option value="api_call" ${type === 'api_call' ? 'selected' : ''}>API запрос</option>
+                    <option value="random_choice" ${type === 'random_choice' ? 'selected' : ''}>Случайный выбор</option>
+                </select>
+                
+                <button type="button" onclick="removeParam('dynamic-${id}')"
+                        style="padding: 0.5rem; background: #dc2626; color: white; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600;">
+                    Удалить параметр
+                </button>
+            </div>
+            
+            <div class="dynamic-fields-${id}"></div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', html);
+    updateDynamicFields(`dynamic-${id}`, config);
+}
+
+function updateDynamicFields(parentId, savedConfig = {}) {
+    const parent = document.getElementById(parentId);
+    if (!parent) return;
+    const type = parent.querySelector('.dynamic-type').value;
+    const fieldsContainer = parent.querySelector(`.dynamic-fields-${parentId.split('-')[1]}`);
+    if (!fieldsContainer) return;
+    
+    let html = '';
+    
+    if (type === 'cycle_list') {
+        const values = savedConfig.values || [];
+        html = `
+            <div class="mt-2">
+                <label class="text-xs text-gray-400 mb-1 block">Значения через запятую (например: Овен, Телец, Близнецы)</label>
+                <input type="text" class="config-values" value="${values.join(', ')}"
+                       placeholder="Овен, Телец, Близнецы, Рак, Лев, Дева"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            </div>
+        `;
+    } else if (type === 'current_date') {
+        const format = savedConfig.format || '%d.%m.%Y';
+        html = `
+            <div class="mt-2">
+                <label class="text-xs text-gray-400 mb-1 block">Формат даты</label>
+                <input type="text" class="config-format" value="${format}"
+                       placeholder="%d.%m.%Y"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                <p class="text-xs text-gray-500 mt-1">%d - день, %m - месяц, %Y - год</p>
+            </div>
+        `;
+    } else if (type === 'api_call') {
+        const url = savedConfig.url || '';
+        const path = savedConfig.path || '';
+        const processor = savedConfig.processor || '';
+        html = `
+            <div class="mt-2 space-y-2">
+                <input type="text" class="config-url" value="${escapeHtml(url)}"
+                       placeholder="URL API (например: https://api.openweathermap.org/...)"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                <input type="text" class="config-path" value="${escapeHtml(path)}"
+                       placeholder="Путь к данным (например: main.temp)"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                <input type="text" class="config-processor" value="${escapeHtml(processor)}"
+                       placeholder="Обработка (например: round)"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            </div>
+        `;
+    } else if (type === 'random_choice') {
+        const values = savedConfig.values || [];
+        html = `
+            <div class="mt-2">
+                <label class="text-xs text-gray-400 mb-1 block">Варианты через запятую</label>
+                <input type="text" class="config-values" value="${values.join(', ')}"
+                       placeholder="радостное, нейтральное, вдохновляющее"
+                       style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            </div>
+        `;
+    }
+    
+    fieldsContainer.innerHTML = html;
+}
+
+function removeParam(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
+
+function renderStaticParams(params = {}) {
+    const container = document.getElementById('static-params-container');
+    const hidden = document.getElementById('static_params_hidden');
+    if (!container || !hidden) return;
+    container.innerHTML = '';
+    if (params && Object.keys(params).length) {
+        Object.entries(params).forEach(([key, value]) => addStaticParam(key, value));
+    }
+    hidden.value = JSON.stringify(params || {});
+}
+
+function renderDynamicParams(params = {}) {
+    const container = document.getElementById('dynamic-params-container');
+    const hidden = document.getElementById('dynamic_params_hidden');
+    if (!container || !hidden) return;
+    container.innerHTML = '';
+    dynamicParamCounter = 0;
+    if (params && Object.keys(params).length) {
+        Object.entries(params).forEach(([key, config]) => {
+            if (config && typeof config === 'object') {
+                addDynamicParam(key, config.type || 'cycle_list', config);
+            } else {
+                addDynamicParam(key, 'cycle_list', {});
+            }
+        });
+    }
+    hidden.value = JSON.stringify(params || {});
+}
+
+// ========== PAYLOAD BUILDER ==========
+let payloadRawMode = false;
+
+function addPayloadParam(key = '', value = '', type = 'string') {
+    const container = document.getElementById('payload-params-container');
+    if (!container) return;
+
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    const html = `
+        <div class="param-row" id="payload-${id}">
+            <input type="text" placeholder="Ключ" class="payload-key"
+                   value="${escapeHtml(key)}"
+                   style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            <input type="text" placeholder="Значение"
+                   class="payload-value"
+                   value="${escapeHtml(value)}"
+                   style="flex: 2; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+            <select class="payload-type"
+                    style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.375rem;">
+                <option value="string" ${type === 'string' ? 'selected' : ''}>Строка</option>
+                <option value="number" ${type === 'number' ? 'selected' : ''}>Число</option>
+                <option value="boolean" ${type === 'boolean' ? 'selected' : ''}>Булево</option>
+                <option value="json" ${type === 'json' ? 'selected' : ''}>JSON</option>
+            </select>
+            <button type="button" onclick="removeParam('payload-${id}')"
+                    style="padding: 0.5rem; background: #dc2626; color: white; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600;">
+                ✕
+            </button>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', html);
+}
+
+function togglePayloadRaw() {
+    payloadRawMode = !payloadRawMode;
+    const builder = document.getElementById('payload-builder');
+    const rawWrapper = document.getElementById('payload-raw-wrapper');
+    const rawField = document.getElementById('id_payload_template');
+    if (!builder || !rawWrapper || !rawField) return;
+
+    if (payloadRawMode) {
+        rawWrapper.classList.remove('hidden');
+        builder.classList.add('hidden');
+        rawField.value = serializePayloadBuilder(true);
+    } else {
+        rawWrapper.classList.add('hidden');
+        builder.classList.remove('hidden');
+        loadPayloadFromField();
+    }
+}
+
+function serializePayloadBuilder(pretty = false) {
+    const payload = {};
+    const container = document.getElementById('payload-params-container');
+    if (!container) return '{}';
+    
+    container.querySelectorAll('.param-row').forEach(row => {
+        const key = row.querySelector('.payload-key')?.value.trim();
+        const valueRaw = row.querySelector('.payload-value')?.value.trim();
+        const type = row.querySelector('.payload-type')?.value;
+        if (!key) return;
+
+        let parsedValue = valueRaw;
+        if (type === 'number') {
+            const numberValue = Number(valueRaw);
+            if (!Number.isNaN(numberValue)) {
+                parsedValue = numberValue;
+            } else {
+                return;
+            }
+        } else if (type === 'boolean') {
+            const lowered = valueRaw.toLowerCase();
+            if (['true', '1', 'yes', 'да'].includes(lowered)) {
+                parsedValue = true;
+            } else if (['false', '0', 'no', 'нет'].includes(lowered)) {
+                parsedValue = false;
+            } else {
+                return;
+            }
+        } else if (type === 'json') {
+            try {
+                parsedValue = JSON.parse(valueRaw || 'null');
+            } catch (err) {
+                console.warn('Невозможно разобрать JSON payload:', err);
+                return;
+            }
+        }
+
+        payload[key] = parsedValue;
+    });
+
+    return JSON.stringify(payload, null, pretty ? 2 : 0);
+}
+
+function loadPayloadFromField() {
+    const rawField = document.getElementById('id_payload_template');
+    if (!rawField) return;
+    const container = document.getElementById('payload-params-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    try {
+        const content = rawField.value && rawField.value.trim() ? JSON.parse(rawField.value) : {};
+        if (content && typeof content === 'object' && !Array.isArray(content)) {
+            Object.entries(content).forEach(([key, value]) => {
+                const { displayValue, detectedType } = detectPayloadValue(value);
+                addPayloadParam(key, displayValue, detectedType);
+            });
+        } else if (Array.isArray(content)) {
+            addPayloadParam('items', JSON.stringify(content), 'json');
+        } else {
+            addPayloadParam('value', content ?? '', typeof content);
+        }
+    } catch (err) {
+        console.warn('Ошибка загрузки payload, вставляем сырой JSON', err);
+    }
+
+    if (container.children.length === 0) {
+        addPayloadParam();
+    }
+}
+
+function detectPayloadValue(value) {
+    if (typeof value === 'number') {
+        return { displayValue: value.toString(), detectedType: 'number' };
+    }
+    if (typeof value === 'boolean') {
+        return { displayValue: value ? 'true' : 'false', detectedType: 'boolean' };
+    }
+    if (typeof value === 'object' && value !== null) {
+        return { displayValue: JSON.stringify(value), detectedType: 'json' };
+    }
+    return { displayValue: value ?? '', detectedType: 'string' };
+}
+
+// ========== ПРЕСЕТЫ ==========
+const globalPresetRawElement = document.getElementById('schedule-presets-data');
+const globalSchedulePresets = globalPresetRawElement ? JSON.parse(globalPresetRawElement.textContent || '[]') : [];
+const schedulePreviewUrl = "{{ schedule_preview_url }}";
+
+function applyGlobalPreset(presetId) {
+    const preset = globalSchedulePresets.find(item => item.id === presetId);
+    if (!preset) {
+        alert('Не удалось найти пресет');
+        return;
+    }
+
+    const scheduleKindField = document.getElementById('id_schedule_kind');
+    if (scheduleKindField && preset.schedule_kind) {
+        scheduleKindField.value = preset.schedule_kind;
+    }
+
+    const timeField = document.getElementById('id_scheduled_time');
+    if (timeField && preset.scheduled_time) {
+        timeField.value = preset.scheduled_time || '';
+    }
+
+    const intervalField = document.getElementById('id_interval_minutes');
+    if (intervalField && preset.interval_minutes) {
+        intervalField.value = preset.interval_minutes || '';
+    }
+
+    const weekdayField = document.getElementById('id_weekday');
+    if (weekdayField && typeof preset.weekday !== 'undefined' && preset.weekday !== null) {
+        weekdayField.value = preset.weekday;
+    }
+
+    const cronField = document.getElementById('id_cron_expression');
+    if (cronField && preset.cron_expression) {
+        cronField.value = preset.cron_expression || '';
+    }
+
+    const articlesField = document.getElementById('id_articles_per_run');
+    if (articlesField && preset.articles_per_run) {
+        articlesField.value = preset.articles_per_run;
+    }
+
+    const frequencyField = document.getElementById('id_posting_frequency');
+    if (frequencyField && preset.posting_frequency) {
+        frequencyField.value = preset.posting_frequency;
+    }
+
+    const maxRunsField = document.getElementById('id_max_runs');
+    if (maxRunsField && typeof preset.max_runs !== 'undefined') {
+        maxRunsField.value = preset.max_runs ?? '';
+    }
+
+    const tagsField = document.getElementById('id_tags');
+    if (tagsField && preset.tags) {
+        tagsField.value = preset.tags;
+    }
+
+    const payloadField = document.getElementById('id_payload_template');
+    if (payloadField) {
+        const payloadData = preset.payload_template || preset.payload || {};
+        payloadField.value = JSON.stringify(payloadData, null, 2);
+        payloadRawMode = false;
+        const rawWrapper = document.getElementById('payload-raw-wrapper');
+        const builder = document.getElementById('payload-builder');
+        if (rawWrapper) rawWrapper.classList.add('hidden');
+        if (builder) builder.classList.remove('hidden');
+        loadPayloadFromField();
+    }
+
+    renderStaticParams(preset.static_params || {});
+    renderDynamicParams(preset.dynamic_params || {});
+    refreshSchedulePreview();
+    triggerSchedulePreviewUpdate(true);
+    updateLoadWarning();
+}
+
+// ========== ПРЕДПРОСМОТР РАСПИСАНИЯ ==========
+const WEEKDAY_LABELS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+
+function refreshSchedulePreview() {
+    const previewEl = document.getElementById('schedule-preview-text');
+    if (!previewEl) return;
+
+    const kind = document.getElementById('id_schedule_kind')?.value || 'daily';
+    const timeValue = document.getElementById('id_scheduled_time')?.value || '';
+    const intervalValue = document.getElementById('id_interval_minutes')?.value;
+    const weekdayValue = document.getElementById('id_weekday')?.value;
+    const cronValue = document.getElementById('id_cron_expression')?.value || '';
+
+    let text = '—';
+    if (kind === 'daily') {
+        text = timeValue ? `Каждый день в ${timeValue}` : 'Каждый день (укажите время)';
+    } else if (kind === 'weekly') {
+        const label = typeof weekdayValue !== 'undefined' && weekdayValue !== '' ? WEEKDAY_LABELS[Number(weekdayValue)] : 'день недели';
+        text = timeValue ? `Каждый ${label} в ${timeValue}` : `Каждый ${label}`;
+    } else if (kind === 'interval') {
+        text = intervalValue ? `Каждые ${intervalValue} минут` : 'Интервал не задан';
+    } else if (kind === 'cron') {
+        text = cronValue ? `Cron: ${cronValue}` : 'Укажите cron-выражение';
+    }
+
+    previewEl.textContent = text;
+    triggerSchedulePreviewUpdate();
+    updateLoadWarning();
+}
+
+function attachSchedulePreviewListeners() {
+    ['id_schedule_kind', 'id_scheduled_time', 'id_interval_minutes', 'id_weekday', 'id_cron_expression'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', refreshSchedulePreview);
+        if (el.tagName === 'INPUT') {
+            el.addEventListener('input', refreshSchedulePreview);
+        }
+    });
+}
+
+let schedulePreviewTimer = null;
+let schedulePreviewRequestId = 0;
+
+function triggerSchedulePreviewUpdate(immediate = false) {
+    if (!schedulePreviewUrl) return;
+    if (schedulePreviewTimer) {
+        clearTimeout(schedulePreviewTimer);
+    }
+    if (immediate) {
+        sendSchedulePreviewRequest();
+        return;
+    }
+    schedulePreviewTimer = setTimeout(sendSchedulePreviewRequest, 600);
+}
+
+function gatherSchedulePreviewPayload() {
+    return {
+        schedule_kind: document.getElementById('id_schedule_kind')?.value || 'daily',
+        scheduled_time: document.getElementById('id_scheduled_time')?.value || '',
+        interval_minutes: document.getElementById('id_interval_minutes')?.value || '',
+        weekday: document.getElementById('id_weekday')?.value || '',
+        cron_expression: document.getElementById('id_cron_expression')?.value || '',
+        articles_per_run: document.getElementById('id_articles_per_run')?.value || '',
+        is_active: document.getElementById('id_is_active')?.checked ?? true,
+    };
+}
+
+function sendSchedulePreviewRequest() {
+    if (!schedulePreviewUrl) return;
+    const previewEl = document.getElementById('next-run-preview');
+    const errorEl = document.getElementById('next-run-error');
+    if (!previewEl || !errorEl) return;
+
+    const payload = gatherSchedulePreviewPayload();
+    const requestId = ++schedulePreviewRequestId;
+
+    fetch(schedulePreviewUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify(payload),
+    })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (requestId !== schedulePreviewRequestId) return;
+            if (ok && data.success) {
+                previewEl.textContent = data.next_run;
+                errorEl.classList.add('hidden');
+                errorEl.textContent = '';
+            } else {
+                previewEl.textContent = '—';
+                errorEl.textContent = data?.error || 'Не удалось рассчитать';
+                errorEl.classList.remove('hidden');
+            }
+        })
+        .catch(err => {
+            console.warn('Ошибка preview', err);
+            previewEl.textContent = '—';
+            errorEl.textContent = 'Ошибка соединения';
+            errorEl.classList.remove('hidden');
+        });
+}
+
+function getCsrfToken() {
+    const tokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    return tokenInput ? tokenInput.value : '';
+}
+
+function updateLoadWarning() {
+    const warningEl = document.getElementById('load-warning');
+    if (!warningEl) return;
+    const kind = document.getElementById('id_schedule_kind')?.value || 'daily';
+    if (kind !== 'interval') {
+        warningEl.classList.add('hidden');
+        warningEl.textContent = '';
+        return;
+    }
+    const minutes = Number(document.getElementById('id_interval_minutes')?.value);
+    const articles = Number(document.getElementById('id_articles_per_run')?.value) || 1;
+    if (!minutes || minutes <= 0) {
+        warningEl.classList.add('hidden');
+        warningEl.textContent = '';
+        return;
+    }
+    const perHour = (60 / minutes) * articles;
+    const limit = Number(warningEl.dataset.limit || 30);
+    warningEl.classList.remove('hidden');
+    warningEl.textContent = `~${perHour.toFixed(1)} запусков в час (лимит ${limit})`;
+    if (perHour > limit) {
+        warningEl.classList.add('text-rose-400');
+        warningEl.classList.remove('text-amber-300');
+    } else {
+        warningEl.classList.remove('text-rose-400');
+        warningEl.classList.add('text-amber-300');
+    }
+}
+
+// ========== ГЕНЕРАЦИЯ JSON ПЕРЕД ОТПРАВКОЙ ==========
+document.querySelector('form')?.addEventListener('submit', function(e) {
+    // Собираем статические параметры
+    const staticParams = {};
+    const staticContainer = document.getElementById('static-params-container');
+    if (staticContainer) {
+        staticContainer.querySelectorAll('.param-row').forEach(row => {
+            const key = row.querySelector('.param-key')?.value.trim();
+            const value = row.querySelector('.param-value')?.value.trim();
+            if (key && value) {
+                staticParams[key] = value;
+            }
+        });
+    }
+    const staticHidden = document.getElementById('static_params_hidden');
+    if (staticHidden) staticHidden.value = JSON.stringify(staticParams);
+    
+    // Собираем динамические параметры
+    const dynamicParams = {};
+    const dynamicContainer = document.getElementById('dynamic-params-container');
+    if (dynamicContainer) {
+        dynamicContainer.querySelectorAll('div[id^="dynamic-"]').forEach(block => {
+            const key = block.querySelector('.dynamic-key')?.value.trim();
+            const type = block.querySelector('.dynamic-type')?.value;
+            
+            if (!key) return;
+            
+            const config = { type: type };
+            
+            if (type === 'cycle_list' || type === 'random_choice') {
+                const valuesStr = block.querySelector('.config-values')?.value || '';
+                config.values = valuesStr.split(',').map(v => v.trim()).filter(v => v);
+            } else if (type === 'current_date') {
+                config.format = block.querySelector('.config-format')?.value || '%d.%m.%Y';
+            } else if (type === 'api_call') {
+                config.url = block.querySelector('.config-url')?.value || '';
+                config.path = block.querySelector('.config-path')?.value || '';
+                const processor = block.querySelector('.config-processor')?.value || '';
+                if (processor) config.processor = processor;
+            }
+            
+            dynamicParams[key] = config;
+        });
+    }
+    const dynamicHidden = document.getElementById('dynamic_params_hidden');
+    if (dynamicHidden) dynamicHidden.value = JSON.stringify(dynamicParams);
+
+    if (!payloadRawMode) {
+        const payloadField = document.getElementById('id_payload_template');
+        if (payloadField) {
+            payloadField.value = serializePayloadBuilder();
+        }
+    }
+});
+
+// ========== ЗАГРУЗКА СУЩЕСТВУЮЩИХ ПАРАМЕТРОВ ==========
+window.addEventListener('DOMContentLoaded', function() {
+    // Загружаем статические параметры
+    try {
+        const staticJson = document.getElementById('static_params_hidden')?.value;
+        if (staticJson && staticJson !== '{}') {
+            renderStaticParams(JSON.parse(staticJson));
+        } else {
+            renderStaticParams({});
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки статических параметров:', e);
+        renderStaticParams({});
+    }
+    
+    // Загружаем динамические параметры
+    try {
+        const dynamicJson = document.getElementById('dynamic_params_hidden')?.value;
+        if (dynamicJson && dynamicJson !== '{}') {
+            renderDynamicParams(JSON.parse(dynamicJson));
+        } else {
+            renderDynamicParams({});
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки динамических параметров:', e);
+        renderDynamicParams({});
+    }
+    
+    // Загружаем payload
+    loadPayloadFromField();
+    attachSchedulePreviewListeners();
+    refreshSchedulePreview();
+    triggerSchedulePreviewUpdate(true);
+    updateLoadWarning();
+    
+    const articlesField = document.getElementById('id_articles_per_run');
+    if (articlesField) {
+        articlesField.addEventListener('input', refreshSchedulePreview);
+        articlesField.addEventListener('change', refreshSchedulePreview);
+    }
+});
+</script>
+{% endblock %}
+

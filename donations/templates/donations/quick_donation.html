@@ -1,0 +1,197 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}Быстрый донат{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    
+    <!-- Заголовок -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-bolt text-yellow-500"></i> Быстрый донат
+        </h1>
+        <p class="text-lg text-gray-600">
+            Выберите сумму и способ оплаты - быстро и просто!
+        </p>
+    </div>
+
+    <!-- Форма -->
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+        <form method="post" id="quick-donation-form">
+            {% csrf_token %}
+            
+            <!-- Выбор предустановленной суммы -->
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-gray-700 mb-4">
+                    <i class="fas fa-hand-holding-usd"></i> Выберите сумму
+                </label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {% for value, label in form.preset_amount.field.choices %}
+                    <label class="cursor-pointer">
+                        <input type="radio" name="preset_amount" value="{{ value }}" class="hidden preset-radio" {% if forloop.first %}checked{% endif %}>
+                        <div class="preset-card border-2 border-gray-200 rounded-lg p-4 text-center hover:border-purple-500 transition duration-200">
+                            <div class="text-2xl font-bold text-purple-600">{{ label }}</div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% if form.preset_amount.errors %}
+                    <p class="text-red-600 text-sm mt-2">{{ form.preset_amount.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Своя сумма -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-edit"></i> Или введите свою сумму
+                </label>
+                {{ form.custom_amount }}
+                {% if form.custom_amount.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.custom_amount.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Способ оплаты -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                    <i class="fas fa-credit-card"></i> Способ оплаты
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for value, label in form.payment_method.field.choices %}
+                    <label class="payment-method-label cursor-pointer">
+                        <input type="radio" name="payment_method" value="{{ value }}" class="hidden payment-radio" {% if forloop.first %}checked{% endif %}>
+                        <div class="payment-option border-2 border-gray-200 rounded-lg p-4 hover:border-purple-500 transition duration-200">
+                            <div class="flex items-center space-x-3">
+                                {% if value == 'yandex' %}
+                                    <i class="fas fa-wallet text-yellow-500 text-2xl"></i>
+                                {% elif value == 'sberpay' %}
+                                    <i class="fas fa-university text-green-600 text-2xl"></i>
+                                {% elif value == 'sbp' %}
+                                    <i class="fas fa-bolt text-blue-600 text-2xl"></i>
+                                {% elif value == 'qr' %}
+                                    <i class="fas fa-qrcode text-purple-600 text-2xl"></i>
+                                {% endif %}
+                                <span class="font-semibold text-gray-800">{{ label }}</span>
+                            </div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% if form.payment_method.errors %}
+                    <p class="text-red-600 text-sm mt-2">{{ form.payment_method.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-envelope"></i> Email для чека <span class="text-red-500">*</span>
+                </label>
+                {{ form.user_email }}
+                {% if form.user_email.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.user_email.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Общие ошибки формы -->
+            {% if form.non_field_errors %}
+                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                    {% for error in form.non_field_errors %}
+                        <p class="text-red-600 text-sm">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Кнопка отправки -->
+            <button type="submit" 
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition duration-200 transform hover:scale-105 shadow-lg">
+                <i class="fas fa-heart mr-2"></i> Поддержать проект
+            </button>
+        </form>
+    </div>
+
+    <!-- Информация -->
+    <div class="mt-8 text-center">
+        <p class="text-sm text-gray-600">
+            <i class="fas fa-lock text-green-500"></i>
+            Безопасная оплата через проверенные платежные системы
+        </p>
+        <div class="mt-4">
+            <a href="{% url 'donations:donation_page' %}" class="text-purple-600 hover:text-purple-700">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Вернуться к полной форме
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка предустановленных сумм
+    const presetRadios = document.querySelectorAll('.preset-radio');
+    const presetCards = document.querySelectorAll('.preset-card');
+    const customAmountInput = document.querySelector('input[name="custom_amount"]');
+    
+    presetRadios.forEach((radio, index) => {
+        radio.addEventListener('change', function() {
+            // Снимаем выделение со всех карточек
+            presetCards.forEach(card => {
+                card.classList.remove('border-purple-500', 'bg-purple-50');
+                card.classList.add('border-gray-200');
+            });
+            
+            // Выделяем выбранную
+            if (this.checked) {
+                presetCards[index].classList.add('border-purple-500', 'bg-purple-50');
+                presetCards[index].classList.remove('border-gray-200');
+                
+                // Очищаем поле своей суммы
+                customAmountInput.value = '';
+            }
+        });
+        
+        // Устанавливаем начальное состояние
+        if (radio.checked) {
+            presetCards[index].classList.add('border-purple-500', 'bg-purple-50');
+            presetCards[index].classList.remove('border-gray-200');
+        }
+    });
+    
+    // При вводе своей суммы снимаем выделение с предустановленных
+    customAmountInput.addEventListener('input', function() {
+        if (this.value) {
+            presetRadios.forEach(radio => radio.checked = false);
+            presetCards.forEach(card => {
+                card.classList.remove('border-purple-500', 'bg-purple-50');
+                card.classList.add('border-gray-200');
+            });
+        }
+    });
+    
+    // Обработка способов оплаты
+    const paymentRadios = document.querySelectorAll('.payment-radio');
+    const paymentOptions = document.querySelectorAll('.payment-option');
+    
+    paymentRadios.forEach((radio, index) => {
+        radio.addEventListener('change', function() {
+            paymentOptions.forEach(option => {
+                option.classList.remove('border-purple-500', 'bg-purple-50');
+                option.classList.add('border-gray-200');
+            });
+            
+            if (this.checked) {
+                paymentOptions[index].classList.add('border-purple-500', 'bg-purple-50');
+                paymentOptions[index].classList.remove('border-gray-200');
+            }
+        });
+        
+        // Устанавливаем начальное состояние
+        if (radio.checked) {
+            paymentOptions[index].classList.add('border-purple-500', 'bg-purple-50');
+            paymentOptions[index].classList.remove('border-gray-200');
+        }
+    });
+});
+</script>
+{% endblock %}

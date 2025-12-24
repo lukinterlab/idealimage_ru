@@ -1,0 +1,226 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    
+    <!-- Заголовок и описание -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">
+            {{ page_title }}
+        </h1>
+        <p class="text-lg text-gray-600">{{ page_description }}</p>
+    </div>
+
+    <!-- Форма доната -->
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+        <form method="post" id="donation-form" class="space-y-6">
+            {% csrf_token %}
+            
+            {# Сквозные параметры услуги #}
+            {% if selected_purpose %}
+                <input type="hidden" name="payment_purpose" value="{{ selected_purpose }}">
+            {% endif %}
+            {% if selected_amount %}
+                <input type="hidden" name="preset_amount" value="{{ selected_amount }}">
+            {% endif %}
+            
+            <!-- Сумма -->
+            <div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-ruble-sign"></i>
+                        {% if selected_purpose and selected_purpose != 'donation' %}
+                            Сумма оплаты
+                        {% else %}
+                            Сумма доната
+                        {% endif %}
+                    </label>
+                    
+                    {% if selected_amount %}
+                        <!-- Красивое отображение суммы к оплате -->
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-600 rounded-xl p-4 mb-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-700 dark:text-green-400 mb-1">
+                                    К ОПЛАТЕ
+                                </div>
+                                <div class="text-5xl font-black text-green-600 dark:text-green-300 mb-2">
+                                    {{ selected_amount }} ₽
+                                </div>
+                                <div class="text-sm text-green-600 dark:text-green-400">
+                                    {% if selected_purpose and selected_purpose != 'donation' %}
+                                        Оплата услуги
+                                    {% else %}
+                                        Поддержка проекта
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Быстрый выбор суммы (только для донатов) -->
+                {% if settings.preset_amounts and not selected_purpose or selected_purpose == 'donation' %}
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    {% for amount in settings.preset_amounts %}
+                    <button type="button" 
+                            class="preset-amount-btn bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold py-3 px-4 rounded-lg transition duration-200"
+                            data-amount="{{ amount }}">
+                        {{ amount }} ₽
+                    </button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {# Поле ввода суммы - скрываем если есть предустановленная сумма услуги #}
+                {% if not selected_amount or selected_purpose == 'donation' %}
+                    {{ form.amount }}
+                    {% if form.amount.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.amount.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-sm text-gray-500 mt-1">{{ form.amount.help_text }}</p>
+                {% else %}
+                    <!-- Скрытое поле для предустановленной суммы -->
+                    <input type="hidden" name="amount" value="{{ selected_amount }}">
+                    <div class="text-center text-gray-500 text-sm mt-2">
+                        <i class="fas fa-lock mr-1"></i>
+                        Сумма фиксированная для данной услуги
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Способ оплаты -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                    <i class="fas fa-credit-card"></i> Способ оплаты
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for value, label in form.payment_method.field.choices %}
+                    <label class="payment-method-card cursor-pointer">
+                        <input type="radio" name="payment_method" value="{{ value }}" class="hidden payment-method-radio" {% if forloop.first %}checked{% endif %}>
+                        <div class="payment-card border-2 border-gray-200 rounded-lg p-4 hover:border-purple-500 transition duration-200">
+                            <div class="flex items-center space-x-3">
+                                {% if value == 'yandex' %}
+                                    <i class="fas fa-wallet text-yellow-500 text-2xl"></i>
+                                {% elif value == 'sberpay' %}
+                                    <i class="fas fa-university text-green-600 text-2xl"></i>
+                                {% elif value == 'sbp' %}
+                                    <i class="fas fa-bolt text-blue-600 text-2xl"></i>
+                                {% elif value == 'qr' %}
+                                    <i class="fas fa-qrcode text-purple-600 text-2xl"></i>
+                                {% endif %}
+                                <span class="font-semibold text-gray-800">{{ label }}</span>
+                            </div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% if form.payment_method.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.payment_method.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-envelope"></i> Email для чека <span class="text-red-500">*</span>
+                </label>
+                {{ form.user_email }}
+                {% if form.user_email.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.user_email.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Имя -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-user"></i> Ваше имя (необязательно)
+                </label>
+                {{ form.user_name }}
+                {% if form.user_name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.user_name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Сообщение -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-comment"></i> Сообщение или пожелание (необязательно)
+                </label>
+                {{ form.message }}
+                {% if form.message.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.message.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Анонимный донат -->
+            <div class="flex items-center">
+                {{ form.is_anonymous }}
+                <label for="{{ form.is_anonymous.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                    {{ form.is_anonymous.label }} <span class="text-gray-500">({{ form.is_anonymous.help_text }})</span>
+                </label>
+            </div>
+
+            <!-- Кнопка отправки -->
+            <button type="submit" 
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition duration-200 transform hover:scale-105 shadow-lg">
+                {% if selected_purpose and selected_purpose != 'donation' %}
+                    Оплатить услугу
+                {% else %}
+                    Поддержать проект
+                {% endif %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Информация о безопасности -->
+    <div class="mt-8 text-center text-sm text-gray-600">
+        <i class="fas fa-lock text-green-500"></i>
+        Все платежи защищены и проходят через проверенные платежные системы
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка быстрого выбора суммы
+    const presetButtons = document.querySelectorAll('.preset-amount-btn');
+    const amountInput = document.querySelector('input[name="amount"]');
+    
+    presetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = this.getAttribute('data-amount');
+            amountInput.value = amount;
+            
+            // Визуальное выделение выбранной кнопки
+            presetButtons.forEach(btn => btn.classList.remove('bg-purple-500', 'text-white'));
+            presetButtons.forEach(btn => btn.classList.add('bg-purple-100', 'text-purple-700'));
+            this.classList.remove('bg-purple-100', 'text-purple-700');
+            this.classList.add('bg-purple-500', 'text-white');
+        });
+    });
+    
+    // Обработка выбора способа оплаты
+    const paymentRadios = document.querySelectorAll('.payment-method-radio');
+    const paymentCards = document.querySelectorAll('.payment-card');
+    
+    paymentRadios.forEach((radio, index) => {
+        radio.addEventListener('change', function() {
+            paymentCards.forEach(card => {
+                card.classList.remove('border-purple-500', 'bg-purple-50');
+                card.classList.add('border-gray-200');
+            });
+            if (this.checked) {
+                paymentCards[index].classList.add('border-purple-500', 'bg-purple-50');
+            }
+        });
+        
+        // Устанавливаем начальное состояние
+        if (radio.checked) {
+            paymentCards[index].classList.add('border-purple-500', 'bg-purple-50');
+        }
+    });
+});
+</script>
+{% endblock %}

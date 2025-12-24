@@ -1,0 +1,105 @@
+{% load static %}
+
+<!-- Content Start -->
+    <div>
+        <!-- мышь выделяет строку ТАБЛИЦА -->
+        <section class="scroll-section" id="hover">
+            <h2 class="small-title">Выделяет строку</h2>
+            <div class="card mb-5">
+            <div class="card-body">
+                <!-- ТАБЛИЦА навигация -->
+                <div class="row">
+                <div class="col-12 col-sm-5 col-lg-3 col-xxl-2 mb-1">
+                    <div class="d-inline-block float-md-start me-1 mb-1 search-input-container w-100 border border-separator bg-foreground search-sm">
+                    <input class="form-control form-control-sm datatable-search" placeholder="Search" data-datatable="#datatableHover" />
+                    <span class="search-magnifier-icon">
+                        <i data-cs-icon="search"></i>
+                    </span>
+                    <span class="search-delete-icon d-none">
+                        <i data-cs-icon="close"></i>
+                    </span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-7 col-lg-9 col-xxl-10 text-end mb-1">
+                    <div class="d-inline-block">
+                    <button class="btn btn-icon btn-icon-only btn-outline-muted btn-sm datatable-print" type="button" data-datatable="#datatableHover">
+                        <i data-cs-icon="print"></i>
+                    </button>
+                    <div class="d-inline-block datatable-export" data-datatable="#datatableHover">
+                        <button
+                        class="btn btn-icon btn-icon-only btn-outline-muted btn-sm dropdown"
+                        data-bs-toggle="dropdown"
+                        type="button"
+                        data-bs-offset="0,3"
+                        >
+                        <i data-cs-icon="download"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-sm dropdown-menu-end">
+                        <button class="dropdown-item export-copy" type="button">Copy</button>
+                        <button class="dropdown-item export-excel" type="button">Excel</button>
+                        <button class="dropdown-item export-cvs" type="button">Cvs</button>
+                        </div>
+                    </div>
+                    <div class="dropdown-as-select d-inline-block datatable-length" data-datatable="#datatableHover">
+                        <button
+                        class="btn btn-outline-muted btn-sm dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        data-bs-offset="0,3"
+                        >
+                        10 строк
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-sm dropdown-menu-end">
+                        <a class="dropdown-item" href="#">5 строк</a>
+                        <a class="dropdown-item active" href="#">10 строк</a>
+                        <a class="dropdown-item" href="#">20 строк</a>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                </div>
+                <!-- ТАБЛИЦА навигация -->
+                
+                <!-- ТАБЛИЦА Table Start -->
+                <table
+                class="data-table data-table-pagination data-table-standard responsive nowrap hover"
+                id="datatableHover"
+                data-order='[[ 0, "desc" ]]'
+                >
+                    <thead>
+                        <tr>
+                        <th class="text-muted text-small text-uppercase">Name</th>
+                        <th class="text-muted text-small text-uppercase">Sales</th>
+                        <th class="text-muted text-small text-uppercase">Stock</th>
+                        <th class="text-muted text-small text-uppercase">Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for post in posts %}
+                        <tr> 
+                            <td>{{ post.title|truncatechars:30 }}</td>
+                            <td>
+                                {% if post.kartinka %}
+                                    <img  src="{{ post.kartinka.url }}" class="img-fluid rounded mb-1 me-1 sh-3 sw-9" alt="thumb" />
+                                {% endif %}
+                            </td>
+                            <td>{{ post.category }}</td>
+                            <td>
+                            <a href='{% url "blog:post_update" post.slug %}' >
+                                <button type="button" class="btn btn-primary w-100 me-2">редактировать статью</button>
+                            </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <!-- ТАБЛИЦА Table End -->
+            </div>
+            </div>
+        </section>
+        <!-- мышь выделяет строку ТАБЛИЦА -->
+    </div>
+    <!-- Content End -->
+</div>

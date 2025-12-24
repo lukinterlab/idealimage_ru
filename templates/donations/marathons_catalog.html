@@ -1,0 +1,173 @@
+{% extends 'donations/base.html' %}
+{% load static %}
+
+{% block title %}Марафоны и тренинги - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12">
+    
+    <!-- Заголовок -->
+    <div class="text-center mb-12">
+        <div class="text-7xl mb-4">📚</div>
+        <h1 class="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            Марафоны и тренинги
+        </h1>
+        <p class="text-xl text-gray-600 dark:text-gray-300">
+            10 дней к идеальному результату с пошаговыми инструкциями
+        </p>
+    </div>
+
+    <!-- Каталог марафонов -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        
+        <!-- Марафон 1: Идеальная кожа -->
+        <div class="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 rounded-2xl shadow-xl p-6 border-2 border-pink-200 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+            <div class="text-5xl mb-4 text-center">✨</div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                10 дней к идеальной коже
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+                Комплексная программа ухода за кожей с ежедневными заданиями и рецептами
+            </p>
+            
+            <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2 text-sm">Что включено:</h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                    <li>• 10 подробных статей</li>
+                    <li>• Ежедневные задания</li>
+                    <li>• Рецепты масок и скрабов</li>
+                    <li>• Чек-листы по уходу</li>
+                    <li>• Рекомендации косметики</li>
+                </ul>
+            </div>
+            
+            <div class="text-center mb-4">
+                <div class="text-4xl font-bold text-pink-600 dark:text-pink-400">990 ₽</div>
+                <div class="text-sm text-gray-500 line-through">1500₽</div>
+            </div>
+            
+            <a href="{% url 'donations:donation_page' %}?purpose=marathon_skin&amount=990&title=Марафон%20Идеальная%20кожа&description=10%20дней%20ухода%20за%20кожей" 
+               class="block w-full bg-gradient-to-r from-pink-600 to-rose-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-pink-700 hover:to-rose-700 transition duration-200">
+                Купить марафон
+            </a>
+        </div>
+
+        <!-- Марафон 2: Макияж -->
+        <div class="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl shadow-xl p-6 border-2 border-purple-200 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+            <div class="text-5xl mb-4 text-center">💄</div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                Макияж: от новичка до мастера
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+                14 дней обучения профессиональному макияжу с видео-уроками
+            </p>
+            
+            <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2 text-sm">Что включено:</h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                    <li>• 14 уроков с фото</li>
+                    <li>• Техники нанесения</li>
+                    <li>• Подбор косметики</li>
+                    <li>• Коррекция лица</li>
+                    <li>• Вечерний макияж</li>
+                </ul>
+            </div>
+            
+            <div class="text-center mb-4">
+                <div class="text-4xl font-bold text-purple-600 dark:text-purple-400">1290 ₽</div>
+                <div class="text-sm text-gray-500 line-through">2000₽</div>
+            </div>
+            
+            <a href="{% url 'donations:donation_page' %}?purpose=marathon_makeup&amount=1290&title=Марафон%20Макияж&description=14%20дней%20обучения%20макияжу" 
+               class="block w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition duration-200">
+                Купить марафон
+            </a>
+        </div>
+
+        <!-- Марафон 3: Капсульный гардероб -->
+        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl shadow-xl p-6 border-2 border-blue-200 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+            <div class="text-5xl mb-4 text-center">👗</div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                Капсульный гардероб за 7 дней
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+                Создайте идеальный гардероб из 20 вещей на все случаи жизни
+            </p>
+            
+            <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2 text-sm">Что включено:</h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                    <li>• 7 уроков по стилю</li>
+                    <li>• Анализ гардероба</li>
+                    <li>• Список must-have вещей</li>
+                    <li>• Сочетания образов</li>
+                    <li>• Где купить недорого</li>
+                </ul>
+            </div>
+            
+            <div class="text-center mb-4">
+                <div class="text-4xl font-bold text-blue-600 dark:text-blue-400">790 ₽</div>
+                <div class="text-sm text-gray-500 line-through">1200₽</div>
+            </div>
+            
+            <a href="{% url 'donations:donation_page' %}?purpose=marathon_wardrobe&amount=790&title=Марафон%20Гардероб%207%20дней&description=Капсульный%20гардероб%20за%207%20дней" 
+               class="block w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-center font-bold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition duration-200">
+                Купить марафон
+            </a>
+        </div>
+
+        <!-- Скоро (заглушка для будущих марафонов) -->
+        <div class="bg-gray-100 dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center">
+            <div class="text-5xl mb-4">🔜</div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                Скоро появится!
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300 text-sm text-center">
+                Новые марафоны в разработке. Подпишитесь на уведомления!
+            </p>
+        </div>
+    </div>
+
+    <!-- Преимущества марафонов -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+            Почему стоит купить марафон?
+        </h2>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="text-4xl mb-3">🎯</div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">Системный подход</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Последовательное обучение шаг за шагом, а не хаотичное чтение статей
+                </p>
+            </div>
+
+            <div class="text-center">
+                <div class="text-4xl mb-3">📊</div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">Гарантия результата</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Если пройдёте все дни марафона - увидите реальные изменения
+                </p>
+            </div>
+
+            <div class="text-center">
+                <div class="text-4xl mb-3">💰</div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-2">Доступная цена</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Дешевле чем 1 поход в салон, а знания остаются навсегда!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка назад -->
+    <div class="text-center">
+        <a href="{% url 'donations:services_page' %}" class="text-purple-600 dark:text-purple-400 hover:underline">
+            ← Вернуться к списку услуг
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+

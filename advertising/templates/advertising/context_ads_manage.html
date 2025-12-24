@@ -1,0 +1,132 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Контекстная реклама - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-5xl font-black text-white mb-2">
+                        📝 Контекстная реклама
+                    </h1>
+                    <p class="text-xl text-gray-300">Управление рекламными вставками в статьях</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'advertising:context_ad_create' %}" 
+                       class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        ➕ Создать объявление
+                    </a>
+                    <a href="{% url 'advertising:dashboard' %}" 
+                       class="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20">
+                        ← Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контекстные объявления -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8">
+            <h3 class="text-2xl font-bold text-white mb-4">Контекстные объявления</h3>
+            {% if context_ads %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-white/5 border-b border-white/20">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-white font-semibold">Ключевая фраза</th>
+                            <th class="px-4 py-3 text-left text-white font-semibold">Текст ссылки</th>
+                            <th class="px-4 py-3 text-left text-white font-semibold">Кампания</th>
+                            <th class="px-4 py-3 text-center text-white font-semibold">Показы</th>
+                            <th class="px-4 py-3 text-center text-white font-semibold">Клики</th>
+                            <th class="px-4 py-3 text-center text-white font-semibold">CTR</th>
+                            <th class="px-4 py-3 text-right text-white font-semibold">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for ad in context_ads %}
+                        <tr class="hover:bg-white/5">
+                            <td class="px-4 py-3 text-white">{{ ad.keyword_phrase }}</td>
+                            <td class="px-4 py-3 text-purple-300">{{ ad.anchor_text }}</td>
+                            <td class="px-4 py-3 text-gray-300">{{ ad.campaign.name }}</td>
+                            <td class="px-4 py-3 text-center text-white">{{ ad.impressions }}</td>
+                            <td class="px-4 py-3 text-center text-green-300 font-bold">{{ ad.clicks }}</td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="text-yellow-300">{{ ad.get_ctr|floatformat:2 }}%</span>
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <a href="{% url 'advertising:context_ad_edit' ad.id %}" 
+                                   class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">
+                                    Редактировать
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-gray-400 text-center py-8">Контекстных объявлений пока нет</p>
+            {% endif %}
+        </div>
+        
+        <!-- Вставки в статьях -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <h3 class="text-2xl font-bold text-white mb-4">🔗 Вставки рекламы в статьях</h3>
+            {% if insertions %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-white/5 border-b border-white/20">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-white font-semibold">Объявление</th>
+                            <th class="px-4 py-3 text-left text-white font-semibold">Статья</th>
+                            <th class="px-4 py-3 text-left text-white font-semibold">Вставил</th>
+                            <th class="px-4 py-3 text-left text-white font-semibold">Когда</th>
+                            <th class="px-4 py-3 text-center text-white font-semibold">Клики</th>
+                            <th class="px-4 py-3 text-center text-white font-semibold">Показы</th>
+                            <th class="px-4 py-3 text-right text-white font-semibold">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for insertion in insertions %}
+                        <tr class="hover:bg-white/5">
+                            <td class="px-4 py-3 text-white">{{ insertion.context_ad.anchor_text }}</td>
+                            <td class="px-4 py-3">
+                                <a href="{{ insertion.get_article_link }}" 
+                                   class="text-blue-400 hover:text-blue-300" 
+                                   target="_blank">
+                                    {{ insertion.post.title|truncatewords:8 }}
+                                </a>
+                            </td>
+                            <td class="px-4 py-3 text-gray-300">{{ insertion.inserted_by }}</td>
+                            <td class="px-4 py-3 text-gray-400 text-sm">{{ insertion.inserted_at|date:"d.m.Y H:i" }}</td>
+                            <td class="px-4 py-3 text-center text-green-300">{{ insertion.clicks }}</td>
+                            <td class="px-4 py-3 text-center text-white">{{ insertion.views }}</td>
+                            <td class="px-4 py-3 text-right">
+                                <button class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm">
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-gray-400 text-center py-8">Вставок пока нет</p>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+

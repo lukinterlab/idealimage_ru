@@ -1,0 +1,203 @@
+{% load static %}
+
+{% block vizitor %}
+<!--Левая полоса страницы  ПРОФИЛЬ -->
+<div class="col-12 col-xl-4 col-xxl-3">
+
+	<!--ЕСЛИ ПИСАТЕЛЬ  РЕДАКТИРОВАТЬ ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ-->
+	{% if request.user.is_authenticated %}
+	  <a href="{% url 'Visitor:profile_edit' %}" class="btn btn-outline-primary w-100 me-2">РЕДАКТИРОВАТЬ ПРОФИЛЬ</a>
+	{% endif %}
+	<!--ЕСЛИ ПИСАТЕЛЬ  -->
+
+	<!--ПРОФИЛЬ VISITORA  -->
+	<div class="card">
+		<div class="card-body mb-n5">
+
+			<!-- ФОТО ПРОФИЛЯ С подписью и кнопками-->
+			<div class="d-flex align-items-center flex-column mb-5">
+
+				<!-- ФОТО ПРОФИЛЯ С подписью-->
+				<div class="mb-5 d-flex align-items-center flex-column">
+					<div class="sw-20 position-relative mb-3">
+						<img src="{{ profile.avatar.url }}"  class="img-fluid " alt="thumb" />
+					</div>
+					<div class="h5 mb-0">
+						{{ profile.vizitor.username }}-
+						<span class="align-middle">{{ profile.spez }}</span>
+					</div>
+					<div class="text-muted">{{ profile.vizitor.get_full_name }}</div>
+					<div class="text-muted">
+						<span class="align-middle">На сайте с {{ profile.vizitor.date_joined }}</span>
+					</div>
+					Заходил: {{ profile.vizitor.last_login }}
+				</div>
+				<!-- ФОТО ПРОФИЛЯ С подписью-->
+				
+				<!-- КНОПКИ ПОД подписью -->
+				<div class="d-flex flex-row justify-content-between w-100 w-sm-50 w-xl-100">
+	
+					<!--ЕСЛИ ПИСАТЕЛЬ  Выход   Добавить статью  *** GPT-->
+					{% if request.user.is_authenticated %}
+					
+						<!--Выход  -->
+						<form action='{% url "Visitor:logout" %}' method="post">
+							{% csrf_token %}
+							<button class="btn btn-outline-primary w-100 me-2" >Выход</button>
+						</form>
+						<!--Выход  -->
+		
+						<!--Добавить статью -->
+						<a href='{% url "blog:post_create" %}' >
+							<button type="button" class="btn btn-primary w-100 me-2">Добавить статью</button>
+						</a>
+						<!--Добавить статью -->
+		
+						<!--ЧАТ БОТ ТЕКСТОВ -->
+						<a href='https://textbot.ru/account' target="_blank">
+							<button class="btn btn-icon btn-icon-only btn-outline-primary" type="button">
+							<i data-cs-icon="more-horizontal">ЧАТ БОТ ТЕКСТОВ</i>
+							</button>
+						</a>
+						<!--ЧАТ БОТ ТЕКСТОВ -->
+	
+					{% else %}
+						<button type="button" class="btn btn-primary w-100 me-2">Подписаться</button>
+						<button type="button" class="btn btn-outline-primary w-100 me-2">Отписаться</button>
+						<button class="btn btn-icon btn-icon-only btn-outline-primary" type="button">
+							<i data-cs-icon="more-horizontal"></i>
+						</button>
+					{% endif %}
+					<!--ЕСЛИ ПИСАТЕЛЬ  -->
+	
+				</div>
+				<!-- КНОПКИ ПОД подписью -->
+
+			</div>
+			<!-- ФОТО ПРОФИЛЯ С подписью и кнопками-->
+
+			<!--сч ётчики .count -->
+			<div class="mb-5">
+
+				<!-- >Колличество статей Start -->
+				<div class="row g-0 align-items-center mb-2">
+					<div class="col-auto">
+						<div class="border border-primary sw-5 sh-5 rounded-xl d-flex justify-content-center align-items-center">
+							<i data-cs-icon="screen" class="text-primary"></i>
+						</div>
+					</div>
+					<div class="col ps-3">
+						<div class="row g-0">
+							<div class="col">
+								<div class="p mb-0 sh-5 d-flex align-items-center lh-1-25">Колличество статей</div>
+							</div>
+							<div class="col-auto">
+								<div class="sh-5 d-flex align-items-center">{{ posts.count }}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- >Колличество статей Start -->
+	
+				<!-- Общее Комментариев -->
+				<div class="row g-0 align-items-center mb-2">
+					<div class="col-auto">
+						<div class="border border-primary sw-5 sh-5 rounded-xl d-flex justify-content-center align-items-center">
+							<i data-cs-icon="paint-roller" class="text-primary"></i>
+						</div>
+					</div>
+					<div class="col ps-3">
+						<div class="row g-0">
+							<div class="col">
+								<div class="p mb-0 sh-5 d-flex align-items-center lh-1-25">Общее Комментариев</div>
+							</div>
+							<div class="col-auto">
+								<div class="sh-5 d-flex align-items-center">1.124</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Общее Комментариев -->
+	
+				<!-- >ЛАЙКИ Start -->
+				<div class="row g-0 align-items-center mb-2">
+					<div class="col-auto">
+						<div class="border border-primary sw-5 sh-5 rounded-xl d-flex justify-content-center align-items-center">
+							<i data-cs-icon="like" class="text-primary"></i>
+						</div>
+					</div>
+					<div class="col ps-3">
+						<div class="row g-0">
+							<div class="col">
+								<div class="p mb-0 sh-5 d-flex align-items-center lh-1-25">Общее Likes</div>
+							</div>
+							<div class="col-auto">
+								<div class="sh-5 d-flex align-items-center">12.573</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- >ЛАЙКИ Start -->
+	
+				<!-- ПОдписчики Start -->
+				<div class="row g-0 align-items-center mb-2">
+					<div class="col-auto">
+						<div class="border border-primary sw-5 sh-5 rounded-xl d-flex justify-content-center align-items-center">
+							<i data-cs-icon="user" class="text-primary"></i>
+						</div>
+					</div>
+					<div class="col ps-3">
+						<div class="row g-0">
+							<div class="col">
+								<div class="p mb-0 sh-5 d-flex align-items-center lh-1-25">Подписчиков</div>
+							</div>
+							<div class="col-auto">
+								<div class="sh-5 d-flex align-items-center">1.245</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- ПОдписчики Start -->
+
+			</div>
+			<!--сч ётчики  -->
+
+			<!--О себе: profile.bio -->
+			<div class="mb-5">
+			<p class="text-small text-muted mb-2">О себе:</p>
+			<p>
+				{{ profile.bio }}
+			</p>
+			</div>
+			<!--О себе: -->
+
+			<!--Дата рождения: rofile.birth_date -->
+			<div class="mb-5">
+			<p class="text-small text-muted mb-2">Дата рождения:</p>
+			<p>
+				{{ profile.birth_date }}
+			</p>
+			</div>
+			<!--Дата рождения: rofile.birth_date -->
+
+			<!--Контакты profile.user.email -->
+			<div class="mb-5">
+			<p class="text-small text-muted mb-2">Контакты</p>
+			<a href="https://lukinterlab.ru/" class="d-block body-link mb-1">
+				<i data-cs-icon="screen" class="me-2" data-cs-size="17"></i>
+				<span class="align-middle">LukInterLab.ru</span>
+			</a>
+			<a href='{% url "Visitor:feedback" %}' class="d-block body-link">
+				<i data-cs-icon="email" class="me-2" data-cs-size="17"></i>
+				<span class="align-middle">{{ profile.vizitor.email }}</span>
+			</a>
+			</div>
+			<!--Контакты profile.user.email -->
+
+		</div>
+	</div>
+	<!--ПРОФИЛЬ VISITORA  -->
+
+</div>
+<!--Левая полоса страницы  ПРОФИЛЬ -->
+{% endblock vizitor %}

@@ -1,0 +1,99 @@
+<!-- Donation Widget -->
+<div class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-purple-900/20 dark:via-pink-900/20 dark:to-blue-900/20 rounded-2xl shadow-lg p-6 md:p-8 border-2 border-purple-200/50 dark:border-purple-700/50 hover:shadow-xl transition-all duration-300">
+    <div class="flex flex-col md:flex-row items-center gap-6">
+        <!-- Icon -->
+        <div class="flex-shrink-0">
+            <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="flex-1 text-center md:text-left">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 font-heading">
+                Поддержите наш проект! 💝
+            </h3>
+            
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Ваши донаты помогают нам создавать ещё больше качественного контента ✨
+            </p>
+            
+           
+        </div>
+        
+        <!-- CTA Button -->
+        <div class="flex-shrink-0">
+            <a href="{% url 'donations:donation_page' %}{% if post %}?article_id={{ post.id }}{% endif %}" 
+               class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden">
+                <!-- Animated background -->
+                <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-pink-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                
+                <!-- Button content -->
+                <span class="relative flex items-center">
+                    <svg class="w-6 h-6 mr-2 group-hover:animate-bounce" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                    </svg>
+                    Поддержать
+                </span>
+            </a>
+            
+            <!-- Quick donation amounts -->
+            <div class="flex gap-2 mt-3 justify-center">
+                <a href="{% url 'donations:quick_donation' %}?amount=100{% if post %}&article_id={{ post.id }}{% endif %}" 
+                   class="px-3 py-1 text-xs font-semibold text-purple-600 dark:text-purple-400 bg-white dark:bg-gray-800 border-2 border-purple-300 dark:border-purple-600 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors">
+                    100₽
+                </a>
+                <a href="{% url 'donations:quick_donation' %}?amount=500{% if post %}&article_id={{ post.id }}{% endif %}" 
+                   class="px-3 py-1 text-xs font-semibold text-purple-600 dark:text-purple-400 bg-white dark:bg-gray-800 border-2 border-purple-300 dark:border-purple-600 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors">
+                    500₽
+                </a>
+                <a href="{% url 'donations:quick_donation' %}?amount=1000{% if post %}&article_id={{ post.id }}{% endif %}" 
+                   class="px-3 py-1 text-xs font-semibold text-purple-600 dark:text-purple-400 bg-white dark:bg-gray-800 border-2 border-purple-300 dark:border-purple-600 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors">
+                    1000₽
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment methods icons
+    <div class="mt-6 pt-4 border-t border-purple-200/50 dark:border-purple-700/50">
+        <p class="text-xs text-center text-gray-500 dark:text-gray-400 mb-2">Принимаем:</p>
+        <div class="flex justify-center items-center gap-4 flex-wrap">
+            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                <svg class="w-6 h-6 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                </svg>
+                <span class="text-xs">Яндекс.Касса</span>
+            </div>
+            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                <svg class="w-6 h-6 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                <span class="text-xs">СберПей</span>
+            </div>
+            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                <svg class="w-6 h-6 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zm8-2v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm13-2h-2v3h-3v2h3v3h2v-3h3v-2h-3z"/>
+                </svg>
+                <span class="text-xs">QR-код</span>
+            </div>
+        </div>
+    </div> -->
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .7;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>

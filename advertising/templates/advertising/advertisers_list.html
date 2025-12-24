@@ -1,0 +1,71 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-white dark:bg-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
+                👥 Рекламодатели
+            </h1>
+            <div class="flex gap-3">
+                <a href="/admin/advertising/advertiser/add/" 
+                   class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg">
+                    ➕ Создать рекламодателя
+                </a>
+                <a href="{% url 'advertising:dashboard' %}" 
+                   class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg">
+                    ← Назад
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {% if advertisers %}
+            <table class="w-full">
+                <thead class="bg-gray-100 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-gray-700 dark:text-gray-300 font-semibold">Название</th>
+                        <th class="px-6 py-4 text-left text-gray-700 dark:text-gray-300 font-semibold">Email</th>
+                        <th class="px-6 py-4 text-left text-gray-700 dark:text-gray-300 font-semibold">Телефон</th>
+                        <th class="px-6 py-4 text-center text-gray-700 dark:text-gray-300 font-semibold">Потрачено</th>
+                        <th class="px-6 py-4 text-right text-gray-700 dark:text-gray-300 font-semibold">Действия</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for advertiser in advertisers %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="px-6 py-4 text-gray-900 dark:text-white font-semibold">{{ advertiser.name }}</td>
+                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">{{ advertiser.contact_email }}</td>
+                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">{{ advertiser.contact_phone }}</td>
+                        <td class="px-6 py-4 text-center text-yellow-600 dark:text-yellow-400 font-bold">
+                            {{ advertiser.total_spent|floatformat:0 }}₽
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'advertising:advertiser_detail' advertiser.id %}" 
+                               class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">
+                                Подробнее
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="p-12 text-center">
+                <p class="text-gray-500 dark:text-gray-400 mb-4">Рекламодателей пока нет</p>
+                <a href="/admin/advertising/advertiser/add/" 
+                   class="inline-block px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg">
+                    Создать первого рекламодателя
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+

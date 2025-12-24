@@ -1,0 +1,47 @@
+{% load static %}
+
+<!-- ХЛЕБНЫЕ КРОШКИ (Breadcrumbs) -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb bg-light p-3 rounded">
+    {% for name, url in breadcrumbs %}
+      {% if forloop.last %}
+        <li class="breadcrumb-item active" aria-current="page">{{ name|truncatewords:8 }}</li>
+      {% else %}
+        <li class="breadcrumb-item">
+          <a href="{{ url }}" class="text-decoration-none">{{ name }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+</nav>
+
+<style>
+.breadcrumb {
+  background-color: #f8f9fa;
+  margin-bottom: 1.5rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #6c757d;
+}
+
+.breadcrumb-item a {
+  color: #0d6efd;
+  transition: color 0.2s;
+}
+
+.breadcrumb-item a:hover {
+  color: #0a58ca;
+  text-decoration: underline !important;
+}
+
+.breadcrumb-item.active {
+  color: #6c757d;
+  font-weight: 500;
+}
+</style>
+
+

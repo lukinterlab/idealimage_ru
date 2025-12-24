@@ -1,0 +1,58 @@
+{% load static %}
+
+<section class="scroll-section" id="galleryBoxed">
+    <h2 class="small-title">Gallery Boxed</h2>
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="glide" id="glideGalleryBoxed">
+              <!-- Large Images Start -->
+            
+              <div class="glide glide-large">
+                <div class="glide__track" data-glide-el="track">
+                  <ul class="glide__slides">
+                    {% for post in post_list reversed %}
+                    <li class="glide__slide p-0">
+                      <img
+                        alt="detail"
+                        src="{{ post.kartinka.url }}"
+                        class="responsive border-0 rounded-md img-fluid mb-3 sh-80 w-80"
+                      />
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+              <!-- Large Images End -->
+
+              <!-- Thumbs Start -->
+              <div class="glide glide-thumb">
+                <div class="glide__track" data-glide-el="track">
+                  <ul class="glide__slides">
+                    {% for post in post_list reversed %}
+                    <li class="glide__slide p-2">
+                      <img alt="thumb" src="{{ post.kartinka.url }}" class="responsive rounded-md img-fluid" />
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                <div class="glide__arrows" data-glide-el="controls">
+                  <button class="btn btn-icon btn-icon-only btn-foreground hover-outline left-arrow" data-glide-dir="<">
+                    <i data-cs-icon="chevron-left"></i>
+                  </button>
+                  <button class="btn btn-icon btn-icon-only btn-foreground hover-outline right-arrow" data-glide-dir=">">
+                    <i data-cs-icon="chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+              <!-- Thumbs End -->
+            
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+<!-- Gallery Boxed End -->
+

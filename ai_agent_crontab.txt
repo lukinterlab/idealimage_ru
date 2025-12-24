@@ -1,0 +1,14 @@
+# ================================================================
+# AI AGENT АВТОМАТИЧЕСКИЙ МОНИТОРИНГ
+# Добавьте эти строки в crontab: crontab -e
+# ================================================================
+
+# Мониторинг каждый час с 8:00 до 21:00
+0 8-21 * * * cd /home/users/j/j7642490/domains/idealimage.ru && /home/users/j/j7642490/domains/idealimage.ru/.venv/python311/bin/python manage.py ai_auto_monitor >> logs/ai_monitor.log 2>&1
+
+# Альтернатива: Каждые 30 минут в рабочее время
+# */30 8-21 * * * cd /home/users/j/j7642490/domains/idealimage.ru && /home/users/j/j7642490/domains/idealimage.ru/.venv/python311/bin/python manage.py ai_auto_monitor >> logs/ai_monitor.log 2>&1
+
+# Проверка Django-Q статуса каждые 5 минут (автоматический перезапуск)
+*/5 * * * * pgrep -f "python.*qcluster" > /dev/null || (cd /home/users/j/j7642490/domains/idealimage.ru && /home/users/j/j7642490/domains/idealimage.ru/.venv/python311/bin/python manage.py qcluster >> logs/qcluster.log 2>&1 &)
+

@@ -1,0 +1,8 @@
+{% load static %}
+<!-- Schema.org JSON-LD structured data -->
+{% if structured_data %}
+<script type="application/ld+json">
+{{ structured_data|safe }}
+</script>
+{% endif %}
+

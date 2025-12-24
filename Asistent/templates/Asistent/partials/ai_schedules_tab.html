@@ -1,0 +1,803 @@
+<!-- AI-расписания вкладка -->
+<div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 p-6 mb-6 shadow-xl">
+    <div class="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+        <form method="get" class="w-full">
+            <input type="hidden" name="tab" value="{{ current_tab }}">
+            <input type="hidden" name="view" value="{{ view_mode }}">
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                <div>
+                    <label for="status-filter" class="block text-xs uppercase tracking-widest text-gray-300 dark:text-gray-400 mb-2">Статус</label>
+                    <select id="status-filter" name="status"
+                            class="w-full px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все расписания</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Только активные</option>
+                        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Только неактивные</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="state-filter" class="block text-xs uppercase tracking-widest text-gray-300 dark:text-gray-400 mb-2">Состояние запуска</label>
+                    <select id="state-filter" name="state"
+                            class="w-full px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="all" {% if run_state_filter == 'all' %}selected{% endif %}>Все состояния</option>
+                        <option value="running" {% if run_state_filter == 'running' %}selected{% endif %}>Запущено</option>
+                        <option value="stopped" {% if run_state_filter == 'stopped' %}selected{% endif %}>Остановлено</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="type-filter" class="block text-xs uppercase tracking-widest text-gray-300 dark:text-gray-400 mb-2">Тип</label>
+                    <select id="type-filter" name="type"
+                            class="w-full px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="all" {% if type_filter == 'all' %}selected{% endif %}>Все типы</option>
+                        <option value="system" {% if type_filter == 'system' %}selected{% endif %}>Системные</option>
+                        <option value="non_system" {% if type_filter == 'non_system' %}selected{% endif %}>Пользовательские</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="sort-filter" class="block text-xs uppercase tracking-widest text-gray-300 dark:text-gray-400 mb-2">Сортировка</label>
+                    <select id="sort-filter" name="sort"
+                            class="w-full px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        {% for value, label in sort_options %}
+                            <option value="{{ value }}" {% if sort_param == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="dir-filter" class="block text-xs uppercase tracking-widest text-gray-300 dark:text-gray-400 mb-2">Направление</label>
+                    <select id="dir-filter" name="dir"
+                            class="w-full px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        {% for value, label in direction_options %}
+                            <option value="{{ value }}" {% if sort_direction == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3">
+                <button type="submit"
+                        class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-lg transition-colors">
+                    Применить
+                </button>
+                <a href="?{{ reset_filters_query }}"
+                   class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-gray-200 font-semibold rounded-lg border border-white/10 transition-colors {% if not filters_active %}opacity-60 pointer-events-none{% endif %}">
+                    Сбросить
+                </a>
+            </div>
+        </form>
+
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-2">
+                <a href="?{{ grid_view_query }}"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/15 transition-all {% if view_mode == 'grid' %}bg-purple-600 text-white shadow-lg border-transparent{% else %}text-gray-300 hover:bg-white/10{% endif %}">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 3h6v6H3V3zm0 8h6v6H3v-6zm8-8h6v6h-6V3zm6 8h-6v6h6v-6z" />
+                    </svg>
+                    <span class="text-sm font-semibold">Карточки</span>
+                </a>
+                <a href="?{{ table_view_query }}"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/15 transition-all {% if view_mode == 'table' %}bg-purple-600 text-white shadow-lg border-transparent{% else %}text-gray-300 hover:bg-white/10{% endif %}">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v1H3V4zm0 3h14v2H3V7zm14 4H3v2h14v-2zm0 4H3v1a1 1 0 001 1h12a1 1 0 001-1v-1z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="text-sm font-semibold">Список</span>
+                </a>
+            </div>
+            
+            <!-- Чекбокс "Выделить все" для grid view -->
+            {% if view_mode == 'grid' %}
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="select-all-schedules-grid" 
+                       class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer">
+                <label for="select-all-schedules-grid" class="text-sm text-gray-300">Выделить все</label>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Панель массовых операций -->
+        <div id="bulk-actions-panel" class="hidden mt-4 bg-purple-600/20 backdrop-blur-md rounded-2xl border border-purple-500/30 p-4 shadow-xl">
+            {% csrf_token %}
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center gap-4">
+                    <span class="text-white font-semibold">
+                        Выбрано: <span id="selected-count">0</span>
+                    </span>
+                    <select id="bulk-action-select" 
+                            class="px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">-- Выберите действие --</option>
+                        <option value="activate">Активировать</option>
+                        <option value="deactivate">Деактивировать (Остановить)</option>
+                        <option value="run">Запустить</option>
+                        <option value="delete">Удалить</option>
+                    </select>
+                    <button id="apply-bulk-action" 
+                            class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                        Применить
+                    </button>
+                </div>
+                <button id="clear-selection" 
+                        class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                    Снять выделение
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if schedules %}
+    {% if view_mode == 'table' %}
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 shadow-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-white/10">
+                    <thead class="bg-white/5">
+                        <tr class="text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
+                            <th class="px-5 py-3 w-12">
+                                <input type="checkbox" id="select-all-schedules" 
+                                       class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer">
+                            </th>
+                            <th class="px-5 py-3">
+                                <div class="flex items-center gap-1">
+                                    <span>ID</span>
+                                    <a href="?{% if filter_querystring %}{{ filter_querystring }}&{% endif %}sort=id&dir={% if sort_param == 'id' %}{% if sort_direction == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}"
+                                       class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-white/15 text-xs {% if sort_param == 'id' %}bg-white/20 text-white{% else %}text-gray-400 hover:bg-white/10{% endif %}"
+                                       title="Сортировка по ID">
+                                        <svg class="w-3 h-3 transition-transform transform {% if sort_param == 'id' and sort_direction == 'asc' %}rotate-180{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </th>
+                            <th class="px-5 py-3">
+                                <div class="flex items-center gap-1">
+                                    <span>Название</span>
+                                    <a href="?{% if filter_querystring %}{{ filter_querystring }}&{% endif %}sort=name&dir={% if sort_param == 'name' %}{% if sort_direction == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}"
+                                       class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-white/15 text-xs {% if sort_param == 'name' %}bg-white/20 text-white{% else %}text-gray-400 hover:bg-white/10{% endif %}"
+                                       title="Сортировка по названию">
+                                        <svg class="w-3 h-3 transition-transform transform {% if sort_param == 'name' and sort_direction == 'asc' %}rotate-180{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </th>
+                            <th class="px-5 py-3 hidden xl:table-cell">
+                                <div class="flex items-center gap-1">
+                                    <span>Категория</span>
+                                    <a href="?{% if filter_querystring %}{{ filter_querystring }}&{% endif %}sort=category&dir={% if sort_param == 'category' %}{% if sort_direction == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}"
+                                       class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-white/15 text-xs {% if sort_param == 'category' %}bg-white/20 text-white{% else %}text-gray-400 hover:bg-white/10{% endif %}"
+                                       title="Сортировка по категории">
+                                        <svg class="w-3 h-3 transition-transform transform {% if sort_param == 'category' and sort_direction == 'asc' %}rotate-180{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </th>
+                            <th class="px-5 py-3 hidden lg:table-cell">
+                                <div class="flex items-center gap-1">
+                                    <span>Тип</span>
+                                    <a href="?{% if filter_querystring %}{{ filter_querystring }}&{% endif %}sort=strategy_type&dir={% if sort_param == 'strategy_type' %}{% if sort_direction == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}"
+                                       class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-white/15 text-xs {% if sort_param == 'strategy_type' %}bg-white/20 text-white{% else %}text-gray-400 hover:bg-white/10{% endif %}"
+                                       title="Сортировка по типу">
+                                        <svg class="w-3 h-3 transition-transform transform {% if sort_param == 'strategy_type' and sort_direction == 'asc' %}rotate-180{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </th>
+                            <th class="px-5 py-3 hidden lg:table-cell">
+                                <div class="flex items-center gap-1">
+                                    <span>Частота</span>
+                                    <a href="?{% if filter_querystring %}{{ filter_querystring }}&{% endif %}sort=posting_frequency&dir={% if sort_param == 'posting_frequency' %}{% if sort_direction == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}"
+                                       class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-white/15 text-xs {% if sort_param == 'posting_frequency' %}bg-white/20 text-white{% else %}text-gray-400 hover:bg-white/10{% endif %}"
+                                       title="Сортировка по частоте">
+                                        <svg class="w-3 h-3 transition-transform transform {% if sort_param == 'posting_frequency' and sort_direction == 'asc' %}rotate-180{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </th>
+                            <th class="px-5 py-3 hidden 2xl:table-cell">
+                                <div class="flex items-center gap-1">
+                                    <span>Последний запуск</span>
+                                    <a href="?{% if filter_querystring %}{{ filter_querystring }}&{% endif %}sort=last_run&dir={% if sort_param == 'last_run' %}{% if sort_direction == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}"
+                                       class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-white/15 text-xs {% if sort_param == 'last_run' %}bg-white/20 text-white{% else %}text-gray-400 hover:bg-white/10{% endif %}"
+                                       title="Сортировка по последнему запуску">
+                                        <svg class="w-3 h-3 transition-transform transform {% if sort_param == 'last_run' and sort_direction == 'asc' %}rotate-180{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </th>
+                            <th class="px-5 py-3 hidden 2xl:table-cell">
+                                <div class="flex items-center gap-1">
+                                    <span>Следующий запуск</span>
+                                    <a href="?{% if filter_querystring %}{{ filter_querystring }}&{% endif %}sort=next_run&dir={% if sort_param == 'next_run' %}{% if sort_direction == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}"
+                                       class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-white/15 text-xs {% if sort_param == 'next_run' %}bg-white/20 text-white{% else %}text-gray-400 hover:bg-white/10{% endif %}"
+                                       title="Сортировка по следующему запуску">
+                                        <svg class="w-3 h-3 transition-transform transform {% if sort_param == 'next_run' and sort_direction == 'asc' %}rotate-180{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </th>
+                            <th class="px-5 py-3 text-right">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10 text-sm">
+                        {% for schedule in schedules %}
+                        <tr class="hover:bg-white/10 transition-colors {% if not schedule.is_active %}opacity-80{% endif %}" data-schedule-id="{{ schedule.id }}">
+                            <td class="px-5 py-4">
+                                <input type="checkbox" name="schedule_ids" value="{{ schedule.id }}" 
+                                       class="schedule-checkbox w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer">
+                            </td>
+                            <td class="px-5 py-4 text-white font-semibold">
+                                #{{ schedule.id }}
+                                <div class="mt-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {% if schedule.is_active %}bg-emerald-500/20 text-emerald-300{% else %}bg-gray-500/30 text-gray-200{% endif %}">
+                                        {% if schedule.is_active %}Активно{% else %}Неактивно{% endif %}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-5 py-4">
+                                <div class="text-white font-semibold">{{ schedule.name }}</div>
+                                <div class="text-xs text-gray-400 mt-1">
+                                    Статей за запуск: <span class="text-gray-200">{{ schedule.articles_per_run }}</span>
+                                </div>
+                               
+                            </td>
+                            <td class="px-5 py-4 hidden xl:table-cell text-gray-200">
+                                {{ schedule.category.title|default:"—" }}
+                            </td>
+                            <td class="px-5 py-4 hidden lg:table-cell text-gray-200">
+                                {{ schedule.get_strategy_type_display }}
+                            </td>
+                            <td class="px-5 py-4 hidden lg:table-cell text-gray-200">
+                                {{ schedule.get_posting_frequency_display }}
+                            </td>
+                            <td class="px-5 py-4 hidden 2xl:table-cell text-gray-200">
+                                {{ schedule.last_run|date:"d.m.Y H:i"|default:"Не запускался" }}
+                            </td>
+                            <td class="px-5 py-4 hidden 2xl:table-cell text-gray-200">
+                                {{ schedule.next_run|date:"d.m.Y H:i"|default:"Не запланирован" }}
+                            </td>
+                            <td class="px-5 py-4">
+                                <div class="flex flex-wrap justify-end gap-2">
+                                    <form method="post" action="{% url 'asistent:toggle_ai_schedule' schedule.id %}" class="inline schedule-action-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="X-Requested-With" value="XMLHttpRequest">
+                                        <button type="submit"
+                                                class="toggle-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-white/10 transition-colors {% if schedule.is_active %}bg-gray-600 hover:bg-gray-700 text-white{% else %}bg-green-600 hover:bg-green-700 text-white{% endif %}">
+                                            {% if schedule.is_active %}Остановить{% else %}Активировать{% endif %}
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'asistent:run_ai_schedule' schedule.id %}" class="inline schedule-action-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="X-Requested-With" value="XMLHttpRequest">
+                                        <button type="submit"
+                                                class="run-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-green-600 hover:bg-green-700 text-white shadow">
+                                            Запустить
+                                        </button>
+                                    </form>
+                                {% if schedule.get_pipeline_slug and schedule.latest_pipeline_log_id %}
+                                <form method="post" action="{% url 'asistent:retry_pipeline_run' schedule.latest_pipeline_log_id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-500/90 hover:bg-yellow-500 text-white shadow">
+                                        Повторить
+                                    </button>
+                                </form>
+                                {% endif %}
+                                    <a href="{% url 'asistent:edit_ai_schedule' schedule.id %}"
+                                       class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white">
+                                        Редактировать
+                                    </a>
+                                    <form method="post" action="{% url 'asistent:delete_ai_schedule' schedule.id %}" class="inline schedule-action-form"
+                                          onsubmit="return confirm('Удалить расписание {{ schedule.name }}?')">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="X-Requested-With" value="XMLHttpRequest">
+                                        <button type="submit"
+                                                class="delete-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-600 hover:bg-red-700 text-white">
+                                            Удалить
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for schedule in schedules %}
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl border {% if schedule.is_active %}border-green-500/30{% else %}border-gray-500/30{% endif %} overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]" data-schedule-id="{{ schedule.id }}">
+                <div class="bg-gradient-to-r {% if schedule.is_active %}from-green-600 to-emerald-700{% else %}from-gray-600 to-gray-800{% endif %} px-6 py-4">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3 flex-1">
+                            <input type="checkbox" name="schedule_ids" value="{{ schedule.id }}" 
+                                   class="schedule-checkbox w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-white text-lg">#{{ schedule.id }} - {{ schedule.name }}</h3>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-white/20 text-white rounded-full text-xs font-semibold">
+                            {% if schedule.is_active %}Активно{% else %}Неактивно{% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <h6 class="text-white/90 font-semibold mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            Параметры:
+                        </h6>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                </svg>
+                                <span class="text-gray-400 dark:text-gray-400">Категория:</span>
+                                <span class="text-white dark:text-white font-semibold">{{ schedule.category.title|default:"Не указана" }}</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6з" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-400 dark:text-gray-400">Частота:</span>
+                                <span class="text-white dark:text-white font-semibold">{{ schedule.get_posting_frequency_display }}</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"></path>
+                                </svg>
+                                <span class="text-gray-400 dark:text-gray-400">Статей за раз:</span>
+                                <span class="text-white dark:text-white font-semibold">{{ schedule.articles_per_run }}</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2h6.586a2 2 0 011.414.586l1.414 1.414A2 2 0 0116 5.414V15a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm6 5a1 1 0 10-2 0v3a1 1 0 102 0v-3z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-gray-400 dark:text-gray-400">Тип:</span>
+                                <span class="text-white dark:text-white font-semibold">{{ schedule.get_strategy_type_display }}</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 2a1 1 0 01.894.553L10.618 4H15a2 2 0 012 2v6.382l1.447.724A1 1 0 0118 14H2a1 1 0 01-.447-1.894l1.447-.724V6a2 2 0 012-2h4.382l.724-1.447A1 1 0 019 2z"></path>
+                                </svg>
+                                <span class="text-gray-400 dark:text-gray-400">Планировщик:</span>
+                                <span class="text-white dark:text-white font-semibold">{{ schedule.get_schedule_kind_display }}</span>
+                            </li>
+                           
+                        </ul>
+                    </div>
+                    <div>
+                        <h6 class="text-white/90 font-semibold mb-2 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2а1 1 0 00-1 1v1H4а2 2 0 00-2 2v10а2 2 0 002 2h12а2 2 0 002-2В6а2 2 0 00-2-2h-1В3a1 1 0 10-2 0В4H7В3a1 1 0 00-1-1zm0 5а1 1 0 000 2h8а1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                            </svg>
+                            Расписание:
+                        </h6>
+                        <ul class="text-sm space-y-1">
+                            <li class="text-gray-300 dark:text-gray-300">
+                                <strong class="text-white dark:text-white">Последний:</strong> {{ schedule.last_run|date:"d.m.Y H:i"|default:"Не запускался" }}
+                            </li>
+                            <li class="text-gray-300 dark:text-gray-300">
+                                <strong class="text-white dark:text-white">Следующий:</strong> {{ schedule.next_run|date:"d.m.Y H:i"|default:"Не запланирован" }}
+                            </li>
+                        </ul>
+                    </div>
+                
+                </div>
+                <div class="px-6 py-4 bg-white/5 dark:bg-white/5 border-t border-white/10 dark:border-white/10">
+                    <div class="flex gap-2 justify-end flex-wrap">
+                        <form method="post" action="{% url 'asistent:toggle_ai_schedule' schedule.id %}" class="inline schedule-action-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="X-Requested-With" value="XMLHttpRequest">
+                            <button type="submit"
+                                    class="toggle-btn px-4 py-2 bg-{% if schedule.is_active %}gray{% else %}green{% endif %}-600 hover:bg-{% if schedule.is_active %}gray{% else %}green{% endif %}-700 text-white dark:text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-semibold">
+                                {% if schedule.is_active %}
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8а1 1 0 012 0v4а1 1 0 11-2 0В8zm5-1а1 1 0 00-1 1v4а1 1 0 102 0В8а1 1 0 00-1-1з" clip-rule="evenodd"></path>
+                                </svg>
+                                Остановить
+                                {% else %}
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4а1 1 0 001.555.832л3-2a1 1 0 000-1.664л-3-2з" clip-rule="evenodd"></path>
+                                </svg>
+                                Активировать
+                                {% endif %}
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'asistent:run_ai_schedule' schedule.id %}" class="inline schedule-action-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="X-Requested-With" value="XMLHttpRequest">
+                            <button type="submit"
+                                    class="run-btn px-4 py-2 bg-green-600 hover:bg-green-700 text-white dark:text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-semibold shadow-lg">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4а1 1 0 001.555.832л3-2a1 1 0 000-1.664л-3-2з" clip-rule="evenodd"></path>
+                                </svg>
+                                Запустить
+                            </button>
+                        </form>
+                        {% if schedule.get_pipeline_slug and schedule.latest_pipeline_log_id %}
+                        <form method="post" action="{% url 'asistent:retry_pipeline_run' schedule.latest_pipeline_log_id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="px-4 py-2 bg-yellow-500/90 hover:bg-yellow-500 text-white dark:text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-semibold shadow">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 4v3h.01L5 7a5 5 0 019.584-2.267l-1.42 1.42A3 3 0 007 7h2l-3 3-3-3h2a5 5 0 019.584-2.267l-1.42 1.42A3 3 0 007 7h2л-3 3-3-3h2zM15 16v-3h-.01L15 13a5 5 0 01-9.584 2.267l1.42-1.42A3 3 0 0013 13h-2л3-3 3 3h-2a5 5 0 01-9.584 2.267l1.42-1.42A3 3 0 0013 13h-2л3-3 3 3h-2z"></path>
+                                </svg>
+                                Повторить
+                            </button>
+                        </form>
+                        {% endif %}
+                        <a href="{% url 'asistent:edit_ai_schedule' schedule.id %}"
+                           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-semibold">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                            </svg>
+                            Редактировать
+                        </a>
+                        <form method="post" action="{% url 'asistent:delete_ai_schedule' schedule.id %}" class="inline schedule-action-form"
+                              onsubmit="return confirm('Удалить расписание {{ schedule.name }}?')">
+                            {% csrf_token %}
+                            <input type="hidden" name="X-Requested-With" value="XMLHttpRequest">
+                            <button type="submit"
+                                    class="delete-btn px-4 py-2 bg-red-600 hover:bg-red-700 text-white dark:text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-semibold">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2В6а1 1 0 100-2h-3.382л-.724-1.447A1 1 0 0011 2H9zM7 8а1 1 0 012 0v6а1 1 0 11-2 0В8zm5-1а1 1 0 00-1 1v6а1 1 0 102 0В8а1 1 0 00-1-1з" clip-rule="evenodd"></path>
+                                </svg>
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% else %}
+    <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 p-12 text-center shadow-2xl">
+        <svg class="w-24 h-24 mx-auto text-white/30 dark:text-white/30 mb-6" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M13 7H7v6h6V7z"></path>
+            <path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1а1 1 0 11-2 0v-1H9v1а1 1 0 11-2 0v-1H5а2 2 0 01-2-2v-2H2а1 1 0 010-2h1V9H2а1 1 0 010-2h1В5а2 2 0 012-2h2В2zM5 5h10v10H5V5z" clip-rule="evenodd"></path>
+        </svg>
+        <h3 class="text-2xl font-bold text-white dark:text-white mb-2">Расписаний пока нет</h3>
+        <p class="text-gray-400 dark:text-gray-400 mb-6">Создайте первое расписание для автоматической генерации статей</p>
+        <a href="{% url 'asistent:create_ai_schedule' %}"
+           class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white dark:text-white font-semibold rounded-lg transition-colors gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+            </svg>
+            Создать расписание
+        </a>
+    </div>
+{% endif %}
+
+<!-- JavaScript для массовых операций и AJAX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all-schedules');
+    const scheduleCheckboxes = document.querySelectorAll('.schedule-checkbox');
+    const bulkActionsPanel = document.getElementById('bulk-actions-panel');
+    const selectedCountSpan = document.getElementById('selected-count');
+    const bulkActionSelect = document.getElementById('bulk-action-select');
+    const applyBulkActionBtn = document.getElementById('apply-bulk-action');
+    const clearSelectionBtn = document.getElementById('clear-selection');
+    const actionForms = document.querySelectorAll('.schedule-action-form');
+    
+    const selectAllCheckboxGrid = document.getElementById('select-all-schedules-grid');
+    
+    // Функция получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Обновление счетчика выделенных элементов
+    function updateSelectedCount() {
+        const checked = document.querySelectorAll('.schedule-checkbox:checked');
+        const count = checked.length;
+        selectedCountSpan.textContent = count;
+        
+        if (count > 0) {
+            bulkActionsPanel.classList.remove('hidden');
+        } else {
+            bulkActionsPanel.classList.add('hidden');
+        }
+        
+        // Обновление состояния кнопки "Применить"
+        applyBulkActionBtn.disabled = !bulkActionSelect.value || count === 0;
+        
+        // Обновление состояния "Выделить все"
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = count === scheduleCheckboxes.length && count > 0;
+            selectAllCheckbox.indeterminate = count > 0 && count < scheduleCheckboxes.length;
+        }
+        if (selectAllCheckboxGrid) {
+            selectAllCheckboxGrid.checked = count === scheduleCheckboxes.length && count > 0;
+            selectAllCheckboxGrid.indeterminate = count > 0 && count < scheduleCheckboxes.length;
+        }
+    }
+    
+    // Выделить все / снять выделение
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            scheduleCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateSelectedCount();
+        });
+    }
+    if (selectAllCheckboxGrid) {
+        selectAllCheckboxGrid.addEventListener('change', function() {
+            scheduleCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateSelectedCount();
+        });
+    }
+    
+    // Обновление счетчика при изменении чекбоксов
+    scheduleCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Снять выделение
+    if (clearSelectionBtn) {
+        clearSelectionBtn.addEventListener('click', function() {
+            scheduleCheckboxes.forEach(cb => cb.checked = false);
+            if (selectAllCheckbox) selectAllCheckbox.checked = false;
+            if (selectAllCheckboxGrid) selectAllCheckboxGrid.checked = false;
+            bulkActionSelect.value = '';
+            updateSelectedCount();
+        });
+    }
+    
+    // Включение/отключение кнопки "Применить" при выборе действия
+    if (bulkActionSelect) {
+        bulkActionSelect.addEventListener('change', function() {
+            applyBulkActionBtn.disabled = !this.value || document.querySelectorAll('.schedule-checkbox:checked').length === 0;
+        });
+    }
+    
+    // Массовые операции
+    if (applyBulkActionBtn) {
+        applyBulkActionBtn.addEventListener('click', function() {
+            const checked = document.querySelectorAll('.schedule-checkbox:checked');
+            const scheduleIds = Array.from(checked).map(cb => parseInt(cb.value));
+            const action = bulkActionSelect.value;
+            
+            console.log('Массовая операция:', { action, scheduleIds, count: scheduleIds.length });
+            
+            if (!action || scheduleIds.length === 0) {
+                console.warn('Не выбрано действие или расписания');
+                return;
+            }
+            
+            // Подтверждение для удаления
+            if (action === 'delete') {
+                if (!confirm(`Удалить ${scheduleIds.length} расписание(й)?`)) return;
+            }
+            
+            // Блокируем кнопку
+            this.disabled = true;
+            const originalText = this.textContent;
+            this.textContent = 'Выполняется...';
+            
+            // Создаем форму для отправки
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "asistent:bulk_ai_schedules_action" %}';
+            
+            // Добавляем CSRF токен в форму
+            const csrfTokenValue = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            if (csrfTokenValue) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfTokenValue;
+                form.appendChild(csrfInput);
+            }
+            
+            scheduleIds.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'schedule_ids[]';
+                input.value = String(id);
+                form.appendChild(input);
+            });
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = action;
+            form.appendChild(actionInput);
+            
+            const csrftoken = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            
+            // Создаем FormData для проверки
+            const formData = new FormData(form);
+            console.log('Отправляемые данные:', {
+                schedule_ids: Array.from(formData.getAll('schedule_ids[]')),
+                action: formData.get('action'),
+                csrf: formData.get('csrfmiddlewaretoken') ? 'есть' : 'нет'
+            });
+            
+            // Отправляем AJAX-запрос
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                // Проверяем статус ответа
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || `HTTP ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Показываем сообщение
+                    showNotification(data.message, 'success');
+                    
+                    // Удаляем строки из таблицы если действие - удаление
+                    if (action === 'delete') {
+                        checked.forEach(cb => {
+                            const row = cb.closest('tr');
+                            const card = cb.closest('[data-schedule-id]');
+                            if (row) {
+                                row.style.opacity = '0.5';
+                                setTimeout(() => row.remove(), 300);
+                            }
+                            if (card) {
+                                card.style.opacity = '0.5';
+                                setTimeout(() => card.remove(), 300);
+                            }
+                        });
+                    } else {
+                        // Обновляем страницу для активации/деактивации/запуска чтобы увидеть изменения
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                    
+                    // Снимаем выделение
+                    scheduleCheckboxes.forEach(cb => cb.checked = false);
+                    if (selectAllCheckbox) selectAllCheckbox.checked = false;
+                    if (selectAllCheckboxGrid) selectAllCheckboxGrid.checked = false;
+                    bulkActionSelect.value = '';
+                    updateSelectedCount();
+                    
+                    // Разблокируем кнопку
+                    applyBulkActionBtn.disabled = false;
+                    applyBulkActionBtn.textContent = originalText;
+                } else {
+                    const errorMsg = data.error || 'Ошибка при выполнении операции';
+                    console.error('Ошибка ответа:', data);
+                    if (data.debug) {
+                        console.error('Отладочная информация:', data.debug);
+                    }
+                    showNotification(errorMsg, 'error');
+                    if (data.errors && data.errors.length > 0) {
+                        console.error('Детали ошибок:', data.errors);
+                        data.errors.slice(0, 3).forEach(err => {
+                            showNotification(err, 'error');
+                        });
+                    }
+                    
+                    // Разблокируем кнопку
+                    applyBulkActionBtn.disabled = false;
+                    applyBulkActionBtn.textContent = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при отправке запроса:', error);
+                showNotification('Ошибка при выполнении операции: ' + error.message, 'error');
+                
+                // Разблокируем кнопку
+                applyBulkActionBtn.disabled = false;
+                applyBulkActionBtn.textContent = originalText;
+            });
+        });
+    }
+    
+    // AJAX-обработка единичных операций
+    actionForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            // Блокируем кнопку
+            submitBtn.disabled = true;
+            submitBtn.textContent = '...';
+            
+            const csrftoken = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message || 'Операция выполнена успешно', 'success');
+                    
+                    const row = this.closest('tr');
+                    const card = this.closest('[data-schedule-id]');
+                    
+                    // Если удаление - удаляем элемент
+                    if (this.action.includes('/delete/')) {
+                        if (row) {
+                            row.style.opacity = '0.5';
+                            setTimeout(() => row.remove(), 300);
+                        }
+                        if (card) {
+                            card.style.opacity = '0.5';
+                            setTimeout(() => card.remove(), 300);
+                        }
+                    } else {
+                        // Для других операций перезагружаем для обновления статусов
+                        // Но делаем это с небольшой задержкой чтобы пользователь увидел уведомление
+                        setTimeout(() => location.reload(), 800);
+                    }
+                } else {
+                    showNotification(data.error || 'Ошибка при выполнении операции', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка при выполнении операции', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            });
+        });
+    });
+    
+    // Функция показа уведомлений
+    function showNotification(message, type) {
+        // Используем существующую систему уведомлений или создаем простую
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-xl z-50 ${
+            type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+        }`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    // Инициализация счетчика
+    updateSelectedCount();
+});
+</script>
+

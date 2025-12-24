@@ -1,0 +1,139 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{{ schedule.name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white mb-2">{{ schedule.name }}</h1>
+                    <p class="text-gray-300">ID: #{{ schedule.id }}</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'schedule:schedule_edit' schedule.id %}" 
+                       class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">
+                        ✏️ Редактировать
+                    </a>
+                    <form method="post" action="{% url 'schedule:schedule_toggle' schedule.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="px-4 py-2 {% if schedule.is_active %}bg-gray-600{% else %}bg-green-600{% endif %} hover:opacity-80 text-white font-semibold rounded-lg transition-colors">
+                            {% if schedule.is_active %}⏸️ Остановить{% else %}▶️ Активировать{% endif %}
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'schedule:schedule_run_now' schedule.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors">
+                            🚀 Запустить сейчас
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'schedule:schedule_delete' schedule.id %}" 
+                          onsubmit="return confirm('Удалить расписание?')" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
+                            🗑️ Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+                <h2 class="text-xl font-bold text-white mb-4">📋 Параметры</h2>
+                <dl class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">Тип стратегии:</dt>
+                        <dd class="text-white font-semibold">{{ schedule.get_strategy_type_display }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">Тип расписания:</dt>
+                        <dd class="text-white font-semibold">{{ schedule.get_schedule_kind_display }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">Статей за раз:</dt>
+                        <dd class="text-white font-semibold">{{ schedule.articles_per_run }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">Категория:</dt>
+                        <dd class="text-white font-semibold">{{ schedule.category.title|default:"—" }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">Статус:</dt>
+                        <dd class="{% if schedule.is_active %}text-green-400{% else %}text-gray-400{% endif %} font-semibold">
+                            {% if schedule.is_active %}✓ Активно{% else %}○ Неактивно{% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+                <h2 class="text-xl font-bold text-white mb-4">⏰ Расписание</h2>
+                <dl class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">Последний запуск:</dt>
+                        <dd class="text-white font-semibold">{{ schedule.last_run|date:"d.m.Y H:i"|default:"—" }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">Следующий запуск:</dt>
+                        <dd class="text-white font-semibold">{{ schedule.next_run|date:"d.m.Y H:i"|default:"—" }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">CRON:</dt>
+                        <dd class="text-white font-mono text-xs">{{ schedule.cron_expression|default:"—" }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">Всего запусков:</dt>
+                        <dd class="text-white font-semibold">{{ total_runs }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-400">Успешных:</dt>
+                        <dd class="text-green-400 font-semibold">{{ successful_runs }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Последние запуски -->
+        {% if recent_runs %}
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+            <h2 class="text-xl font-bold text-white mb-4">📜 Последние запуски</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-white/10">
+                    <thead class="bg-white/5">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs text-gray-300">Время</th>
+                            <th class="px-4 py-2 text-left text-xs text-gray-300">Статус</th>
+                            <th class="px-4 py-2 text-left text-xs text-gray-300">Создано</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for run in recent_runs %}
+                        <tr>
+                            <td class="px-4 py-2 text-white text-sm">{{ run.started_at|date:"d.m.Y H:i" }}</td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 rounded text-xs {% if run.status == 'completed' %}bg-green-500/20 text-green-300{% else %}bg-red-500/20 text-red-300{% endif %}">
+                                    {{ run.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2 text-white text-sm">{{ run.created_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+

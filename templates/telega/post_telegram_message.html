@@ -1,0 +1,24 @@
+	
+<tg-spoiler>https://idealimage.ru{{ post.kartinka.url }}</tg-spoiler>
+
+{% if post.kartinka %}
+ <a href="{{ post.kartinka.url }}">[Изображение]</a>
+{% endif %}
+
+📝 <b>{{ post.title }}</b>
+
+<blockquote>
+{% if post.description %}
+{{ post.description }}
+{% else %}
+{{ post.content|striptags|truncatewords:30 }}
+{% endif %}
+
+🔗 <b><u><a class = 'button' href="https://idealimage.ru/post/{{ post.slug  }}">Читать далее</a></u></b>
+
+</blockquote>
+
+#{{ post.category.title }}
+{% for tag in post.tags.all %}
+#{{ tag.name }}
+{% endfor %}

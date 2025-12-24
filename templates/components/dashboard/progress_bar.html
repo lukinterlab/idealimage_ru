@@ -1,0 +1,16 @@
+<!-- Прогресс бар -->
+<!-- Использование: {% include 'components/dashboard/progress_bar.html' with percent=75 color="green" label="Выполнено" %} -->
+
+<div class="w-full">
+    {% if label %}
+    <div class="flex justify-between mb-1">
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ label }}</span>
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ percent|floatformat:0 }}%</span>
+    </div>
+    {% endif %}
+    
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill bg-{{ color|default:'purple' }}-500" style="width: {{ percent }}%;"></div>
+    </div>
+</div>
+

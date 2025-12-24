@@ -1,0 +1,188 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 dark:from-gray-950 dark:via-purple-950 dark:to-gray-950 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Навигация и Заголовок -->
+        <div class="mb-8">
+            <!-- Кнопка назад -->
+            <div class="mb-4">
+                <a href="{% url 'asistent:admin_dashboard' %}" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10 text-white rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Назад к панели управления
+                </a>
+            </div>
+            
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white dark:text-white mb-2">
+                        📝 Шаблоны промптов
+                    </h1>
+                    <p class="text-xl text-gray-300 dark:text-gray-400">Управление AI промптами для генерации контента</p>
+                </div>
+                <a href="{% url 'asistent:prompt_template_create' %}" 
+                   class="px-6 py-3 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    Создать промпт
+                </a>
+            </div>
+        </div>
+        
+        <!-- Фильтры и поиск -->
+        <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-6 mb-8">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Поиск -->
+                    <div>
+                    <input type="text" name="search" value="{{ search }}" 
+                           placeholder="Поиск промптов..." 
+                           class="form-control w-full px-4 py-2 bg-white/5 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            
+                <!-- Категория -->
+                    <div>
+                    <select name="category" class="form-control w-full px-4 py-2 bg-white/5 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="" class="bg-gray-800 text-white dark:bg-gray-900 dark:text-white">Все категории</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if cat == category %}selected{% endif %} class="bg-gray-800 text-white dark:bg-gray-900 dark:text-white">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+            </div>
+            
+                <!-- Сортировка -->
+                <div>
+                    <select name="sort" class="form-control w-full px-4 py-2 bg-white/5 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %} class="bg-gray-800 text-white dark:bg-gray-900 dark:text-white">Новые первые</option>
+                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %} class="bg-gray-800 text-white dark:bg-gray-900 dark:text-white">Старые первые</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %} class="bg-gray-800 text-white dark:bg-gray-900 dark:text-white">По названию</option>
+                        <option value="-usage_count" {% if sort_by == '-usage_count' %}selected{% endif %} class="bg-gray-800 text-white dark:bg-gray-900 dark:text-white">По использованию</option>
+                    </select>
+        </div>
+        
+                <!-- Кнопка поиска -->
+                <div>
+                    <button type="submit" class="w-full px-6 py-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-semibold rounded-lg transition-colors">
+                        Применить
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Переключатель вида -->
+            <div class="mt-4 flex gap-2">
+                <a href="?view=cards&search={{ search }}&category={{ category }}&sort={{ sort_by }}" 
+                   class="px-4 py-2 {% if view_mode == 'cards' %}bg-purple-600{% else %}bg-white/10 dark:bg-white/5{% endif %} text-white rounded-lg transition-colors">
+                    Карточки
+                </a>
+                <a href="?view=table&search={{ search }}&category={{ category }}&sort={{ sort_by }}" 
+                   class="px-4 py-2 {% if view_mode == 'table' %}bg-purple-600{% else %}bg-white/10 dark:bg-white/5{% endif %} text-white rounded-lg transition-colors">
+                    Таблица
+                </a>
+            </div>
+        </div>
+        
+        <!-- Список промптов -->
+        {% if templates %}
+            {% if view_mode == 'cards' %}
+            <!-- Вид: Карточки -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for template in templates %}
+                <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-6 hover:border-purple-500/50 dark:hover:border-purple-500/50 transition-all">
+                    <div class="flex items-start justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white dark:text-white">{{ template.name }}</h3>
+                        <span class="px-3 py-1 bg-purple-500/20 dark:bg-purple-500/20 text-purple-300 dark:text-purple-300 rounded-full text-xs">
+                                    {{ template.get_category_display }}
+                        </span>
+                    </div>
+                    
+                    {% if template.description %}
+                    <p class="text-gray-300 dark:text-gray-400 text-sm mb-4">{{ template.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    
+                    <div class="flex items-center gap-4 text-sm text-gray-400 dark:text-gray-500 mb-4">
+                        <span>📊 {{ template.usage_count }} использований</span>
+                        <span>✅ {{ template.success_rate|floatformat:0 }}%</span>
+                </div>
+                
+                    <div class="flex gap-2">
+                        <a href="{% url 'asistent:prompt_template_test' template.id %}" 
+                           class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-center rounded-lg transition-colors">
+                            Тест
+                        </a>
+                        <a href="{% url 'asistent:prompt_template_edit' template.id %}" 
+                           class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white text-center rounded-lg transition-colors">
+                            Редактировать
+                        </a>
+                        <a href="{% url 'asistent:prompt_template_delete' template.id %}" 
+                           class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white text-center rounded-lg transition-colors">
+                            Удалить
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Вид: Таблица -->
+            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 overflow-hidden">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-white/5 dark:bg-white/5">
+                            <th class="px-6 py-3 text-left text-white dark:text-white">Название</th>
+                            <th class="px-6 py-3 text-left text-white dark:text-white">Категория</th>
+                            <th class="px-6 py-3 text-center text-white dark:text-white">Использовано</th>
+                            <th class="px-6 py-3 text-center text-white dark:text-white">Успех</th>
+                            <th class="px-6 py-3 text-right text-white dark:text-white">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for template in templates %}
+                        <tr class="border-t border-white/10 dark:border-white/10 hover:bg-white/5 dark:hover:bg-white/5">
+                            <td class="px-6 py-4 text-white dark:text-white">{{ template.name }}</td>
+                            <td class="px-6 py-4 text-gray-300 dark:text-gray-400">{{ template.get_category_display }}</td>
+                            <td class="px-6 py-4 text-center text-gray-300 dark:text-gray-400">{{ template.usage_count }}</td>
+                            <td class="px-6 py-4 text-center text-gray-300 dark:text-gray-400">{{ template.success_rate|floatformat:0 }}%</td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex gap-2 justify-end">
+                                    <a href="{% url 'asistent:prompt_template_test' template.id %}" 
+                                       class="px-3 py-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded transition-colors text-sm">
+                                        Тест
+                                    </a>
+                                    <a href="{% url 'asistent:prompt_template_edit' template.id %}" 
+                                       class="px-3 py-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white rounded transition-colors text-sm">
+                                        Редактировать
+                                    </a>
+                                    <a href="{% url 'asistent:prompt_template_delete' template.id %}" 
+                                       class="px-3 py-1 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white rounded transition-colors text-sm">
+                                        Удалить
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+            {% endfor %}
+                    </tbody>
+                </table>
+        </div>
+            {% endif %}
+        {% else %}
+            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 p-12 text-center">
+                <p class="text-gray-300 dark:text-gray-400 text-xl mb-4">Промпты не найдены</p>
+            <a href="{% url 'asistent:prompt_template_create' %}" 
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white font-semibold rounded-lg transition-colors">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                </svg>
+                    Создать первый промпт
+            </a>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="IdealImage Beauty Studio - ваша красота, наша забота. Профессиональные услуги красоты в Москве: парикмахерские услуги, маникюр, педикюр, косметология.">
+    <title>IdealImage Beauty Studio - Салон красоты в Москве</title>
+    {% load static %}
+    
+    <!-- Styles -->
+    {% include 'home/partials/landing2_styles.html' %}
+</head>
+<body>
+
+<!-- Header -->
+<header class="landing2-header">
+    <div class="header-top">
+        <div class="container">
+            <div class="header-contact">
+                <a href="tel:+70000000000">📞 +7 (000) 000-00-00</a>
+                <a href="#location">📍 г. Москва, ул. Ленинская</a>
+            </div>
+        </div>
+    </div>
+    <nav class="header-nav">
+        <div class="nav-container">
+            <div class="logo">IdealImage Beauty Studio</div>
+            <ul class="nav-menu">
+                <li><a href="#home">Главная</a></li>
+                <li><a href="#services">Услуги</a></li>
+                <li><a href="#portfolio">Портфолио</a></li>
+                <li><a href="#team">Мастера</a></li>
+                <li><a href="#testimonials">Отзывы</a></li>
+                <li><a href="#contact">Контакты</a></li>
+            </ul>
+            <button class="mobile-menu-toggle">☰</button>
+        </div>
+    </nav>
+</header>
+
+<!-- Hero Section -->
+<section id="home" class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">✨ Ваша красота<br>наша забота</h1>
+        <p class="hero-subtitle">Студия красоты IdealImage</p>
+        <p class="hero-description">
+            Мы используем только сертифицированную продукцию от ведущих мировых брендов,
+            строго соблюдаем гигиенические нормы и работаем на современном оборудовании
+        </p>
+        
+        <!-- Booking Form -->
+        <div class="booking-form">
+            <h3>📝 Записаться</h3>
+            {% csrf_token %}
+            <form method="POST">
+                <div class="form-group">
+                    <label for="name">Имя *</label>
+                    <input type="text" id="name" name="name" class="form-control" required placeholder="Ваше имя">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Телефон *</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" required placeholder="+7 (000) 000-00-00">
+                </div>
+                
+                <div class="form-group">
+                    <label for="service">Выбрать услугу *</label>
+                    <select id="service" name="service" class="form-control" required>
+                        <option value="">Выберите услугу</option>
+                        <option value="hair">Парикмахерские услуги</option>
+                        <option value="manicure">Маникюр и педикюр</option>
+                        <option value="cosmetology">Косметология</option>
+                        <option value="spa">SPA и массаж</option>
+                        <option value="brows">Брови и ресницы</option>
+                        <option value="laser">Лазерная эпиляция</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="agreement" name="agreement" required>
+                        <label for="agreement">Ознакомлен с пользовательским соглашением</label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-submit">Отправить заявку</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">10</div>
+            <div class="stat-label">минут от метро</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">20%</div>
+            <div class="stat-label">скидка для новых клиентов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">стерильность и безопасность</div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="services-section">
+    <h2 class="section-title">💅 Наши услуги</h2>
+    
+    <div class="services-slider">
+        <div class="services-track">
+            <!-- Service Card 1 -->
+            <div class="service-card">
+                <img src="/media/landing2/images/service-1.jpg" alt="Парикмахерские услуги" class="service-image">
+                <div class="service-content">
+                    <h3 class="service-title">✂️ Парикмахерские услуги</h3>
+                    <p class="service-description">
+                        Стрижки, окрашивание, укладки, восстановление и уход за волосами. 
+                        Идеальный образ начинается с качественной прически
+                    </p>
+                    <div class="service-price">от 3 000 ₽</div>
+                </div>
+            </div>
+            
+            <!-- Service Card 2 -->
+            <div class="service-card">
+                <img src="/media/landing2/images/service-2.jpg" alt="Маникюр и педикюр" class="service-image">
+                <div class="service-content">
+                    <h3 class="service-title">💅 Маникюр и педикюр</h3>
+                    <p class="service-description">
+                        Аппаратный и классический маникюр, педикюр, гель-лак, укрепление и дизайн.
+                        Безопасность и стерильность гарантированы
+                    </p>
+                    <div class="service-price">от 2 500 ₽</div>
+                </div>
+            </div>
+            
+            <!-- Service Card 3 -->
+            <div class="service-card">
+                <img src="/media/landing2/images/service-3.jpg" alt="Косметология" class="service-image">
+                <div class="service-content">
+                    <h3 class="service-title">✨ Косметология</h3>
+                    <p class="service-description">
+                        Чистка лица, уходовые программы, омоложение, биоревитализация, мезотерапия.
+                        Красота и здоровье вашей кожи — в надежных руках
+                    </p>
+                    <div class="service-price">от 4 000 ₽</div>
+                </div>
+            </div>
+            
+            <!-- Service Card 4 -->
+            <div class="service-card">
+                <img src="/media/landing2/images/service-4.jpg" alt="SPA и массаж" class="service-image">
+                <div class="service-content">
+                    <h3 class="service-title">🌸 SPA и массаж</h3>
+                    <p class="service-description">
+                        Расслабляющий, лимфодренажный и антицеллюлитный массажи, обертывания и уход за телом.
+                        Эстетика и восстановление в одном сеансе
+                    </p>
+                    <div class="service-price">от 3 500 ₽</div>
+                </div>
+            </div>
+            
+            <!-- Service Card 5 -->
+            <div class="service-card">
+                <img src="/media/landing2/images/service-5.jpg" alt="Брови и ресницы" class="service-image">
+                <div class="service-content">
+                    <h3 class="service-title">👁️ Брови и ресницы</h3>
+                    <p class="service-description">
+                        Оформление, окрашивание, ламинирование, наращивание ресниц.
+                        Взгляд, который завораживает
+                    </p>
+                    <div class="service-price">от 2 000 ₽</div>
+                </div>
+            </div>
+            
+            <!-- Service Card 6 -->
+            <div class="service-card">
+                <img src="/media/landing2/images/service-6.jpg" alt="Лазерная эпиляция" class="service-image">
+                <div class="service-content">
+                    <h3 class="service-title">⚡ Лазерная эпиляция</h3>
+                    <p class="service-description">
+                        Современное оборудование, безболезненные процедуры, стойкий эффект.
+                        Для гладкой и ухоженной кожи без раздражения
+                    </p>
+                    <div class="service-price">от 1 500 ₽</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slider Controls -->
+        <div class="slider-controls">
+            <button class="slider-btn services-prev">←</button>
+            <button class="slider-btn services-next">→</button>
+        </div>
+        
+        <div class="slider-dots services-dots"></div>
+    </div>
+</section>
+
+<!-- Special Offer Section -->
+<section class="offer-section">
+    <div class="offer-content">
+        <h2 class="offer-title">🎁 Скидки на любые услуги при первом визите!</h2>
+        <p class="offer-description">
+            Новым клиентам — специальное предложение: скидка 20% на любую услугу салона!
+        </p>
+        <a href="#home" class="btn-offer">Записаться со скидкой</a>
+    </div>
+</section>
+
+<!-- Best Articles Section -->
+<section id="portfolio" class="portfolio-section">
+    <h2 class="section-title">📰 Лучшие статьи</h2>
+    <p class="text-center mb-4" style="color: var(--text-light); max-width: 600px; margin: 0 auto 40px;">
+        Самые популярные и интересные статьи нашего блога о красоте, моде и стиле
+    </p>
+    
+    <div class="portfolio-grid">
+        {% for post in portfolio %}
+        <article class="blog-card">
+            <div class="blog-card-image">
+                {% if post.kartinka %}
+                <img src="{{ post.kartinka.url }}" alt="{{ post.title }}" loading="lazy">
+                {% else %}
+                <div class="blog-card-placeholder">
+                    <span>📰</span>
+                </div>
+                {% endif %}
+                <div class="blog-card-category">{{ post.category.name }}</div>
+            </div>
+            <div class="blog-card-content">
+                <h3 class="blog-card-title">{{ post.title }}</h3>
+                <div class="blog-card-meta">
+                    <span>👁️ {{ post.views }}</span>
+                    <span>❤️ {{ post.get_likes_count }}</span>
+                    <span>💬 {{ post.comments.count }}</span>
+                </div>
+                <a href="{{ post.get_absolute_url }}" class="blog-card-link">
+                    Читать далее →
+                </a>
+            </div>
+        </article>
+        {% empty %}
+        <!-- Заглушка если нет статей -->
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-light);">
+            Статьи скоро появятся...
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mt-4" style="margin-top: 40px;">
+        <a href="{% url 'blog:post_list' %}" class="btn-special">
+            Посмотреть все статьи
+        </a>
+    </div>
+</section>
+
+<!-- Call Master Section -->
+<section class="call-master-section">
+    <div class="call-master-content">
+        <h2 class="section-title">🏠 Вызов мастера на дом</h2>
+        <p class="text-center mb-4" style="color: var(--text-light);">
+            Салонная красота у вас дома
+        </p>
+        
+        <div class="call-master-grid">
+            <div class="call-master-info">
+                <h3>Условия выезда</h3>
+                <ul class="info-list">
+                    <li><strong>Зона обслуживания:</strong> Москва в пределах МКАД (выезд за МКАД — по согласованию)</li>
+                    <li><strong>Минимальный заказ:</strong> от 3 000 ₽</li>
+                    <li><strong>Время выезда:</strong> ежедневно с 10:00 до 21:00</li>
+                    <li><strong>Предварительная запись:</strong> не менее чем за 3 часа до желаемого времени</li>
+                    <li><strong>Оплата:</strong> наличными, по переводу или по QR-коду после оказания услуги</li>
+                </ul>
+            </div>
+            
+            <div class="call-master-form-wrap">
+                <form class="call-master-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="call-name">Имя *</label>
+                        <input type="text" id="call-name" name="name" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="call-phone">Телефон *</label>
+                        <input type="tel" id="call-phone" name="phone" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="call-service">Услуга *</label>
+                        <select id="call-service" name="service" class="form-control" required>
+                            <option value="">Выберите услугу</option>
+                            <option value="hair">Парикмахерские услуги</option>
+                            <option value="manicure">Маникюр и педикюр</option>
+                            <option value="makeup">Макияж</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="call-address">Адрес</label>
+                        <input type="text" id="call-address" name="address" class="form-control" placeholder="Укажите адрес">
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Оставить заявку</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="about-section">
+    <div class="about-grid">
+        <div>
+            <img src="{% static 'landing2/images/about.jpg' %}" alt="О студии" class="about-image" onerror="this.src='/media/landing/landing-feature-2.webp'">
+        </div>
+        
+        <div class="about-content">
+            <h2>💖 О студии IdealImage</h2>
+            <p class="about-text">
+                Добро пожаловать в нашу студию красоты в Москве — пространство стиля, уюта и профессионального ухода. 
+                Мы создали место, где каждая деталь продумана для вашего комфорта, а каждая процедура направлена на 
+                раскрытие вашей естественной красоты.
+            </p>
+            <p class="about-text">
+                Наш салон работает с 2017 года и предлагает широкий спектр услуг: женские и мужские стрижки, окрашивание, 
+                маникюр и педикюр, косметологические процедуры, лазерную эпиляцию и массаж.
+            </p>
+            <p class="about-text">
+                Мы используем только сертифицированную продукцию от ведущих мировых брендов, строго соблюдаем 
+                гигиенические нормы и работаем на современном оборудовании.
+            </p>
+            
+            <div class="about-features">
+                <div class="feature-item">
+                    <div class="feature-icon">📍</div>
+                    <div class="feature-text">Удобное расположение в центре Москвы</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📅</div>
+                    <div class="feature-text">Работаем 7 дней в неделю</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⏰</div>
+                    <div class="feature-text">С 9:00 до 21:00 — в удобное для вас время</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✨</div>
+                    <div class="feature-text">Мастера с опытом от 7 лет</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Brands Section -->
+<section class="brands-section">
+    <h2 class="section-title">🏆 Мы работаем с ведущими брендами</h2>
+    <div class="brands-grid">
+        <img src="{% static 'landing2/brands/logo-1.png' %}" alt="Бренд 1" class="brand-logo" onerror="this.src='/media/landing2/images/1logo.jpg'">
+        <img src="{% static 'landing2/brands/logo-2.png' %}" alt="Бренд 2" class="brand-logo" onerror="this.src='/media/landing2/images/2logo.jpg'">
+        <img src="{% static 'landing2/brands/logo-3.png' %}" alt="Бренд 3" class="brand-logo" onerror="this.src='/media/landing2/images/3logo.jpg'">
+        <img src="{% static 'landing2/brands/logo-4.png' %}" alt="Бренд 4" class="brand-logo" onerror="this.src='/media/landing2/images/4logo.jpg'">
+        <img src="{% static 'landing2/brands/logo-5.png' %}" alt="Бренд 5" class="brand-logo" onerror="this.src='/media/landing2/images/5logo.jpg'">
+        <img src="{% static 'landing2/brands/logo-6.png' %}" alt="Бренд 6" class="brand-logo" onerror="this.src='/media/landing2/images/6logo.jpg'">
+    </div>
+</section>
+
+<!-- Team Section -->
+<section id="team" class="team-section">
+    <h2 class="section-title">👩‍💼 Ведущие специалисты нашей студии</h2>
+    
+    <div class="team-grid">
+        <div class="team-card">
+            <img src="{% static 'landing2/team/master-1.jpg' %}" alt="Мастер 1" class="team-photo" onerror="this.src='/media/landing2/images/9857188.jpg'">
+            <div class="team-info">
+                <h3 class="team-name">Дарья Фролова</h3>
+                <p class="team-position">Мастер по перманентному макияжу</p>
+                <p class="team-experience">Опыт: 7 лет</p>
+            </div>
+        </div>
+        
+        <div class="team-card">
+            <img src="{% static 'landing2/team/master-2.jpg' %}" alt="Мастер 2" class="team-photo" onerror="this.src='/media/landing2/images/57188.jpg'">
+            <div class="team-info">
+                <h3 class="team-name">Наталья Ковалева</h3>
+                <p class="team-position">Массажист, SPA-мастер</p>
+                <p class="team-experience">Опыт: 14 лет</p>
+            </div>
+        </div>
+        
+        <div class="team-card">
+            <img src="{% static 'landing2/team/master-3.jpg' %}" alt="Мастер 3" class="team-photo" onerror="this.src='/media/landing2/images/69857188.jpg'">
+            <div class="team-info">
+                <h3 class="team-name">Елена Смирнова</h3>
+                <p class="team-position">Стилист-парикмахер</p>
+                <p class="team-experience">Опыт: 10 лет</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Special Deal Section -->
+<section class="special-deal-section">
+    <div class="special-deal-content">
+        <h2 class="special-deal-title">💎 Маникюр + педикюр со скидкой 20%</h2>
+        <p class="special-deal-description">
+            Комплексный уход за руками и ногами по приятной цене — только при записи на оба сервиса одновременно
+        </p>
+        <a href="#home" class="btn-special">Записаться</a>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section id="testimonials" class="testimonials-section">
+    <h2 class="section-title">💬 Отзывы наших клиентов</h2>
+    
+    <div class="testimonials-slider">
+        <div class="testimonial-card">
+            <p class="testimonial-text">
+                "Очень довольна работой мастера по окрашиванию! Получился именно тот оттенок, 
+                о котором мечтала. Приятная атмосфера, вежливый персонал. Теперь только к вам!"
+            </p>
+            <div class="testimonial-author">
+                <img src="{% static 'landing2/images/client-1.jpg' %}" alt="Дарья" class="testimonial-avatar" onerror="this.src='/media/landing2/images/10pic.jpg'">
+                <div class="testimonial-info">
+                    <div class="testimonial-name">Дарья</div>
+                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial-card">
+            <p class="testimonial-text">
+                "Ходила на чистку лица и массаж — косметолог просто волшебница! Кожа заметно посвежела, 
+                ощущение полного релакса. Спасибо за профессионализм и заботу."
+            </p>
+            <div class="testimonial-author">
+                <img src="{% static 'landing2/images/client-2.jpg' %}" alt="Наталья" class="testimonial-avatar" onerror="this.src='/media/landing2/images/6pic.jpg'">
+                <div class="testimonial-info">
+                    <div class="testimonial-name">Наталья</div>
+                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial-card">
+            <p class="testimonial-text">
+                "Отличный салон! Приятные цены, профессиональные мастера. Особенно понравился маникюр — 
+                держится уже третью неделю без сколов. Рекомендую!"
+            </p>
+            <div class="testimonial-author">
+                <img src="{% static 'landing2/images/client-3.jpg' %}" alt="Анна" class="testimonial-avatar" onerror="this.src='/media/landing2/images/7pic.jpg'">
+                <div class="testimonial-info">
+                    <div class="testimonial-name">Анна</div>
+                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section id="contact" class="cta-section">
+    <div class="cta-content">
+        <h2 class="cta-title">Ждем вас!</h2>
+        <p class="cta-description">
+            Запишитесь на процедуру прямо сейчас и получите скидку 20% на первое посещение
+        </p>
+        <a href="#home" class="btn-offer">Записаться</a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="landing2-footer">
+    <div class="footer-grid">
+        <div class="footer-section">
+            <h4>IdealImage Beauty Studio</h4>
+            <p style="color: #b2bec3; line-height: 1.8;">
+                Ваша красота — наша забота. Профессиональные услуги красоты в сердце Москвы.
+            </p>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Меню</h4>
+            <ul class="footer-links">
+                <li><a href="#home">Главная</a></li>
+                <li><a href="#services">Услуги</a></li>
+                <li><a href="#portfolio">Портфолио</a></li>
+                <li><a href="#team">Наши мастера</a></li>
+                <li><a href="#testimonials">Отзывы</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Услуги</h4>
+            <ul class="footer-links">
+                <li><a href="#services">Парикмахерские услуги</a></li>
+                <li><a href="#services">Маникюр и педикюр</a></li>
+                <li><a href="#services">Косметология</a></li>
+                <li><a href="#services">SPA и массаж</a></li>
+                <li><a href="#services">Брови и ресницы</a></li>
+                <li><a href="#services">Лазерная эпиляция</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Контакты</h4>
+            <ul class="footer-links">
+                <li>📞 +7 (000) 000-00-00</li>
+                <li>📍 г. Москва, ул. Ленинская</li>
+                <li>📧 info@idealimage.ru</li>
+                <li>🕐 Пн-Вс: 9:00 - 21:00</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>© 2025 IdealImage Beauty Studio. Все права защищены.</p>
+        <p style="font-size: 12px; margin-top: 10px;">
+            ИНН: 123456789111 | ОГРНИП: 1110987654321
+        </p>
+    </div>
+</footer>
+
+<!-- Scripts -->
+{% include 'home/partials/landing2_scripts.html' %}
+
+</body>
+</html>
+

@@ -1,0 +1,224 @@
+<!-- Таблица статистики авторов за период -->
+<div class="p-6">
+    <!-- Итоговые суммы -->
+    <div class="grid grid-cols-7 gap-3 mb-6">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 text-center">
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Статьи</p>
+            <p class="text-xl font-bold text-blue-600 dark:text-blue-400">{{ totals.posts }}</p>
+        </div>
+        <div class="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg p-3 text-center">
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Просмотры</p>
+            <p class="text-xl font-bold text-cyan-600 dark:text-cyan-400">{{ totals.views }}</p>
+        </div>
+        <div class="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg p-3 text-center">
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Лайки</p>
+            <p class="text-xl font-bold text-red-600 dark:text-red-400">{{ totals.likes }}</p>
+        </div>
+        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg p-3 text-center">
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Комментарии</p>
+            <p class="text-xl font-bold text-purple-600 dark:text-purple-400">{{ totals.comments }}</p>
+        </div>
+        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg p-3 text-center">
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Донаты</p>
+            <p class="text-xl font-bold text-yellow-600 dark:text-yellow-400">{{ totals.donations }}₽</p>
+        </div>
+        <div class="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg p-3 text-center">
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Подписчики</p>
+            <p class="text-xl font-bold text-pink-600 dark:text-pink-400">{{ totals.subscribers }}</p>
+        </div>
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-3 text-center">
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Показано</p>
+            <p class="text-xl font-bold text-green-600 dark:text-green-400">{{ stats.object_list|length }}</p>
+        </div>
+    </div>
+    
+    <!-- Пагинация верх -->
+    {% if stats.has_other_pages %}
+    <div class="mb-4 flex justify-center">
+        <nav class="flex items-center gap-2">
+            {% if stats.has_previous %}
+            <a href="?page=1&per_page={{ per_page }}" class="px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-primary hover:text-white transition-colors text-sm">Первая</a>
+            <a href="?page={{ stats.previous_page_number }}&per_page={{ per_page }}" class="px-3 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors text-sm">← Назад</a>
+            {% else %}
+            <span class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 rounded-lg cursor-not-allowed text-sm">Первая</span>
+            <span class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 rounded-lg cursor-not-allowed text-sm">← Назад</span>
+            {% endif %}
+            
+            <span class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-bold text-sm">
+                Страница {{ stats.number }} из {{ stats.paginator.num_pages }}
+            </span>
+            
+            {% if stats.has_next %}
+            <a href="?page={{ stats.next_page_number }}&per_page={{ per_page }}" class="px-3 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors text-sm">Вперёд →</a>
+            <a href="?page={{ stats.paginator.num_pages }}&per_page={{ per_page }}" class="px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-primary hover:text-white transition-colors text-sm">Последняя</a>
+            {% else %}
+            <span class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 rounded-lg cursor-not-allowed text-sm">Вперёд →</span>
+            <span class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 rounded-lg cursor-not-allowed text-sm">Последняя</span>
+            {% endif %}
+        </nav>
+    </div>
+    <div class="mb-4 text-center text-sm text-gray-600 dark:text-gray-400">
+        Показано {{ stats.start_index }}-{{ stats.end_index }} из {{ stats.paginator.count }} авторов
+    </div>
+    {% endif %}
+    
+    <!-- Таблица -->
+    <div class="overflow-x-auto">
+        <table class="w-full authors-table" data-period="{{ period }}">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th onclick="sortTable(this, 'author', '{{ period }}')" class="sortable px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
+                        Автор <span class="sort-indicator"></span>
+                    </th>
+                    <th onclick="sortTable(this, 'posts', '{{ period }}')" class="sortable px-4 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
+                        Статьи <span class="sort-indicator"></span>
+                    </th>
+                    <th onclick="sortTable(this, 'views', '{{ period }}')" class="sortable px-4 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
+                        Просмотры <span class="sort-indicator"></span>
+                    </th>
+                    <th onclick="sortTable(this, 'likes', '{{ period }}')" class="sortable px-4 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
+                        Лайки <span class="sort-indicator"></span>
+                    </th>
+                    <th onclick="sortTable(this, 'comments', '{{ period }}')" class="sortable px-4 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
+                        Комм. <span class="sort-indicator"></span>
+                    </th>
+                    <th onclick="sortTable(this, 'donations', '{{ period }}')" class="sortable px-4 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
+                        Донаты <span class="sort-indicator"></span>
+                    </th>
+                    <th onclick="sortTable(this, 'subscribers', '{{ period }}')" class="sortable px-4 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
+                        Подп. <span class="sort-indicator"></span>
+                    </th>
+                    <th onclick="sortTable(this, 'bonus', '{{ period }}')" class="sortable px-4 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
+                        Премия <span class="sort-indicator"></span>
+                    </th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        Действия
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for stat in stats %}
+                <tr class="table-row hover:bg-gray-50 dark:hover:bg-gray-700 {% if stat.is_ai %}bg-purple-50 dark:bg-purple-900/20{% endif %}" 
+                    data-author="{{ stat.author.username|lower }}"
+                    data-posts="{{ stat.posts_count }}"
+                    data-views="{{ stat.views_count }}"
+                    data-likes="{{ stat.likes_count }}"
+                    data-comments="{{ stat.comments_count }}"
+                    data-donations="{{ stat.total_donations }}"
+                    data-subscribers="{{ stat.subscribers_count }}"
+                    data-bonus="{{ stat.bonus|floatformat:0 }}">
+                    <td class="px-4 py-3">
+                        <div class="flex items-center space-x-2">
+                            <img src="{{ stat.profile.get_avatar }}" 
+                                 alt="{{ stat.author.username }}"
+                                 class="w-8 h-8 rounded-full {% if stat.is_ai %}ring-2 ring-purple-500{% endif %}">
+                            <div>
+                                <div class="flex items-center space-x-1">
+                                    <span class="font-medium text-gray-900 dark:text-white author-name">{{ stat.author.username }}</span>
+                                    {% if stat.is_ai %}
+                                    <span class="text-purple-600 dark:text-purple-400" title="AI-Ассистент">🤖</span>
+                                    {% endif %}
+                                </div>
+                                {% if stat.profile.is_author %}
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Автор</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="font-semibold text-gray-900 dark:text-white">{{ stat.posts_count }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="font-semibold {% if stat.views_count > 0 %}text-cyan-600 dark:text-cyan-400{% else %}text-gray-500{% endif %}">
+                            {{ stat.views_count }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="{% if stat.likes_count > 0 %}text-red-600 dark:text-red-400{% else %}text-gray-500{% endif %}">
+                            {{ stat.likes_count }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="{% if stat.comments_count > 0 %}text-blue-600 dark:text-blue-400{% else %}text-gray-500{% endif %}">
+                            {{ stat.comments_count }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="{% if stat.total_donations > 0 %}text-yellow-600 dark:text-yellow-400 font-semibold{% else %}text-gray-500{% endif %}">
+                            {{ stat.total_donations }}₽
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="{% if stat.subscribers_count > 0 %}text-purple-600 dark:text-purple-400{% else %}text-gray-500{% endif %}">
+                            {{ stat.subscribers_count }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="font-semibold {% if stat.bonus > 0 %}text-green-600 dark:text-green-400{% else %}text-gray-500{% endif %}">
+                            {{ stat.bonus }}₽
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <div class="flex justify-center space-x-1">
+                            <a href="{% url 'Visitor:profile_detail' stat.profile.slug %}" 
+                               target="_blank"
+                               class="group relative px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                               title="Публичный профиль автора">
+                                <span class="text-sm">👤</span>
+                                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                    Профиль
+                                </span>
+                            </a>
+                            <a href="{% url 'Visitor:view_user_cabinet' stat.author.id %}" 
+                               class="group relative px-2 py-1 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors"
+                               title="Личный кабинет пользователя">
+                                <span class="text-sm">🏠</span>
+                                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                    Кабинет
+                                </span>
+                            </a>
+                            <a href="{% url 'admin:auth_user_change' stat.author.id %}" 
+                               target="_blank"
+                               class="group relative px-2 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
+                               title="Редактировать в админке Django">
+                                <span class="text-sm">⚙️</span>
+                                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                    Админка
+                                </span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Пагинация низ -->
+    {% if stats.has_other_pages %}
+    <div class="mt-4 flex justify-center">
+        <nav class="flex items-center gap-2">
+            {% if stats.has_previous %}
+            <a href="?page=1&per_page={{ per_page }}" class="px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-primary hover:text-white transition-colors text-sm">Первая</a>
+            <a href="?page={{ stats.previous_page_number }}&per_page={{ per_page }}" class="px-3 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors text-sm">← Назад</a>
+            {% else %}
+            <span class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 rounded-lg cursor-not-allowed text-sm">Первая</span>
+            <span class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 rounded-lg cursor-not-allowed text-sm">← Назад</span>
+            {% endif %}
+            
+            <span class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-bold text-sm">
+                Страница {{ stats.number }} из {{ stats.paginator.num_pages }}
+            </span>
+            
+            {% if stats.has_next %}
+            <a href="?page={{ stats.next_page_number }}&per_page={{ per_page }}" class="px-3 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors text-sm">Вперёд →</a>
+            <a href="?page={{ stats.paginator.num_pages }}&per_page={{ per_page }}" class="px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-primary hover:text-white transition-colors text-sm">Последняя</a>
+            {% else %}
+            <span class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 rounded-lg cursor-not-allowed text-sm">Вперёд →</span>
+            <span class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 rounded-lg cursor-not-allowed text-sm">Последняя</span>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+

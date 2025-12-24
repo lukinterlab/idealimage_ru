@@ -1,0 +1,174 @@
+# robots.txt для idealimage.ru
+# Обновлено: 2025 - Поддержка всех основных поисковиков
+
+# ========================================
+# ОБЩИЕ ПРАВИЛА ДЛЯ ВСЕХ РОБОТОВ
+# ========================================
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /ckeditor/
+Disallow: /visitor/login/
+Disallow: /visitor/register/
+Disallow: /search?
+Disallow: /*?page=
+Disallow: /media/uploads/
+Disallow: /*/update/
+Disallow: /*/delete/
+Disallow: /*/create/
+Disallow: /*?next=
+
+# Игнорирование незначащих GET-параметров (для Yandex)
+Clean-param: next
+Clean-param: from
+Clean-param: utm_source
+Clean-param: utm_medium
+Clean-param: utm_campaign
+Clean-param: utm_content
+Clean-param: utm_term
+Clean-param: fbclid
+Clean-param: gclid
+Clean-param: yclid
+Clean-param: _openstat
+Clean-param: ref
+Clean-param: referer
+Clean-param: source
+
+# ========================================
+# КАРТА САЙТА И RSS
+# ========================================
+Sitemap: https://idealimage.ru/sitemap.xml
+# RSS Feed: https://idealimage.ru/blog/feed/
+
+# ========================================
+# GOOGLE / GOOGLEBOT
+# ========================================
+User-agent: Googlebot
+Crawl-delay: 0
+Allow: /media/images/
+Allow: /static/
+Allow: /blog/
+
+User-agent: Googlebot-Image
+Allow: /media/
+Allow: /static/images/
+
+User-agent: Googlebot-Video
+Allow: /media/
+
+# ========================================
+# YANDEX
+# ========================================
+User-agent: Yandex
+User-agent: YandexBot
+Crawl-delay: 0
+Host: idealimage.ru
+Allow: /media/images/
+Allow: /static/
+Allow: /blog/
+
+User-agent: YandexImages
+Allow: /media/
+Allow: /static/images/
+
+User-agent: YandexMedia
+User-agent: YandexVideo
+Allow: /media/
+
+# ========================================
+# BING / MICROSOFT
+# ========================================
+User-agent: Bingbot
+User-agent: MSNBot
+User-agent: BingPreview
+Crawl-delay: 0
+Allow: /media/images/
+Allow: /static/
+Allow: /blog/
+
+# ========================================
+# YAHOO / SLURP
+# ========================================
+User-agent: Slurp
+Crawl-delay: 1
+Allow: /
+
+# ========================================
+# MAIL.RU
+# ========================================
+User-agent: Mail.RU_Bot
+Crawl-delay: 1
+Allow: /
+
+# ========================================
+# RAMBLER
+# ========================================
+User-agent: StackRambler
+User-agent: Rambler
+Crawl-delay: 1
+Allow: /
+
+# ========================================
+# DUCKDUCKGO
+# ========================================
+User-agent: DuckDuckBot
+Crawl-delay: 0
+Allow: /
+
+# ========================================
+# BAIDU (Китайский поисковик)
+# ========================================
+User-agent: Baiduspider
+Crawl-delay: 2
+Allow: /
+
+# ========================================
+# СОЦИАЛЬНЫЕ СЕТИ (для превью)
+# ========================================
+User-agent: facebookexternalhit
+User-agent: Twitterbot
+User-agent: TelegramBot
+User-agent: Discordbot
+User-agent: WhatsApp
+Allow: /
+Allow: /media/images/
+
+# ========================================
+# AI БОТЫ (2025 - контроль AI-скрапинга)
+# ========================================
+# OpenAI (ChatGPT)
+User-agent: GPTBot
+User-agent: ChatGPT-User
+Allow: /blog/
+Disallow: /admin/
+Disallow: /media/uploads/
+
+# Anthropic (Claude)
+User-agent: anthropic-ai
+User-agent: Claude-Web
+Allow: /blog/
+Disallow: /admin/
+
+# Google (Bard/Gemini)
+User-agent: Google-Extended
+Allow: /blog/
+Disallow: /admin/
+
+# Common Crawl
+User-agent: CCBot
+Allow: /blog/
+
+# ========================================
+# БЛОКИРОВКА ВРЕДНЫХ БОТОВ
+# ========================================
+User-agent: AhrefsBot
+User-agent: MJ12bot
+User-agent: SemrushBot
+User-agent: DotBot
+User-agent: Screaming Frog SEO Spider
+Disallow: /
+
+# ========================================
+# ДОПОЛНИТЕЛЬНЫЕ МЕТА-ДАННЫЕ
+# ========================================
+# Request-rate: 1/1  # Ограничение частоты запросов (если нужно)

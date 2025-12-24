@@ -1,0 +1,210 @@
+<div class="mb-8 bg-gradient-to-br from-purple-900/50 to-blue-900/50 backdrop-blur-md rounded-2xl p-6 border border-purple-500/30" id="gigachat-widget">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+            🤖 GigaChat AI Мониторинг
+        </h2>
+        <div class="flex gap-2">
+            <a href="{% url 'asistent:token_optimization' %}" 
+               class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center gap-2"
+               data-tippy-content="Открыть анализ затрат токенов">
+                💰 Оптимизация
+            </a>
+            <button onclick="refreshGigaChatStats()" 
+                    class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition"
+                    data-tippy-content="Обновить баланс токенов">
+                🔄 Обновить
+            </button>
+        </div>
+    </div>
+    
+    <!-- Текущая модель -->
+    <div class="mb-6 p-4 bg-white/10 rounded-xl">
+        <p class="text-white/70 text-sm mb-2">Активная модель:</p>
+        <p class="text-2xl font-bold text-white" id="current-model">GigaChat-Max</p>
+    </div>
+    
+    <!-- Баланс токенов -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="p-4 bg-white/10 rounded-xl">
+            <p class="text-white/70 text-sm mb-1">Embeddings</p>
+            <p class="text-xl font-bold text-white" id="balance-embeddings">-</p>
+            <div class="mt-2 h-2 bg-white/20 rounded-full overflow-hidden">
+                <div class="h-full bg-cyan-500 transition-all" id="progress-embeddings" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <div class="p-4 bg-white/10 rounded-xl">
+            <p class="text-white/70 text-sm mb-1">GigaChat Lite</p>
+            <p class="text-xl font-bold text-white" id="balance-lite">-</p>
+            <div class="mt-2 h-2 bg-white/20 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-500 transition-all" id="progress-lite" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <div class="p-4 bg-white/10 rounded-xl border-2 border-purple-500/50">
+            <p class="text-white/70 text-sm mb-1">GigaChat Max</p>
+            <p class="text-xl font-bold text-white" id="balance-max">1,000,000</p>
+            <div class="mt-2 h-2 bg-white/20 rounded-full overflow-hidden">
+                <div class="h-full bg-purple-500 transition-all" id="progress-max" style="width: 100%"></div>
+            </div>
+        </div>
+        
+        <div class="p-4 bg-white/10 rounded-xl">
+            <p class="text-white/70 text-sm mb-1">GigaChat Pro</p>
+            <p class="text-xl font-bold text-white" id="balance-pro">50,000</p>
+            <div class="mt-2 h-2 bg-white/20 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500 transition-all" id="progress-pro" style="width: 100%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Статистика использования -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="text-center">
+            <p class="text-white/70 text-sm">Всего запросов</p>
+            <p class="text-2xl font-bold text-white" id="total-requests">0</p>
+        </div>
+        <div class="text-center">
+            <p class="text-white/70 text-sm">Успешно</p>
+            <p class="text-2xl font-bold text-green-400" id="successful-requests">0</p>
+        </div>
+        <div class="text-center">
+            <p class="text-white/70 text-sm">Ошибок</p>
+            <p class="text-2xl font-bold text-red-400" id="failed-requests">0</p>
+        </div>
+        <div class="text-center">
+            <p class="text-white/70 text-sm">Успешность</p>
+            <p class="text-2xl font-bold text-yellow-400" id="success-rate">0%</p>
+        </div>
+    </div>
+    
+    <!-- Настройки -->
+    <div class="p-4 bg-white/10 rounded-xl">
+        <p class="text-white font-semibold mb-3">⚙️ Настройки проверки баланса</p>
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div class="flex items-center gap-2">
+                <label class="text-white/70 text-sm">Проверять после:</label>
+                <select id="check-frequency" onchange="updateGigaChatSettings()" 
+                        class="px-3 py-2 bg-white/20 text-white rounded-lg border border-white/30">
+                    <option value="1">1 запроса</option>
+                    <option value="5">5 запросов</option>
+                    <option value="10">10 запросов</option>
+                    <option value="20">20 запросов</option>
+                    <option value="50">50 запросов</option>
+                </select>
+            </div>
+            
+            <label class="flex items-center gap-2 text-white/70 text-sm">
+                <input type="checkbox" id="auto-switch" onchange="updateGigaChatSettings()" 
+                       class="w-4 h-4" checked>
+                <span>Автопереключение моделей</span>
+            </label>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshGigaChatStats() {
+    fetch('/asistent/api/gigachat-balance/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status !== 'ok') {
+                console.error('Ошибка загрузки данных GigaChat:', data.message);
+                return;
+            }
+            
+            // Обновляем текущую модель
+            document.getElementById('current-model').textContent = data.current_model;
+            
+            // Обновляем балансы
+            const balances = data.balances;
+            updateModelBalance('embeddings', 'GigaChat-Embeddings', balances, 10000000);
+            updateModelBalance('lite', 'GigaChat', balances, 30000000);
+            updateModelBalance('max', 'GigaChat-Max', balances, 1000000);
+            updateModelBalance('pro', 'GigaChat-Pro', balances, 1000000);
+            
+            // Обновляем статистику
+            let totalRequests = 0, successfulRequests = 0, failedRequests = 0;
+            data.stats.forEach(stat => {
+                totalRequests += stat.total_requests;
+                successfulRequests += stat.successful_requests;
+                failedRequests += stat.failed_requests;
+            });
+            
+            document.getElementById('total-requests').textContent = totalRequests;
+            document.getElementById('successful-requests').textContent = successfulRequests;
+            document.getElementById('failed-requests').textContent = failedRequests;
+            
+            // Вычисляем процент успешности
+            const successRate = totalRequests > 0 ? Math.round((successfulRequests / totalRequests) * 100) : 0;
+            document.getElementById('success-rate').textContent = successRate + '%';
+            
+            // Обновляем настройки
+            document.getElementById('check-frequency').value = data.check_after_requests;
+            document.getElementById('auto-switch').checked = data.auto_switch_enabled;
+        })
+        .catch(error => console.error('Ошибка загрузки статистики GigaChat:', error));
+}
+
+function updateModelBalance(modelId, modelName, balances, maxTokens) {
+    const balance = balances[modelName] || 0;
+    const balanceEl = document.getElementById(`balance-${modelId}`);
+    const progressEl = document.getElementById(`progress-${modelId}`);
+    
+    balanceEl.textContent = balance.toLocaleString('ru-RU');
+    
+    const percentage = (balance / maxTokens) * 100;
+    progressEl.style.width = percentage + '%';
+    
+    // Меняем цвет в зависимости от остатка
+    if (percentage < 10) {
+        progressEl.className = 'h-full bg-red-500 transition-all';
+    } else if (percentage < 30) {
+        progressEl.className = 'h-full bg-yellow-500 transition-all';
+    }
+}
+
+function updateGigaChatSettings() {
+    const checkFrequency = document.getElementById('check-frequency').value;
+    const autoSwitch = document.getElementById('auto-switch').checked;
+    
+    fetch('/asistent/api/gigachat-settings-update/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: `check_balance_after_requests=${checkFrequency}&auto_switch_enabled=${autoSwitch}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            console.log('Настройки обновлены:', data);
+        } else {
+            console.error('Ошибка обновления настроек:', data.message);
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Автообновление каждые 30 секунд
+setInterval(refreshGigaChatStats, 30000);
+
+// Загружаем при открытии страницы
+document.addEventListener('DOMContentLoaded', refreshGigaChatStats);
+</script>
+

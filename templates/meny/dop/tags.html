@@ -1,0 +1,17 @@
+{% load static %}
+{% block Tags %}
+<!-- Tags Start -->
+<div class="col-12 col-sm-6 col-xl-12">
+  <h2 class="small-title"> ({{ tags.count }}) ТЕГОВ . ВЫБИРАЙ :</h2>
+  <div class="card-body border-quaternary scroll-out">
+    <div class="scroll sh-60">
+      {% for tag in tags %}
+      <a class="btn btn-sm btn-icon btn-icon-end btn-outline-primary mb-1 me-1" href="{% url 'blog:post_by_tags' tag.slug %}">
+        <span>{{ tag }} {{ tag.posts.count }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<!-- Tags End -->               
+{% endblock Tags %}

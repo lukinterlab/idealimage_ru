@@ -1,0 +1,11 @@
+{% load static %}
+{% block titul %}
+<div class="page-title-container">
+  <div class="page-title-container"></div>
+    <a href='{% url "Home:home" %}'>
+      <h1 class="mb-0 pb-0 display-4" id="title">{{ page_title }}</h1>
+    </a>
+  <div class="page-title-container"></div>
+</div>
+{% endblock titul %}
+

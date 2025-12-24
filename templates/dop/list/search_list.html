@@ -1,0 +1,34 @@
+{% load static %}  
+
+<h1>По запросу "{{ query }}" нашлось {{ post_list.count }} статей</h1>  
+<section class="scroll-section" id="verticalContent">
+        {% for post in post_list %}
+            <div class="card mb-5">
+                <div class="">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-12 col-md-4">
+                            <a href="{{ post.get_absolute_url }}">
+                                <img src="{{ post.kartinka.url }}" class="card-img card-img-horizontal-md sh-35 sh-md-50 mb-4 mb-md-0"/>
+                            </a>
+                        </div>
+                        <div class="col-12 col-md-8 ps-md-3 ps-0">
+                            <div class="card-body">
+                                <h4 class="mb-4"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h4>
+                                <h6 class="mb-3 mt-5 text-alternate"><a class="btn btn-primary" href="{{ post.category.get_absolute_url }}">{{ post.category }}</a> | {{ post.author }} | {{ post.publish | date:"d F Y" }} |  
+                                    Просмотров: {{ post.views }} </h6>
+                                <p>
+                                    {{ post.content | safe |truncatechars:777 }}
+                                </p>
+                                <h6 class="mb-3 mt-5 text-alternate">
+                                    {% for tag in post.tags.all %}
+                                    <a class="btn btn-sm btn-icon btn-icon-end btn-outline-primary mb-1 me-1" href="{% url 'blog:post_by_tags' tag.slug %}">
+                                        <span>{{ tag }} </span>
+                                    </a>
+                                    {% endfor %}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+</section>

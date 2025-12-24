@@ -1,0 +1,91 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Аналитика рекламы - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-5xl font-black text-white mb-2">
+                        📈 Аналитика рекламы
+                    </h1>
+                    <p class="text-xl text-gray-300">Детальная статистика и отчеты</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'advertising:analytics_export' %}" 
+                       class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        📥 Экспорт CSV
+                    </a>
+                    <a href="{% url 'advertising:dashboard' %}" 
+                       class="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20">
+                        ← Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Фильтр периода -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8">
+            <form method="get" class="flex items-center gap-4">
+                <label class="text-white font-semibold">Период:</label>
+                <select name="days" onchange="this.form.submit()" 
+                        class="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg">
+                    <option value="7" {% if days == 7 %}selected{% endif %} class="bg-gray-800">7 дней</option>
+                    <option value="30" {% if days == 30 %}selected{% endif %} class="bg-gray-800">30 дней</option>
+                    <option value="90" {% if days == 90 %}selected{% endif %} class="bg-gray-800">90 дней</option>
+                </select>
+            </form>
+        </div>
+        
+        <!-- Статистика по рекламодателям -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8">
+            <h3 class="text-2xl font-bold text-white mb-6">💼 Статистика по рекламодателям</h3>
+            {% if advertisers_stats %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-white/5 border-b border-white/20">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-white font-semibold">Рекламодатель</th>
+                            <th class="px-4 py-3 text-center text-white font-semibold">Потрачено</th>
+                            <th class="px-4 py-3 text-center text-white font-semibold">Показы</th>
+                            <th class="px-4 py-3 text-center text-white font-semibold">Клики</th>
+                            <th class="px-4 py-3 text-center text-white font-semibold">CTR</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for stat in advertisers_stats %}
+                        <tr class="hover:bg-white/5">
+                            <td class="px-4 py-3 text-white font-semibold">{{ stat.advertiser.name }}</td>
+                            <td class="px-4 py-3 text-center text-yellow-300 font-bold">{{ stat.total_spent|floatformat:0 }}₽</td>
+                            <td class="px-4 py-3 text-center text-white">{{ stat.impressions }}</td>
+                            <td class="px-4 py-3 text-center text-green-300 font-bold">{{ stat.clicks }}</td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="{% if stat.ctr > 3 %}text-green-300{% elif stat.ctr > 1 %}text-yellow-300{% else %}text-red-300{% endif %} font-bold">
+                                    {{ stat.ctr|floatformat:2 }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-gray-400 text-center py-8">Нет данных за выбранный период</p>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+

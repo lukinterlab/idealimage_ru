@@ -1,0 +1,119 @@
+{% load static %}
+
+<!-- ПОХОЖИЕ СТАТЬИ -->
+<div class="card mb-5">
+  <div class="card-body">
+    <h3 class="mb-4">{{ title }}</h3>
+    
+    <div class="row g-4">
+      {% for related_post in posts %}
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 hover-shadow-lg transition-shadow">
+          <!-- Изображение с lazy loading -->
+          {% if related_post.kartinka %}
+          <a href="{{ related_post.get_absolute_url }}">
+            <img 
+              src="{% if related_post.thumbnail %}{{ related_post.thumbnail.url }}{% else %}{{ related_post.kartinka.url }}{% endif %}" 
+              alt="{{ related_post.title }}"
+              class="card-img-top lazy-image"
+              loading="lazy"
+              style="height: 200px; object-fit: cover;"
+            />
+          </a>
+          {% endif %}
+          
+          <div class="card-body d-flex flex-column">
+            <!-- Категория -->
+            <div class="mb-2">
+              <a href="{% url 'blog:post_list_by_category' related_post.category.slug %}" 
+                 class="badge bg-primary text-decoration-none">
+                {{ related_post.category.title }}
+              </a>
+            </div>
+            
+            <!-- Заголовок -->
+            <h5 class="card-title">
+              <a href="{{ related_post.get_absolute_url }}" class="text-decoration-none text-dark hover-text-primary">
+                {{ related_post.title }}
+              </a>
+            </h5>
+            
+            <!-- Описание (кратко) -->
+            {% if related_post.description %}
+            <p class="card-text text-muted small mb-3">
+              {{ related_post.description|truncatewords:15 }}
+            </p>
+            {% endif %}
+            
+            <!-- Метрики -->
+            <div class="mt-auto d-flex justify-content-between align-items-center text-muted small">
+              <span>
+                <i data-cs-icon="eye" class="me-1"></i>
+                {{ related_post.views }}
+              </span>
+              <span>
+                {{ related_post.created|date:"d.m.Y" }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Стили для hover эффектов -->
+<style>
+.hover-shadow-lg {
+  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.hover-shadow-lg:hover {
+  box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+  transform: translateY(-5px);
+}
+
+.hover-text-primary:hover {
+  color: var(--bs-primary) !important;
+}
+
+.transition-shadow {
+  transition: all 0.3s ease;
+}
+
+.lazy-image {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.lazy-image.loaded {
+  opacity: 1;
+}
+</style>
+
+<!-- Скрипт для lazy loading -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const lazyImages = document.querySelectorAll('.lazy-image');
+  
+  if ('IntersectionObserver' in window) {
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.classList.add('loaded');
+          observer.unobserve(img);
+        }
+      });
+    });
+    
+    lazyImages.forEach(img => imageObserver.observe(img));
+  } else {
+    // Fallback для старых браузеров
+    lazyImages.forEach(img => img.classList.add('loaded'));
+  }
+});
+</script>
+
+

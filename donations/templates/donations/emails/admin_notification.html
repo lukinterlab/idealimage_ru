@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новый донат - IdealImage.ru</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .donation-details {
+            background: #f8f9fa;
+            border: 2px solid #10b981;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .donation-details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .donation-details td {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .donation-details td:first-child {
+            font-weight: bold;
+            width: 40%;
+        }
+        .donation-details tr:last-child td {
+            border-bottom: none;
+        }
+        .amount-highlight {
+            font-size: 36px;
+            font-weight: bold;
+            color: #10b981;
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #ecfdf5;
+            border-radius: 10px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #10b981;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Получен новый донат!</h1>
+        </div>
+        
+        <div class="content">
+            <p>Отличные новости! На сайт поступил новый донат.</p>
+            
+            <div class="amount-highlight">
+                💰 {{ donation.amount }} ₽
+            </div>
+            
+            <div class="donation-details">
+                <table>
+                    <tr>
+                        <td>ID транзакции:</td>
+                        <td>{{ donation.id }}</td>
+                    </tr>
+                    <tr>
+                        <td>Донатер:</td>
+                        <td>{{ donation.get_donor_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Email:</td>
+                        <td>{{ donation.user_email }}</td>
+                    </tr>
+                    <tr>
+                        <td>Способ оплаты:</td>
+                        <td>{{ donation.get_payment_method_display }}</td>
+                    </tr>
+                    <tr>
+                        <td>Дата:</td>
+                        <td>{{ donation.completed_at|date:"d.m.Y в H:i:s" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Статус:</td>
+                        <td style="color: #10b981; font-weight: bold;">✓ {{ donation.get_status_display }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            {% if donation.message %}
+            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
+                <p style="margin: 0; font-weight: bold;">Сообщение от донатера:</p>
+                <p style="margin: 10px 0 0 0; font-style: italic;">{{ donation.message }}</p>
+            </div>
+            {% endif %}
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{{ site_url }}/admin/donations/donation/{{ donation.id }}/change/" class="button">
+                    Посмотреть в админке
+                </a>
+                <a href="{{ site_url }}/donations/list/" class="button" style="background: #667eea;">
+                    Все донаты
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 IdealImage.ru | Система уведомлений о донатах</p>
+        </div>
+    </div>
+</body>
+</html>

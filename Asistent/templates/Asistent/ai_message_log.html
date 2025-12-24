@@ -1,0 +1,224 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+{% load ai_filters %}
+
+{% block title %}Журнал AI-агента{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white mb-2">
+                        <svg class="w-10 h-10 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Журнал уведомлений AI-агента
+                    </h1>
+                    <p class="text-xl text-gray-300">Полная история сообщений и уведомлений от AI</p>
+                </div>
+                <div class="flex gap-3">
+                    <form method="post" action="{% url 'asistent:clear_ai_messages' %}" class="inline" onsubmit="return confirm('Удалить ВСЕ сообщения? Это действие нельзя отменить!');">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-lg">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            Очистить журнал
+                        </button>
+                    </form>
+                    <a href="{% url 'Home:master_admin_dashboard' %}" 
+                       class="px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-lg transition-colors border border-white/20 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Фильтры -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">Тип сообщения:</label>
+                    <select name="role" onchange="this.form.submit()" 
+                            class="w-full px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="" class="bg-gray-800">Все</option>
+                        <option value="user" {% if request.GET.role == 'user' %}selected{% endif %} class="bg-gray-800">От пользователя</option>
+                        <option value="assistant" {% if request.GET.role == 'assistant' %}selected{% endif %} class="bg-gray-800">От AI</option>
+                        <option value="system" {% if request.GET.role == 'system' %}selected{% endif %} class="bg-gray-800">Системные</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">Диалог:</label>
+                    <select name="conversation" onchange="this.form.submit()"
+                            class="w-full px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="" class="bg-gray-800">Все диалоги</option>
+                        {% for conv in conversations %}
+                        <option value="{{ conv.id }}" {% if request.GET.conversation == conv.id|stringformat:"s" %}selected{% endif %} class="bg-gray-800">
+                            {{ conv.title|truncatechars:30 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">За период:</label>
+                    <select name="period" onchange="this.form.submit()"
+                            class="w-full px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="today" {% if request.GET.period == 'today' %}selected{% endif %} class="bg-gray-800">Сегодня</option>
+                        <option value="week" {% if request.GET.period == 'week' or not request.GET.period %}selected{% endif %} class="bg-gray-800">Неделя</option>
+                        <option value="month" {% if request.GET.period == 'month' %}selected{% endif %} class="bg-gray-800">Месяц</option>
+                        <option value="all" {% if request.GET.period == 'all' %}selected{% endif %} class="bg-gray-800">Всё время</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" 
+                            class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"></path>
+                        </svg>
+                        Применить
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Статистика -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Всего сообщений</div>
+                <div class="text-4xl font-bold text-white">{{ stats.total }}</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">От AI</div>
+                <div class="text-4xl font-bold text-green-300">{{ stats.from_ai }}</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">От пользователей</div>
+                <div class="text-4xl font-bold text-blue-300">{{ stats.from_user }}</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Системные</div>
+                <div class="text-4xl font-bold text-yellow-300">{{ stats.system }}</div>
+            </div>
+        </div>
+        
+        <!-- Список сообщений -->
+        {% if messages_list %}
+        <div class="space-y-4">
+            {% for message in messages_list %}
+            <div class="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 overflow-hidden hover:border-purple-500/30 transition-all">
+                <div class="px-6 py-4 bg-{% if message.role == 'user' %}blue{% elif message.role == 'assistant' %}green{% else %}gray{% endif %}-500/10 border-b border-white/10">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-{% if message.role == 'user' %}blue{% elif message.role == 'assistant' %}green{% else %}gray{% endif %}-500/30 rounded-full flex items-center justify-center">
+                                {% if message.role == 'user' %}
+                                <svg class="w-5 h-5 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                </svg>
+                                {% elif message.role == 'assistant' %}
+                                <svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
+                                </svg>
+                                {% else %}
+                                <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+                                </svg>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-white">
+                                    {% if message.role == 'user' %}Пользователь{% elif message.role == 'assistant' %}AI-Ассистент{% else %}Система{% endif %}
+                                </p>
+                                <p class="text-xs text-gray-400">{{ message.timestamp|date:"d.m.Y H:i:s" }}</p>
+                            </div>
+                        </div>
+                        {% if message.conversation %}
+                        <div class="px-3 py-1 bg-purple-500/30 text-purple-200 rounded-full text-xs font-semibold">
+                            {{ message.conversation.title|truncatechars:20 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="px-6 py-4">
+                    <div class="text-white whitespace-pre-wrap prose prose-invert max-w-none">
+                        {{ message.content|linkify_ai_message }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Пагинация -->
+        {% if messages_list.has_other_pages %}
+        <div class="mt-8 flex justify-center">
+            <nav class="flex items-center gap-2">
+                {% if messages_list.has_previous %}
+                <a href="?page=1{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.conversation %}&conversation={{ request.GET.conversation }}{% endif %}{% if request.GET.period %}&period={{ request.GET.period }}{% endif %}" 
+                   class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </a>
+                <a href="?page={{ messages_list.previous_page_number }}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.conversation %}&conversation={{ request.GET.conversation }}{% endif %}{% if request.GET.period %}&period={{ request.GET.period }}{% endif %}" 
+                   class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                </a>
+                {% endif %}
+                
+                <span class="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold">
+                    Страница {{ messages_list.number }} из {{ messages_list.paginator.num_pages }}
+                </span>
+                
+                {% if messages_list.has_next %}
+                <a href="?page={{ messages_list.next_page_number }}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.conversation %}&conversation={{ request.GET.conversation }}{% endif %}{% if request.GET.period %}&period={{ request.GET.period }}{% endif %}" 
+                   class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                </a>
+                <a href="?page={{ messages_list.paginator.num_pages }}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.conversation %}&conversation={{ request.GET.conversation }}{% endif %}{% if request.GET.period %}&period={{ request.GET.period }}{% endif %}" 
+                   class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- Пустое состояние -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-12 text-center shadow-2xl">
+            <svg class="w-24 h-24 mx-auto text-white/30 mb-6" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            <h3 class="text-2xl font-bold text-white mb-2">Сообщений нет</h3>
+            <p class="text-gray-400">Журнал пуст или не соответствует выбранным фильтрам</p>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+
+<style>
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+</style>
+{% endblock %}

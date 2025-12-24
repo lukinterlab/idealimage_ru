@@ -1,0 +1,43 @@
+{% extends 'base_tailwind.html' %}
+
+{% block title %}Удаление баннера - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="container mx-auto px-4 max-w-2xl">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4">⚠️</div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    Удалить баннер?
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Это действие нельзя отменить
+                </p>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mb-8">
+                <h3 class="font-bold text-gray-900 dark:text-white mb-2">{{ banner.name }}</h3>
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    <p><strong>Кампания:</strong> {{ banner.campaign.name }}</p>
+                    <p><strong>Место:</strong> {{ banner.place.name }}</p>
+                    <p><strong>Тип:</strong> {{ banner.get_banner_type_display }}</p>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-lg transition-colors">
+                        🗑️ Да, удалить
+                    </button>
+                    <a href="{% url 'advertising:banners_manage' %}" class="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg transition-colors text-center">
+                        ❌ Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

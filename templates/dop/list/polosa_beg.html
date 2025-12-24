@@ -1,0 +1,28 @@
+{% load static %}         
+       
+
+<div class="glide" id="glideFlow">
+    <div class="glide__track" data-glide-el="track">
+        <div class="glide__slides">
+            {% for category in categorys %}
+                <div class="glide__slide">
+                    <div class="col-12 col-sm-6 col-xl-12 mb-5">
+                        <div class="card w-100 sh-25 hover-img-scale-up">
+                            <a href="{{ category.get_absolute_url }}" class="btn btn-icon btn-icon-start btn-primary mt-3 stretched-link">
+                                <i data-cs-icon="chevron-right"></i>
+                                <span>{{ category.title }}</span>
+                            </a>
+                        <img src="{{ category.posts.last.kartinka.url }}" class="img-fluid rounded mb-1 me-1 sh-25 sw-40" alt="card image" />
+                        <div class="card-img-overlay d-flex flex-column justify-content-between bg-transparent">
+                            <div class="d-flex flex-column h-100 justify-content-between align-items-start">
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+

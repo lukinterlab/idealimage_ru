@@ -1,0 +1,189 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}События интеграций{% endblock %}
+
+{% block content %}
+<!-- Админ навигация -->
+{% include 'partials/admin_navigation.html' %}
+
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl font-black text-white dark:text-white mb-2">
+                        <svg class="w-10 h-10 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v3H2V5zm0 5h16v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5z"></path>
+                        </svg>
+                        События интеграций
+                    </h1>
+                    <p class="text-xl text-gray-300 dark:text-gray-300">Мониторинг событий внешних сервисов и интеграций</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'asistent:ai_schedules' %}" 
+                       class="px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white dark:text-white font-semibold rounded-lg transition-colors border border-white/20 dark:border-white/20 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        Назад к расписаниям
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Всего событий</div>
+                <div class="text-4xl font-bold text-white mb-2">{{ total_events }}</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Ошибок</div>
+                <div class="text-4xl font-bold text-rose-300 mb-2">{{ error_count }}</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Предупреждений</div>
+                <div class="text-4xl font-bold text-amber-300 mb-2">{{ warning_count }}</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                <div class="text-gray-300 text-sm mb-2">Информационных</div>
+                <div class="text-4xl font-bold text-emerald-300 mb-2">{{ info_count }}</div>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 p-6 mb-6 shadow-xl">
+            <form method="get" class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label for="service-filter" class="block text-xs uppercase tracking-widest text-gray-300 dark:text-gray-400 mb-2">Сервис</label>
+                    <select id="service-filter" name="service"
+                            class="w-full px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="all" {% if service_filter == 'all' %}selected{% endif %}>Все сервисы</option>
+                        {% for value, label in service_choices %}
+                            <option value="{{ value }}" {% if service_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                    <label for="severity-filter" class="block text-xs uppercase tracking-widest text-gray-300 dark:text-gray-400 mb-2">Уровень</label>
+                    <select id="severity-filter" name="severity"
+                            class="w-full px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="all" {% if severity_filter == 'all' %}selected{% endif %}>Все уровни</option>
+                        {% for value, label in severity_choices %}
+                            <option value="{{ value }}" {% if severity_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <button type="submit"
+                            class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-lg transition-colors">
+                        Применить
+                    </button>
+                </div>
+                {% if service_filter != 'all' or severity_filter != 'all' %}
+                <div>
+                    <a href="{% url 'asistent:integration_events' %}"
+                       class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-gray-200 font-semibold rounded-lg border border-white/10 transition-colors">
+                        Сбросить
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Таблица событий -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/20 shadow-2xl overflow-hidden">
+            <div class="px-5 py-4 border-b border-white/10">
+                <h3 class="text-white text-lg font-semibold flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v3H2V5zm0 5h16v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5z"></path>
+                    </svg>
+                    Список событий
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-white/10 text-sm text-gray-200">
+                    <thead class="bg-white/5 text-gray-300 uppercase text-xs">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Время</th>
+                            <th class="px-4 py-3 text-left">Сервис</th>
+                            <th class="px-4 py-3 text-left">Уровень</th>
+                            <th class="px-4 py-3 text-left">Код</th>
+                            <th class="px-4 py-3 text-left">Сообщение</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for event in events %}
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-4 py-3 text-xs text-gray-400">
+                                {{ event.created_at|date:"d.m.Y H:i:s" }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="text-gray-200">{{ event.get_service_display }}</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                    {% if event.severity == 'error' %}bg-rose-500/20 text-rose-200
+                                    {% elif event.severity == 'warning' %}bg-amber-500/20 text-amber-200
+                                    {% else %}bg-emerald-500/20 text-emerald-200{% endif %}">
+                                    {{ event.get_severity_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-0.5 rounded text-xs font-mono bg-black/30 text-gray-300">
+                                    {{ event.code }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-gray-100">
+                                <div class="max-w-2xl">
+                                    {{ event.message|truncatechars:200 }}
+                                    {% if event.extra %}
+                                        <details class="mt-1">
+                                            <summary class="text-xs text-gray-400 cursor-pointer hover:text-gray-300">Доп. данные</summary>
+                                            <pre class="mt-2 text-xs bg-black/30 p-2 rounded overflow-x-auto">{{ event.extra|safe }}</pre>
+                                        </details>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+                                Событий не найдено
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Пагинация -->
+        {% if page_obj.has_other_pages %}
+        <div class="mt-6 flex items-center justify-center gap-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if service_filter != 'all' %}&service={{ service_filter }}{% endif %}{% if severity_filter != 'all' %}&severity={{ severity_filter }}{% endif %}"
+                   class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                    ← Назад
+                </a>
+            {% endif %}
+            
+            <span class="px-4 py-2 text-gray-300">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if service_filter != 'all' %}&service={{ service_filter }}{% endif %}{% if severity_filter != 'all' %}&severity={{ severity_filter }}{% endif %}"
+                   class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                    Вперёд →
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,260 @@
+{% load static %}
+
+
+<!-- КОНТЕКС НАПОЛНЕНИЕ profile_content.html-->
+<div class="col-12 col-xl-8 col-xxl-9">
+
+    <!-- Заголовки переключатели страницы  -->
+    <ul class="nav nav-tabs nav-tabs-title nav-tabs-line-title responsive-tabs" role="tablist">
+
+      <!-- #projectsTab  -->
+      <li class="nav-item" role="presentation">
+        <a class="nav-link active"   data-bs-toggle="tab" href="#projectsTab" role="tab" aria-selected="true">СТАТЬИ</a>
+      </li>
+
+      <!-- #collectionsTab  -->
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" data-bs-toggle="tab" href="#collectionsTab" role="tab" aria-selected="true">Комментарии</a>
+      </li>
+
+      <!-- #friendsTab  -->
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" data-bs-toggle="tab" href="#friendsTab" role="tab" aria-selected="true">Подписчики</a>
+      </li>
+
+      <!-- more-horizontal  -->
+      <li class="nav-item dropdown ms-auto d-none responsive-tab-dropdown">
+        <a
+          class="btn btn-icon btn-icon-only btn-background pt-0"
+          href="#"
+          role="button"
+          data-bs-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+          data-diplay="static"
+        >
+          <i data-cs-icon="more-horizontal"></i>
+        </a>
+        <ul class="dropdown-menu mt-2 dropdown-menu-end"></ul>
+      </li>
+    </ul>
+    <!-- Заголовок таблиц End -->
+
+    <!-- СТРАНИЦЫ -->
+    <div class="tab-content">
+
+      <!-- СТАТЬИ Tab Start include "dop/tably/table_1.html"-->
+      <div class="tab-pane fade active show" id="projectsTab" role="tabpanel">
+        {% include 'dop/list/paginations2.html' %} 
+        {% include "abc/karty/kart_2.html" %}
+        {% include 'dop/list/paginations2.html' %} 
+      </div>
+      <!-- СТАТЬИ Tab End -->
+
+      <!-- Комментарии Tab Start -->
+      <div class="tab-pane fade" id="collectionsTab" role="tabpanel">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-xxl-3 g-2">
+          <!-- Комментарии -->
+          <div class="col-12 col-sm-6 col-lg-6 col-xxl-6">
+            <div class="card">
+              <div class="sh-35">
+                <div class="row g-1 h-100 gallery">
+                  <div class="col h-100">
+                    <img src="{% static 'new/img/product/small/cornbread.jpg' %}"
+                      class="w-100 h-100 rounded-xl-top-start bg-cover-center d-block"
+                      style="background-image: url({% static 'new/img/product/small/cornbread.jpg' %})"
+                    />
+                  </div>
+                  <div class="col d-flex flex-column justify-content-stretch h-100">
+                    <div class="d-flex mb-1 flex-grow-1">
+                      <img src="{% static 'new/img/product/large/buccellato-di-lucca.jpg' %}"
+                        class="w-100 h-100 rounded-xl-top-end bg-cover-center d-block"
+                        style="background-image: url({% static 'new/img/product/small/buccellato-di-lucca.jpg' %})"
+                      />
+                    </div>
+                    <div class="d-flex flex-grow-1">
+                      <img src="{% static 'new/img/product/large/rugbraud.jpg' %}"
+                        class="w-100 h-100 bg-cover-center d-block"
+                        style="background-image: url({% static 'new/img/product/small/rugbraud.jpg' %})"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 class="heading mb-0">
+                  <a href="#" class="body-link sh-5 d-inline-block">
+                    <span class="clamp-line" data-line="2">Что тонаписано может заголок</span>
+                  </a>
+                </h5>
+              </div>
+            </div>
+          </div>
+          <!-- Комментарии -->
+          <div class="col-12 col-sm-6 col-lg-6 col-xxl-6">
+            <div class="card">
+              <div class="sh-35">
+                <div class="row g-1 h-100 gallery">
+                  <div class="col d-flex flex-column justify-content-stretch h-100">
+                    <div class="d-flex mb-1 flex-grow-1">
+                      <a
+                        href="{% static 'new/img/product/large/bauernbrot.jpg' %}"
+                        class="w-100 h-100 rounded-xl-top bg-cover-center d-block"
+                        style="background-image: url({% static 'new/img/product/small/bauernbrot.jpg' %})"
+                      ></a>
+                    </div>
+                    <div class="d-flex flex-grow-1">
+                      <a
+                        href="{% static 'new/img/product/large/zopf.jpg' %}"
+                        class="w-100 h-100 bg-cover-center d-block"
+                        style="background-image: url({% static 'new/img/product/small/zopf.jpg' %})"
+                      ></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 class="heading mb-0">
+                  <a href="#" class="body-link sh-5 d-inline-block">
+                    <span class="clamp-line" data-line="2">Basic Introduction for Dough Molding</span>
+                  </a>
+                </h5>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-6 col-xxl-6">
+            <div class="card">
+              <div class="sh-35">
+                <div class="row g-1 h-100 gallery">
+                  <div class="col h-100">
+                    <a
+                      href="{% static 'new/img/product/large/panettone.jpg' %}"
+                      class="w-100 h-100 rounded-xl-top-start bg-cover-center d-block"
+                      style="background-image: url({% static 'new/img/product/small/panettone.jpg' %})"
+                    ></a>
+                  </div>
+                  <div class="col h-100">
+                    <a
+                      href="{% static 'new/img/product/large/cornbread.jpg' %}"
+                      class="w-100 h-100 rounded-xl-top-end bg-cover-center d-block"
+                      style="background-image: url({% static 'new/img/product/small/cornbread.jpg' %})"
+                    ></a>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 class="heading mb-0">
+                  <a href="#" class="body-link sh-5 d-inline-block">
+                    <span class="clamp-line" data-line="2">Recipes for Sweet and Healty Treats</span>
+                  </a>
+                </h5>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-6 col-xxl-6">
+            <div class="card">
+              <div class="sh-35">
+                <div class="row g-1 h-100 gallery">
+                  <div class="col d-flex flex-column justify-content-stretch h-100">
+                    <div class="d-flex mb-1 flex-grow-1">
+                      <a
+                        href="{% static 'new/img/product/large/baguette.jpg' %}"
+                        class="w-100 h-100 rounded-xl-top-start bg-cover-center d-block"
+                        style="background-image: url({% static 'new/img/product/small/baguette.jpg' %})"
+                      ></a>
+                    </div>
+                    <div class="d-flex flex-grow-1">
+                      <a
+                        href="{% static 'new/img/product/large/rugbraud.jpg' %}"
+                        class="w-100 h-100 bg-cover-center d-block"
+                        style="background-image: url({% static 'new/img/product/small/rugbraud.jpg' %})"
+                      ></a>
+                    </div>
+                  </div>
+                  <div class="col d-flex flex-column justify-content-stretch h-100">
+                    <div class="d-flex mb-1 flex-grow-1">
+                      <a
+                        href="{% static 'new/img/product/large/guernsey-gache.jpg' %}"
+                        class="w-100 h-100 rounded-xl-top-end bg-cover-center d-block"
+                        style="background-image: url({% static 'new/img/product/small/guernsey-gache.jpg' %})"
+                      ></a>
+                    </div>
+                    <div class="d-flex flex-grow-1">
+                      <a
+                        href="{% static 'new/img/product/large/pain-de-campagne.jpg' %}"
+                        class="w-100 h-100 bg-cover-center d-block"
+                        style="background-image: url({% static 'new/img/product/small/pain-de-campagne.jpg' %})"
+                      ></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 class="heading mb-0">
+                  <a href="#" class="body-link sh-5 d-inline-block">
+                    <span class="clamp-line" data-line="2">10 Secrets Every Southern Baker Knows</span>
+                  </a>
+                </h5>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Комментарии Tab End -->
+
+      <!-- Подписчики Tab Start -->
+      <div class="tab-pane fade" id="friendsTab" role="tabpanel">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xxl-3 g-2">
+          <div class="col">
+            <div class="card">
+              <div class="card-body">
+                <div class="row g-0 sh-6">
+                  <div class="col-auto">
+                    <img src="{% static 'new/img/profile/profile-1.jpg' %}" class="card-img rounded-xl sh-6 sw-6" alt="thumb" />
+                  </div>
+                  <div class="col">
+                    <div class="card-body d-flex flex-row pt-0 pb-0 ps-3 pe-0 h-100 align-items-center justify-content-between">
+                      <div class="d-flex flex-column">
+                        <div>Blaine Cottrell</div>
+                        <div class="text-small text-muted">Project Manager</div>
+                      </div>
+                      <div class="d-flex">
+                        <button type="button" class="btn btn-outline-primary btn-sm ms-1">Follow</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card">
+              <div class="card-body">
+                <div class="row g-0 sh-6">
+                  <div class="col-auto">
+                    <img src="{% static 'new/img/profile/profile-4.jpg' %}" class="card-img rounded-xl sh-6 sw-6" alt="thumb" />
+                  </div>
+                  <div class="col">
+                    <div class="card-body d-flex flex-row pt-0 pb-0 ps-3 pe-0 h-100 align-items-center justify-content-between">
+                      <div class="d-flex flex-column">
+                        <div>Cherish Kerr</div>
+                        <div class="text-small text-muted">Development Lead</div>
+                      </div>
+                      <div class="d-flex">
+                        <button type="button" class="btn btn-outline-primary btn-sm ms-1">Follow</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ПодписчикиTab End -->
+
+    </div>
+    <!--СТРАНИЦЫ   -->
+
+</div>
+<!-- КОНТЕКС НАПОЛНЕНИЕ -->

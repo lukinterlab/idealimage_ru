@@ -1,0 +1,192 @@
+{% extends 'base_tailwind.html' %}
+{% load static %}
+
+{% block title %}Список Telegram каналов - IdealImage.ru{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 text-gray-900 dark:text-gray-100">
+    <!-- Хлебные крошки -->
+    <div class="mb-4 text-sm text-gray-600 dark:text-gray-300">
+        <a href="/dashboard/" class="text-blue-600 dark:text-blue-400 hover:underline">Главный дашборд</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <a href="{% url 'sozseti:dashboard' %}" class="text-blue-600 dark:text-blue-400 hover:underline">Соцсети</a>
+        <span class="mx-2 text-gray-400 dark:text-gray-500">→</span>
+        <span class="text-gray-600 dark:text-gray-300">Telegram каналы</span>
+    </div>
+    
+    <!-- Заголовок и кнопки -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Telegram каналы</h1>
+            <p class="text-gray-500 dark:text-gray-300 mt-2">Всего каналов: {{ total_channels }} | Подписчиков: {{ total_subscribers|default:0 }}</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'sozseti:dashboard' %}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg">
+                <i class="fas fa-arrow-left mr-2"></i>Назад к Соцсетям
+            </a>
+            <a href="/admin/Sozseti/socialchannel/add/" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
+                <i class="fas fa-plus mr-2"></i>Добавить канал
+            </a>
+            <form method="POST" action="/admin/Sozseti/update_telegram_stats/" style="display: inline;">
+                {% csrf_token %}
+                <button type="button" onclick="updateStats()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                    <i class="fas fa-sync mr-2"></i>Обновить статистику
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Фильтры и сортировка -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+        <form method="get" class="flex gap-4 items-end">
+            <div class="flex-1">
+                <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Платформа</label>
+                <select name="platform" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    <option value="">Все платформы</option>
+                    {% for platform in platforms %}
+                    <option value="{{ platform.name }}" {% if selected_platform == platform.name %}selected{% endif %}>
+                        {{ platform.get_name_display }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="flex-1">
+                <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Сортировка</label>
+                <select name="sort" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    <option value="-subscribers_count" {% if selected_sort == "-subscribers_count" %}selected{% endif %}>По подписчикам ↓</option>
+                    <option value="subscribers_count" {% if selected_sort == "subscribers_count" %}selected{% endif %}>По подписчикам ↑</option>
+                    <option value="-total_publications" {% if selected_sort == "-total_publications" %}selected{% endif %}>По публикациям ↓</option>
+                    <option value="channel_name" {% if selected_sort == "channel_name" %}selected{% endif %}>По имени А-Я</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                Применить
+            </button>
+        </form>
+    </div>
+    
+    <!-- Таблица каналов -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">#</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Канал</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Платформа</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Подписчики</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Публикаций</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Просмотры</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Вовлечённость</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Статус</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Действия</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for channel in channels %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {{ forloop.counter }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ channel.channel_name }}
+                                    </div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        {{ channel.channel_id }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-200">
+                                {{ channel.platform.get_name_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
+                            {{ channel.subscribers_count|default:0 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 dark:text-gray-400">
+                            {{ channel.total_publications|default:0 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 dark:text-gray-400">
+                            {{ channel.total_views|default:0 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                            {% if channel.avg_engagement %}
+                            <span class="text-green-600 dark:text-green-400 font-medium">{{ channel.avg_engagement|floatformat:2 }}%</span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            {% if channel.is_active %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-200">
+                                Активен
+                            </span>
+                            {% else %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-200">
+                                Неактивен
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                            <a href="{% url 'sozseti:channel_detail' channel.pk %}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 mr-3">
+                                <i class="fas fa-chart-line"></i> Статистика
+                            </a>
+                            <a href="/admin/Sozseti/socialchannel/{{ channel.pk }}/change/" class="text-blue-600 dark:text-blue-400 hover:text-blue-500">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                            Нет каналов для отображения
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Пагинация -->
+    {% if is_paginated %}
+    <div class="mt-6 flex justify-center">
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&platform={{ selected_platform }}&sort={{ selected_sort }}" 
+               class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                Назад
+            </a>
+            {% endif %}
+            
+            <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&platform={{ selected_platform }}&sort={{ selected_sort }}" 
+               class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                Вперед
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function updateStats() {
+    if (confirm('Обновить статистику всех каналов? Это может занять несколько минут.')) {
+        alert('Функция в разработке. Используйте команду: python manage.py update_telegram_stats');
+    }
+}
+</script>
+{% endblock %}
+
