@@ -68,3 +68,6 @@ coverage/
 htmlcov/
 .coverage
 .coverage.*
+
+# GigaChat rate limiting temporary files
+tmp/cooldown/
