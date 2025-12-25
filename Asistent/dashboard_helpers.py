@@ -399,7 +399,7 @@ def get_navigation_stats() -> Dict:
         # ИСПРАВЛЕНО: Проверяем существование таблицы AITask
         try:
             active_tasks = AITask.objects.filter(
-                status__in=['available', 'active']
+                status__in=['pending', 'in_progress']
             ).count()
             
             today_start = timezone.now().replace(hour=0, minute=0, second=0)
