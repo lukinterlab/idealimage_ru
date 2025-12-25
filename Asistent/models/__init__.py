@@ -1,27 +1,23 @@
 """
 Модели для приложения AI-Ассистент
-
-ВНИМАНИЕ: Этот файл теперь является обёрткой для обратной совместимости.
-Все модели перенесены в подпапку models/ для лучшей организации.
-Используйте: from Asistent.models import ContentTask, AIConversation, ...
-или импортируйте напрямую: from Asistent.models.tasks import ContentTask
+Разделены на логические модули для лучшей организации кода
 """
 
-# Импорт всех моделей из модулей для обратной совместимости
-from .models.tasks import (
+# Импорт всех моделей для обратной совместимости
+from .tasks import (
     ContentTask,
     TaskAssignment,
     AuthorTaskRejection,
     TaskHistory,
 )
 
-from .models.ai_interactions import (
+from .ai_interactions import (
     AIConversation,
     AIMessage,
     AITask,
 )
 
-from .models.finances import (
+from .finances import (
     AuthorBalance,
     BonusFormula,
     BonusCalculation,
@@ -29,40 +25,40 @@ from .models.finances import (
     AuthorDonationShare,
 )
 
-from .models.ai_settings import (
+from .ai_settings import (
     GigaChatSettings,
 )
 
-from .models.prompts import (
+from .prompts import (
     PromptTemplate,
     PromptTemplateVersion,
 )
 
-from .models.knowledge import (
+from .knowledge import (
     AIKnowledgeBase,
 )
 
-from .models.notifications import (
+from .notifications import (
     AuthorNotification,
 )
 
-from .models.profiles import (
+from .profiles import (
     AuthorStyleProfile,
     BotProfile,
     BotActivity,
 )
 
-from .models.metrics import (
+from .metrics import (
     ArticleGenerationMetric,
     GigaChatUsageStats,
 )
 
-from .models.logs import (
+from .logs import (
     IntegrationEvent,
     SystemLog,
 )
 
-from .models.generated_content import (
+from .generated_content import (
     AIGeneratedArticle,
 )
 
@@ -88,9 +84,54 @@ def __getattr__(name):
     Без циклического импорта при загрузке модуля.
     """
     if name == 'AISchedule':
-        from .schedule.models import AISchedule
+        from ..schedule.models import AISchedule
         return AISchedule
     elif name == 'AIScheduleRun':
-        from .schedule.models import AIScheduleRun
+        from ..schedule.models import AIScheduleRun
         return AIScheduleRun
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+__all__ = [
+    # Tasks
+    'ContentTask',
+    'TaskAssignment',
+    'AuthorTaskRejection',
+    'TaskHistory',
+    # AI Interactions
+    'AIConversation',
+    'AIMessage',
+    'AITask',
+    # Finances
+    'AuthorBalance',
+    'BonusFormula',
+    'BonusCalculation',
+    'DonationDistribution',
+    'AuthorDonationShare',
+    # AI Settings
+    'GigaChatSettings',
+    # Prompts
+    'PromptTemplate',
+    'PromptTemplateVersion',
+    # Knowledge
+    'AIKnowledgeBase',
+    # Notifications
+    'AuthorNotification',
+    # Profiles
+    'AuthorStyleProfile',
+    'BotProfile',
+    'BotActivity',
+    # Metrics
+    'ArticleGenerationMetric',
+    'GigaChatUsageStats',
+    # Logs
+    'IntegrationEvent',
+    'SystemLog',
+    # Generated Content
+    'AIGeneratedArticle',
+    # Moderation (aliases)
+    'ModerationCriteria',
+    'CommentModerationCriteria',
+    'CommentModerationLog',
+]
+

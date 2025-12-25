@@ -139,7 +139,7 @@ class UnifiedContentGenerationService:
             if 'faq-section' not in content_html.lower():
                 faq_result = self.optimizer.generate_faq_block(post)
                 if faq_result.get('success') and faq_result.get('html'):
-                    post.content = f"{post.content}\\n\\n{faq_result['html']}"
+                    post.content = f"{post.content}\n\n{faq_result['html']}"
                     post.save(update_fields=['content'])
             
             return {
