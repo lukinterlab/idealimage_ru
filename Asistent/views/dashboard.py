@@ -85,7 +85,7 @@ def ai_dashboard(request):
     # Задачи для текущего пользователя
     user_tasks = ContentTask.objects.filter(
         assigned_to=request.user,
-        status__in=['pending', 'in_progress']
+        status__in=['available', 'active']
     ).order_by('-created_at')
     
     # Последние расписания
@@ -96,8 +96,8 @@ def ai_dashboard(request):
     # Статистика по статусам заданий
     task_stats = {
         'total': ContentTask.objects.count(),
-        'pending': ContentTask.objects.filter(status='pending').count(),
-        'in_progress': ContentTask.objects.filter(status='in_progress').count(),
+        'available': ContentTask.objects.filter(status='available').count(),
+        'active': ContentTask.objects.filter(status='active').count(),
         'completed': ContentTask.objects.filter(status='completed').count(),
         'cancelled': ContentTask.objects.filter(status='cancelled').count(),
     }

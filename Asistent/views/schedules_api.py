@@ -39,8 +39,8 @@ def schedules_dashboard(request):
         'inactive': schedules.filter(is_active=False).count(),
         'failed_recently': schedules.filter(
             last_run__gte=timezone.now() - timedelta(days=1),
-            last_run_status='failed'
-        ).count(),
+            runs__status='failed'
+        ).distinct().count(),
     }
     
     # Мониторинг Django-Q
@@ -145,7 +145,7 @@ def run_schedule_now(request, schedule_id):
     
     try:
         # Создаем контекст выполнения
-        context = ScheduleContext(schedule)
+        context = ScheduleContext(schedule, run=None)
         
         # Запускаем workflow
         workflow = PromptGenerationWorkflow(schedule, context)
@@ -191,6 +191,10 @@ def schedules_api_list(request):
     
     schedules_data = []
     for schedule in schedules:
+        # Получаем статус последнего запуска
+        last_run = schedule.runs.order_by('-started_at').first()
+        last_run_status = last_run.status if last_run else None
+        
         schedules_data.append({
             'id': schedule.id,
             'name': schedule.name,
@@ -199,7 +203,7 @@ def schedules_api_list(request):
             'posting_frequency': schedule.posting_frequency,
             'last_run': schedule.last_run.isoformat() if schedule.last_run else None,
             'next_run': schedule.next_run.isoformat() if schedule.next_run else None,
-            'last_run_status': schedule.last_run_status,
+            'last_run_status': last_run_status,
             'current_run_count': schedule.current_run_count,
             'max_runs': schedule.max_runs,
         })
